@@ -1,0 +1,22 @@
+========== Operation WAL on ===========
+Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+Keys:       16 bytes each (+ 0 bytes user-defined timestamp)
+Values:     512 bytes each (256 bytes after compression)
+Entries:    5000000
+Prefix:    0 bytes
+Keys per prefix:    0
+RawSize:    2517.7 MB (estimated)
+FileSize:   1297.0 MB (estimated)
+Write rate: 0 bytes/second
+Read rate: 0 ops/second
+Compression: Snappy
+Compression sampling rate: 0
+Memtablerep: skip_list
+Perf Level: 1
+WARNING: Assertions are enabled; benchmarks unnecessarily slow
+------------------------------------------------
+Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+DB path: [/home/choigunhee/hojin/mnt]
+fillrandom   :       4.712 micros/op 212209 ops/sec;  106.9 MB/s
