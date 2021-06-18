@@ -31,7 +31,7 @@ Author Experiment Environment
   
   SSD : Samsung EVO 860 Pro 1TB
   
-  RocksDB ver. 6.14 -> 6.20
+  RocksDB ver. 6.14 -> 6.21
 
 If you have any problem to run our explorer, please leave your comment in the Issue section
 
