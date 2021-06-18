@@ -17,6 +17,8 @@
 #include "port/port.h"
 #include "util/cast_util.h"
 
+#define RocksDB_Histogram_Percentile 0
+
 namespace ROCKSDB_NAMESPACE {
 
 HistogramBucketMapper::HistogramBucketMapper() {
@@ -220,6 +222,13 @@ std::string HistogramStat::ToString() const {
     r.append(marks, '#');
     r.push_back('\n');
   }
+
+#ifdef RocksDB_Histogram_Percentile
+  for(int i = 0; i <= 100; i++) {
+    fprintf(stdout, "Latency for percentile %d : %lf\n", i, Percentile(i));
+  }
+#endif
+
   return r;
 }
 
