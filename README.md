@@ -19,7 +19,7 @@ This is a place for stduying RocksDB (Facebook) by Dankook University
 
 ### 5. Source-level Analysis
 
-### Note: Our experimental environment
+## Note: Our experimental environment
 
 Author Experiment Environment
 
