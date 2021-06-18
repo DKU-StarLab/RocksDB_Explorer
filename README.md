@@ -21,17 +21,17 @@ This is a place for stduying RocksDB (Facebook) by Dankook University
 
 ## Note: Our experimental environment
 
-Author Experiment Environment
+#### Author Experiment Environment
 
-  Operatring System : Ubuntu 18.04
+    Operatring System : Ubuntu 18.04
   
-  CPU : 8 * Intel(R) Core(TM) i7-6700 CPU @ 3.40Hz
+    CPU : 8 * Intel(R) Core(TM) i7-6700 CPU @ 3.40Hz
   
-  RAM : 8GB
+    RAM : 8GB
   
-  SSD : Samsung EVO 860 Pro 1TB
+    SSD : Samsung EVO 860 Pro 1TB
   
-  RocksDB ver. 6.14 -> 6.21
+    RocksDB ver. 6.14 -> 6.21
 
 If you have any problem to run our explorer, please leave your comment in the Issue section
 
