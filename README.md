@@ -11,13 +11,45 @@ This is a place for stduying RocksDB (Facebook) by Dankook University
 
 ### 1. Setting Environment for experiments
 
+#### Follow the instructions below 
+
+        git clone https://github.com/DKU-StarLab/RocksDB_Explorer.git
+        
+        cd RocksDB_Explorer
+        
+        make db_bench (It will take some time)
+
+You need to edit your DEV_PATH and RESULT_PATH before starting experiments.
+
 ### 2. Policy-related experiments
+
+2.1 What if we turn off the WAL (Write-Ahead-Log)
+
+2.2 What if we turn off the Compaction
+
+2.2 Explore files that are used and created during compaction
 
 ### 3. Configuration-related experiments
 
+3.1 What if we change the number of background thread
+
+3.2 What if we change the memtable setting
+
+3.3 Details explanation about options
+
 ### 4. Workload-related experiments
 
+4.1 What if the key-value size is changed
+
+4.2 What if the key pattern is changed
+
+4.3 What if the value size distribution is changed
+
+4.4 Details explanation about options
+
 ### 5. Source-level Analysis
+
+5.1 Source code level exploration
 
 ## Note: Our experimental environment
 
