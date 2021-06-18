@@ -9,13 +9,15 @@ This is a place for stduying RocksDB (Facebook) by Dankook University
 
 ## How to use This Github
 
-### 1. Policy-related experiments
+### 1. Setting Environment for experiments
 
-### 2. Configuration-related experiments
+### 2. Policy-related experiments
 
-### 3. Workload-related experiments
+### 3. Configuration-related experiments
 
-### 4. Source-level Analysis
+### 4. Workload-related experiments
+
+### 5. Source-level Analysis
 
 ### Note: Our experimental environment
 
