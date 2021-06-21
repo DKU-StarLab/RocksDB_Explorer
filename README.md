@@ -19,7 +19,7 @@ This is a place for stduying RocksDB (Facebook) by Dankook University
         
         make db_bench (It will take some time)
 
-You need to edit your DEV_PATH and RESULT_PATH before starting experiments.
+You need to edit your DEV_PATH before starting experiments.
 
 ### 2. Policy-related experiments
 
