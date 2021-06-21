@@ -37,6 +37,12 @@ You need to edit your DEV_PATH before starting experiments.
         
         Ex) ./wal_latency.sh ../mnt
         
+        cd ../python_parser
+        
+        python3 latency_parser.py [RESULT_TXT] [RESULT_CSV]
+        
+        Ex) python3 latency_parser.py ../result_txt/wal_on_latency_result.txt ../parsing_csv/wal_on_latecny.csv
+        
 2.2 What if we turn off the Compaction
 
 * Throughput
@@ -50,6 +56,10 @@ You need to edit your DEV_PATH before starting experiments.
         ./compaction_latency.sh [YOUR_DEV_PATH]
         
         Ex) ./compaction_latency.sh ../mnt
+        
+        python3 latency_parser.py [RESULT_TXT] [RESULT_CSV]
+        
+        Ex) python3 latency_parser.py ../result_txt/compaction_on_latency_result.txt ../parsing_csv/compaction_on_latecny.csv
 
 2.2 Explore files that are used and created during compaction
 
