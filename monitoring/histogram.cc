@@ -17,7 +17,7 @@
 #include "port/port.h"
 #include "util/cast_util.h"
 
-#define RocksDB_Histogram_Percentile 0
+#define RocksDB_Histogram_Percentile 1
 
 namespace ROCKSDB_NAMESPACE {
 

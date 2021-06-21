@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DEV_PATH="/home/choigunhee/hojin/mnt"
-RESULT_PATH="/home/choigunhee/hojin/RocksDB_Explorer/result_txt/"
+DEV_PATH=$1
+RESULT_PATH="../result_txt/"
 VALUE_SIZE=512
 NUM=5000000
 BENCHMARK=fillrandom
