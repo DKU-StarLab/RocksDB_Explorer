@@ -25,31 +25,79 @@ You need to edit your DEV_PATH before starting experiments.
 
 2.1 What if we turn off the WAL (Write-Ahead-Log)
 
+* Throughput
+
+         ./policy_wal.sh [YOUR_DEV_PATH]
+         
+         Ex) ./policy_wal.sh ../mnt
+
+* Latency
+        
+        ./wal_latency.sh [YOUR_DEV_PATH]
+        
+        Ex) ./wal_latency.sh ../mnt
+        
 2.2 What if we turn off the Compaction
 
+* Throughput
+
+        ./policy_compaction.sh [YOUR_DEV_PATH]
+        
+        Ex) ./policy_compaction.sh ../mnt
+
+* Latency
+
+        ./compaction_latency.sh [YOUR_DEV_PATH]
+        
+        Ex) ./compaction_latency.sh ../mnt
+
 2.2 Explore files that are used and created during compaction
+
+        Not yet, it will be update soon
+        
+2.3 Details explanation about options
 
 ### 3. Configuration-related experiments
 
 3.1 What if we change the number of background thread
 
+        ./configuration_thread.sh [YOUR_DEV_PATH] [NUM_THREAD]
+        
+        Ex) ./configuration_thread.sh ../mnt 16
+
 3.2 What if we change the memtable setting
+
+        ./configuration_memtable.sh [YOUR_DEV_PATH] [MEM_NUM] [MEM_SIZE]
+        
+        Ex) ./configuration_memtable.sh ../mnt 2 64
+        
+        MEM_SIZE is in MB, 64 means 64MB
 
 3.3 Details explanation about options
 
 ### 4. Workload-related experiments
 
-4.1 What if the key-value size is changed
+4.1 + 2 What if the key-value size and the key pattern are changed
 
-4.2 What if the key pattern is changed
+        ./workload_key_value_size.sh [YOUR_DEV_PATH] [KEY_SIZE] [VALUE_SIZE] [BENCHMARK]
+        
+        Ex) ./workload_key_value_size.sh ../mnt 16 100 fillrandom
+        
+        Value distribution is fixed in this configure.
 
 4.3 What if the value size distribution is changed
+
+        ./workload_value_size_distribution.sh [YOUR_DEV_PATH] [BENCHMARK] [DISTRIBUTION_TYPE] [VALUE_MAX_SIZE] [VALUE_MIN_SIZE]
+        
+        Ex) ./workload_value_size_distribution.sh ../mnt fillrandom uniform 1024 100
 
 4.4 Details explanation about options
 
 ### 5. Source-level Analysis
 
 5.1 Source code level exploration
+
+        Not yet, it will be update soon
 
 ## Note: Our experimental environment
 
