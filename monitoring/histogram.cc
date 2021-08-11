@@ -17,7 +17,7 @@
 #include "port/port.h"
 #include "util/cast_util.h"
 
-#define RocksDB_Histogram_Percentile 1
+#define RocksDB_Histogram_Percentile 0
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -224,9 +224,10 @@ std::string HistogramStat::ToString() const {
   }
 
 #ifdef RocksDB_Histogram_Percentile
-  for(int i = 0; i <= 100; i++) {
+  /*for(int i = 0; i <= 100; i++) {
     fprintf(stdout, "Latency for percentile %d : %lf\n", i, Percentile(i));
-  }
+  }*/
+  //fprintf(stdout, "line\n");
 #endif
 
   return r;

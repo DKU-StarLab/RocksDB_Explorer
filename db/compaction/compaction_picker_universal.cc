@@ -282,6 +282,7 @@ Compaction* UniversalCompactionPicker::PickCompaction(
   UniversalCompactionBuilder builder(ioptions_, icmp_, cf_name,
                                      mutable_cf_options, mutable_db_options,
                                      vstorage, this, log_buffer);
+  fprintf(stdout, "PickCompaction - Universal Compaction Picker (compaction_picker_universal.cc - 285)\n");
   return builder.PickCompaction();
 }
 
@@ -358,8 +359,8 @@ UniversalCompactionBuilder::CalculateSortedRuns(
 // time-range to compact.
 Compaction* UniversalCompactionBuilder::PickCompaction() {
   const int kLevel0 = 0;
-  score_ = vstorage_->CompactionScore(kLevel0);
-  sorted_runs_ = CalculateSortedRuns(*vstorage_);
+  score_ = vstorage_->CompactionScore(kLevel0); // Calculate Compaction Score, How? Why? - Signal.Jin
+  sorted_runs_ = CalculateSortedRuns(*vstorage_); // Count the number of sorted runs that currently exist - Signal.Jin
 
   if (sorted_runs_.size() == 0 ||
       (vstorage_->FilesMarkedForPeriodicCompaction().empty() &&
@@ -371,22 +372,24 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
     TEST_SYNC_POINT_CALLBACK(
         "UniversalCompactionBuilder::PickCompaction:Return", nullptr);
     return nullptr;
-  }
+  } // Do not universal compaction - Signal.Jin
   VersionStorageInfo::LevelSummaryStorage tmp;
   ROCKS_LOG_BUFFER_MAX_SZ(
       log_buffer_, 3072,
       "[%s] Universal: sorted runs: %" ROCKSDB_PRIszt " files: %s\n",
       cf_name_.c_str(), sorted_runs_.size(), vstorage_->LevelSummary(&tmp));
 
-  Compaction* c = nullptr;
-  // Periodic compaction has higher priority than other type of compaction
+  Compaction* c = nullptr; // Initialize Compaction Task - Signal.Jin
+  // Periodic compaction has higher priority than other type of compaction // What is the Periodic Compaction??
   // because it's a hard requirement.
   if (!vstorage_->FilesMarkedForPeriodicCompaction().empty()) {
     // Always need to do a full compaction for periodic compaction.
+    // Universal compaction proceeds with full compaction beacause it always has oldest data. - Signal.Jin
     c = PickPeriodicCompaction();
+    fprintf(stdout, "PickPeriodicCompaction - compaction_picker_universal.cc 389\n"); // Not in here with db_bench - Signal.Jin 
   }
 
-  // Check for size amplification.
+  // Check for size amplification. // size amplification == space amplification ?? - Signal.Jin
   if (c == nullptr &&
       sorted_runs_.size() >=
           static_cast<size_t>(
