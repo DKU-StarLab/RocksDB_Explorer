@@ -394,7 +394,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
       sorted_runs_.size() >=
           static_cast<size_t>(
               mutable_cf_options_.level0_file_num_compaction_trigger)) {
-    if ((c = PickCompactionToReduceSizeAmp()) != nullptr) {
+    if ((c = PickCompactionToReduceSizeAmp()) != nullptr) { // Execution of Compaction if the set value is exceeded - Signal.Jin
       ROCKS_LOG_BUFFER(log_buffer_, "[%s] Universal: compacting for size amp\n",
                        cf_name_.c_str());
     } else {
@@ -776,6 +776,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
     return nullptr;  // no candidate files
   }
   {
+    // Almost through Here with db_bench - Signal.Jin
     char file_num_buf[kFormatFileNumberBufSize];
     sr->Dump(file_num_buf, sizeof(file_num_buf), true);
     ROCKS_LOG_BUFFER(
@@ -796,7 +797,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
           " is already being compacted. No size amp reduction possible.\n");
       return nullptr;
     }
-    candidate_size += sr->compensated_file_size;
+    candidate_size += sr->compensated_file_size; // compensated_file_size == all file size in level - Signal.Jin
     candidate_count++;
   }
   if (candidate_count == 0) {
@@ -807,7 +808,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
   uint64_t earliest_file_size = sorted_runs_.back().size;
 
   // size amplification = percentage of additional size
-  if (candidate_size * 100 < ratio * earliest_file_size) {
+  if (candidate_size * 100 < ratio * earliest_file_size) { // New output file size < Existing file size ? - Signal.Jin
     ROCKS_LOG_BUFFER(
         log_buffer_,
         "[%s] Universal: size amp not needed. newer-files-total-size %" PRIu64
