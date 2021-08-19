@@ -390,6 +390,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
   }
 
   // Check for size amplification. // size amplification == space amplification ?? - Signal.Jin
+  // PickCompactionToReduceSizeAmp() function is probably an impoortant function in Universal Compaction - Signal.Jin
   if (c == nullptr &&
       sorted_runs_.size() >=
           static_cast<size_t>(
