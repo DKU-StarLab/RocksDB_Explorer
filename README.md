@@ -107,6 +107,20 @@ You need to edit your DEV_PATH before starting experiments.
 
 5.1 Source code level exploration
 
+5.1.1 Write Operation Flow
+
+        If you want to see write operation flow, change value 0 to 1 in options/cf_options.h - DB_WRITE_FLOW variable
+        
+        Then, make db_bench
+        
+        After do db_bench, you can see write operation flow (Functions) - What functions are you working with
+
+5.1.2 Compaction Operation Flow
+
+        Not yet, it will be update soon
+
+5.1.3 Read Operation Flow
+
         Not yet, it will be update soon
 
 ## Note: Our experimental environment
