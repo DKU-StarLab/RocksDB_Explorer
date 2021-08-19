@@ -50,6 +50,8 @@ void DBImpl::SetRecoverableStatePreReleaseCallback(
 }
 
 Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - Write() in db_impl_write.cc\n"); // Signal.Jin
   return WriteImpl(write_options, my_batch, nullptr, nullptr);
 }
 
@@ -71,6 +73,10 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
                          size_t batch_cnt,
                          PreReleaseCallback* pre_release_callback) {
   assert(!seq_per_batch_ || batch_cnt != 0);
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - WriteImpl() in db_impl_write.cc\n"); // Signal.Jin
+
   if (my_batch == nullptr) {
     return Status::Corruption("Batch is nullptr!");
   }
@@ -473,6 +479,10 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
 
   WriteThread::Writer w(write_options, my_batch, callback, log_ref,
                         disable_memtable);
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - PipelinedWriteImpl() in db_impl_write.cc\n"); // Signal.Jin
+
   write_thread_.JoinBatchGroup(&w);
   TEST_SYNC_POINT("DBImplWrite::PipelinedWriteImpl:AfterJoinBatchGroup");
   if (w.state == WriteThread::STATE_GROUP_LEADER) {
@@ -915,6 +925,9 @@ Status DBImpl::PreprocessWrite(const WriteOptions& write_options,
   mutex_.AssertHeld();
   assert(write_context != nullptr && need_log_sync != nullptr);
   Status status;
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - PreprocessWrite() in db_impl_write.cc\n"); // Signal.Jin
 
   if (error_handler_.IsDBStopped()) {
     status = error_handler_.GetBGError();
@@ -1668,6 +1681,10 @@ Status DBImpl::TrimMemtableHistory(WriteContext* context) {
 
 Status DBImpl::ScheduleFlushes(WriteContext* context) {
   autovector<ColumnFamilyData*> cfds;
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - ScheduleFlushes() in db_impl_write.cc\n"); // Signal.Jin
+
   if (immutable_db_options_.atomic_flush) {
     SelectColumnFamiliesForAtomicFlush(&cfds);
     for (auto cfd : cfds) {

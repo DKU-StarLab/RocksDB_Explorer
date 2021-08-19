@@ -152,6 +152,9 @@ Status DBImpl::FlushMemTableToOutputFile(
   assert(cfd->imm()->NumNotFlushed() != 0);
   assert(cfd->imm()->IsFlushPending());
 
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - FlushMemtableToOutputFile() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   FlushJob flush_job(
       dbname_, cfd, immutable_db_options_, mutable_cf_options,
       port::kMaxUint64 /* memtable_id */, file_options_for_compaction_,
@@ -316,6 +319,10 @@ Status DBImpl::FlushMemTableToOutputFile(
 Status DBImpl::FlushMemTablesToOutputFiles(
     const autovector<BGFlushArg>& bg_flush_args, bool* made_progress,
     JobContext* job_context, LogBuffer* log_buffer, Env::Priority thread_pri) {
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - FlushMemtablesToOutputFiles() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   if (immutable_db_options_.atomic_flush) {
     return AtomicFlushMemTablesToOutputFiles(
         bg_flush_args, made_progress, job_context, log_buffer, thread_pri);
@@ -2213,6 +2220,10 @@ void DBImpl::EnableManualCompaction() {
 
 void DBImpl::MaybeScheduleFlushOrCompaction() {
   mutex_.AssertHeld();
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - MaybeScheduleFlushOrCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   if (!opened_successfully_) {
     // Compaction may introduce data race to DB open
     return;
@@ -2435,6 +2446,9 @@ void DBImpl::BGWorkFlush(void* arg) {
   FlushThreadArg fta = *(reinterpret_cast<FlushThreadArg*>(arg));
   delete reinterpret_cast<FlushThreadArg*>(arg);
 
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - BGWorkFlush() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   IOSTATS_SET_THREAD_POOL_ID(fta.thread_pri_);
   TEST_SYNC_POINT("DBImpl::BGWorkFlush");
   static_cast_with_check<DBImpl>(fta.db_)->BackgroundCallFlush(fta.thread_pri_);
@@ -2510,6 +2524,9 @@ Status DBImpl::BackgroundFlush(bool* made_progress, JobContext* job_context,
                                LogBuffer* log_buffer, FlushReason* reason,
                                Env::Priority thread_pri) {
   mutex_.AssertHeld();
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - BackgroundFlush() in db_impl_compaction_flush.cc\n"); // Signal.Jin
 
   Status status;
   *reason = FlushReason::kOthers;
@@ -2589,6 +2606,9 @@ Status DBImpl::BackgroundFlush(bool* made_progress, JobContext* job_context,
 void DBImpl::BackgroundCallFlush(Env::Priority thread_pri) {
   bool made_progress = false;
   JobContext job_context(next_job_id_.fetch_add(1), true);
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - BackgroundCallFlush() in db_impl_compaction_flush.cc\n"); // Signal.Jin
 
   TEST_SYNC_POINT("DBImpl::BackgroundCallFlush:start");
 

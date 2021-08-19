@@ -169,6 +169,10 @@ void FlushJob::RecordFlushIOStats() {
 void FlushJob::PickMemTable() {
   db_mutex_->AssertHeld();
   assert(!pick_memtable_called);
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - PickMemTable() in flush_job.cc\n"); // Signal.Jin
+
   pick_memtable_called = true;
   // Save the contents of the earliest memtable as a new Table
   cfd_->imm()->PickMemtablesToFlush(max_memtable_id_, &mems_);
@@ -201,6 +205,10 @@ Status FlushJob::Run(LogsWithPrepTracker* prep_tracker,
   TEST_SYNC_POINT("FlushJob::Start");
   db_mutex_->AssertHeld();
   assert(pick_memtable_called);
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - Run() in flush_job.cc\n"); // Signal.Jin
+
   AutoThreadOperationStageUpdater stage_run(
       ThreadStatus::STAGE_FLUSH_RUN);
   if (mems_.empty()) {
@@ -313,6 +321,9 @@ Status FlushJob::WriteLevel0Table() {
   const uint64_t start_micros = clock_->NowMicros();
   const uint64_t start_cpu_micros = clock_->CPUNanos() / 1000;
   Status s;
+
+  if (DB_WRITE_FLOW == 1)
+    fprintf(stdout, "db_bench Write Flow - WriteLevel0Table() in flush_job.cc\n"); // Signal.Jin
 
   std::vector<BlobFileAddition> blob_file_additions;
 
@@ -450,6 +461,8 @@ Status FlushJob::WriteLevel0Table() {
 
     if (s.ok() && output_file_directory_ != nullptr && sync_output_directory_) {
       s = output_file_directory_->Fsync(IOOptions(), nullptr);
+      if (DB_WRITE_FLOW == 1)
+        fprintf(stdout, "db_bench Write Flow - Fsync() in flush_job.cc or io_posix.cc\n"); // Signal.Jin
     }
     TEST_SYNC_POINT_CALLBACK("FlushJob::WriteLevel0Table", &mems_);
     db_mutex_->Lock();

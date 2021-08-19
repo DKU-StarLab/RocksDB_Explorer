@@ -4555,6 +4555,9 @@ class Benchmark {
     const int test_duration = write_mode == RANDOM ? FLAGS_duration : 0;
     const int64_t num_ops = writes_ == 0 ? num_ : writes_;
 
+    if (DB_WRITE_FLOW == 1)
+      fprintf(stdout, "db_bench Write Flow - DoWrite() in db_bench_tool.cc\n"); // Signal.Jin
+
     size_t num_key_gens = 1;
     if (db_.db == nullptr) {
       num_key_gens = multi_dbs_.size();
