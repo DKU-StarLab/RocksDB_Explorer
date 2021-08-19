@@ -13,6 +13,8 @@
 #include "rocksdb/options.h"
 #include "util/compression.h"
 
+#define DB_WRITE_FLOW 0
+
 namespace ROCKSDB_NAMESPACE {
 
 // ImmutableCFOptions is a data struct used by RocksDB internal. It contains a
