@@ -1636,6 +1636,10 @@ Status DBImpl::Get(const ReadOptions& read_options,
   get_impl_options.column_family = column_family;
   get_impl_options.value = value;
   get_impl_options.timestamp = timestamp;
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - Get() in db_impl.cc\n"); // Signal.Jin
+
   Status s = GetImpl(read_options, key, get_impl_options);
   return s;
 }
@@ -1670,6 +1674,9 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
     assert(!read_options.timestamp);
   }
 #endif  // NDEBUG
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - GetImpl() in db_impl.cc\n"); // Signal.Jin
 
   PERF_CPU_TIMER_GUARD(get_cpu_nanos, immutable_db_options_.clock);
   StopWatch sw(immutable_db_options_.clock, stats_, DB_GET);

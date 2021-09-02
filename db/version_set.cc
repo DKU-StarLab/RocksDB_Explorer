@@ -158,6 +158,10 @@ class FilePicker {
   int GetCurrentLevel() const { return curr_level_; }
 
   FdWithKeyRange* GetNextFile() {
+
+    if (DB_READ_FLOW == 1)
+      fprintf(stdout, "db_bench Read Flow - GetNextFile() in version_set.cc\n"); // Signal.Jin
+
     while (!search_ended_) {  // Loops over different levels.
       while (curr_index_in_curr_level_ < curr_file_level_->num_files) {
         // Loops over all files in current level.
@@ -1854,6 +1858,10 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
                   SequenceNumber* max_covering_tombstone_seq, bool* value_found,
                   bool* key_exists, SequenceNumber* seq, ReadCallback* callback,
                   bool* is_blob, bool do_merge) {
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - Get() (for search in SSTables) in version_set.cc\n"); // Signal.Jin
+
   Slice ikey = k.internal_key();
   Slice user_key = k.user_key();
 

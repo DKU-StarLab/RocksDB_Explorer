@@ -254,6 +254,9 @@ bool BlockBasedFilterBlockReader::MayMatch(
     GetContext* get_context, BlockCacheLookupContext* lookup_context) const {
   CachableEntry<BlockContents> filter_block;
 
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - MayMatch() in block_based_filter_block.cc\n"); // Signal.Jin
+
   const Status s =
       GetOrReadFilterBlock(no_io, get_context, lookup_context, &filter_block);
   if (!s.ok()) {

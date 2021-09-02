@@ -396,6 +396,10 @@ Status TableCache::Get(const ReadOptions& options,
   auto& fd = file_meta.fd;
   std::string* row_cache_entry = nullptr;
   bool done = false;
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - Get() in table_cache.cc\n"); // Signal.Jin
+
 #ifndef ROCKSDB_LITE
   IterKey row_cache_key;
   std::string row_cache_entry_buffer;

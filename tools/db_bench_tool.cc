@@ -5303,6 +5303,9 @@ class Benchmark {
       ts_guard.reset(new char[user_timestamp_size_]);
     }
 
+    if (DB_READ_FLOW == 1)
+      fprintf(stdout, "db_bench Read Flow - ReadRandom() in db_bench_tool.cc\n"); // Signal.Jin
+
     Duration duration(FLAGS_duration, reads_);
     while (!duration.Done(1)) {
       DBWithColumnFamilies* db_with_cfh = SelectDBWithCfh(thread);

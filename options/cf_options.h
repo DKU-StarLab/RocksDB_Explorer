@@ -14,6 +14,8 @@
 #include "util/compression.h"
 
 #define DB_WRITE_FLOW 0
+#define DB_COMPACTION_FLOW 0
+#define DB_READ_FLOW 0
 
 namespace ROCKSDB_NAMESPACE {
 

@@ -153,6 +153,9 @@ bool MemTableListVersion::GetFromList(
     const ReadOptions& read_opts, ReadCallback* callback, bool* is_blob_index) {
   *seq = kMaxSequenceNumber;
 
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - GetFromList() (for search in Immutable memtable) in memtable_list.cc\n"); // Signal.Jin
+
   for (auto& memtable : *list) {
     SequenceNumber current_seq = kMaxSequenceNumber;
 

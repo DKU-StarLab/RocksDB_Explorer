@@ -868,6 +868,10 @@ bool MemTable::Get(const LookupKey& key, std::string* value,
                    SequenceNumber* seq, const ReadOptions& read_opts,
                    ReadCallback* callback, bool* is_blob_index, bool do_merge) {
   // The sequence number is updated synchronously in version_set.h
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - Get() (for search in memtable) in memtable.cc\n"); // Signal.Jin
+
   if (IsEmpty()) {
     // Avoiding recording stats for speed.
     return false;

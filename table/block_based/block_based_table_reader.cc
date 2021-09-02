@@ -1407,6 +1407,10 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
     BlockContents* contents) const {
   assert(block_entry != nullptr);
   const bool no_io = (ro.read_tier == kBlockCacheTier);
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - MaybeReadBlockAndLoadToCache() in block_based_table_reader.cc\n"); // Signal.Jin
+
   Cache* block_cache = rep_->table_options.block_cache.get();
   Cache* block_cache_compressed =
       rep_->table_options.block_cache_compressed.get();
@@ -1865,6 +1869,9 @@ Status BlockBasedTable::RetrieveBlock(
   assert(block_entry);
   assert(block_entry->IsEmpty());
 
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - RetrieveBlock() in block_based_table_reader.cc\n"); // Signal.Jin
+
   Status s;
   if (use_cache) {
     s = MaybeReadBlockAndLoadToCache(prefetch_buffer, ro, handle,
@@ -2171,6 +2178,10 @@ bool BlockBasedTable::FullFilterKeyMayMatch(
     const Slice& internal_key, const bool no_io,
     const SliceTransform* prefix_extractor, GetContext* get_context,
     BlockCacheLookupContext* lookup_context) const {
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - FullFilterKeyMayMatch() in block_based_table_reader.cc\n"); // Signal.Jin
+
   if (filter == nullptr || filter->IsBlockBased()) {
     return true;
   }
@@ -2248,6 +2259,9 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   assert(get_context != nullptr);
   Status s;
   const bool no_io = read_options.read_tier == kBlockCacheTier;
+
+  if (DB_READ_FLOW == 1)
+    fprintf(stdout, "db_bench Read Flow - Get() in block_based_table_reader.cc\n"); // Signal.Jin
 
   FilterBlockReader* const filter =
       !skip_filters ? rep_->filter.get() : nullptr;
