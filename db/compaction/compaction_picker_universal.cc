@@ -358,6 +358,10 @@ UniversalCompactionBuilder::CalculateSortedRuns(
 // Universal style of compaction. Pick files that are contiguous in
 // time-range to compact.
 Compaction* UniversalCompactionBuilder::PickCompaction() {
+
+  if (DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in compaction_picker_universal.cc\n"); // Signal.Jin
+
   const int kLevel0 = 0;
   score_ = vstorage_->CompactionScore(kLevel0); // Calculate Compaction Score, How? Why? - Signal.Jin
   sorted_runs_ = CalculateSortedRuns(*vstorage_); // Count the number of sorted runs that currently exist - Signal.Jin
@@ -545,6 +549,9 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
       mutable_cf_options_.compaction_options_universal.min_merge_width;
   unsigned int max_merge_width =
       mutable_cf_options_.compaction_options_universal.max_merge_width;
+
+  if (DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSortedRuns() in compaction_picker_universal.cc\n"); // Signal.Jin
 
   const SortedRun* sr = nullptr;
   bool done = false;
@@ -746,6 +753,9 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
   // percentage flexibility while reducing size amplification
   uint64_t ratio = mutable_cf_options_.compaction_options_universal
                        .max_size_amplification_percent;
+
+  if (DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSizeAmp() in compaction_picker_universal.cc\n"); // Signal.Jin
 
   unsigned int candidate_count = 0;
   uint64_t candidate_size = 0;
@@ -968,6 +978,9 @@ Compaction* UniversalCompactionBuilder::PickDeleteTriggeredCompaction() {
 Compaction* UniversalCompactionBuilder::PickCompactionToOldest(
     size_t start_index, CompactionReason compaction_reason) {
   assert(start_index < sorted_runs_.size());
+
+  if (DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompactionToOldest() in compaction_picker_universal.cc\n"); // Signal.Jin
 
   // Estimate total file size
   uint64_t estimated_total_size = 0;

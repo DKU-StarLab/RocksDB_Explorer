@@ -164,6 +164,10 @@ void LevelCompactionBuilder::PickFileToCompact(
 
 void LevelCompactionBuilder::SetupInitialFiles() {
   // Find the compactions by size on all levels.
+
+  if (DB_LVL_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - SetupInitialFiles() in compaction_picker_level.cc\n"); // Signal.Jin
+
   bool skipped_l0_to_base = false;
   for (int i = 0; i < compaction_picker_->NumberLevels() - 1; i++) {
     start_level_score_ = vstorage_->CompactionScore(i);
@@ -296,6 +300,9 @@ bool LevelCompactionBuilder::SetupOtherInputsIfNeeded() {
 }
 
 Compaction* LevelCompactionBuilder::PickCompaction() {
+  if (DB_LVL_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in compaction_picker_level.cc\n"); // Signal.Jin
+
   // Pick up the first file to start compaction. It may have been extended
   // to a clean cut.
   SetupInitialFiles();
@@ -325,6 +332,10 @@ Compaction* LevelCompactionBuilder::PickCompaction() {
 }
 
 Compaction* LevelCompactionBuilder::GetCompaction() {
+
+  if (DB_LVL_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - GetCompaction() in compaction_picker_level.cc\n"); // Signal.Jin
+
   auto c = new Compaction(
       vstorage_, ioptions_, mutable_cf_options_, mutable_db_options_,
       std::move(compaction_inputs_), output_level_,
@@ -410,6 +421,10 @@ bool LevelCompactionBuilder::PickFileToCompact() {
   // than one concurrent compactions at this level. This
   // could be made better by looking at key-ranges that are
   // being compacted at level 0.
+
+  if (DB_LVL_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickFileToCompact() in compaction_picker_level.cc\n"); // Signal.Jin
+
   if (start_level_ == 0 &&
       !compaction_picker_->level0_compactions_in_progress()->empty()) {
     TEST_SYNC_POINT("LevelCompactionPicker::PickCompactionBySize:0");

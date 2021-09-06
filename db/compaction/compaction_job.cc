@@ -418,6 +418,9 @@ void CompactionJob::Prepare() {
   AutoThreadOperationStageUpdater stage_updater(
       ThreadStatus::STAGE_COMPACTION_PREPARE);
 
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - Prepare() in compaction_job.cc\n"); // Signal.Jin
+
   // Generate file_levels_ for compaction before making Iterator
   auto* c = compact_->compaction;
   assert(c->column_family_data() != nullptr);
@@ -595,6 +598,9 @@ Status CompactionJob::Run() {
   log_buffer_->FlushBufferToLog();
   LogCompaction();
 
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - Run() in compaction_job.cc\n"); // Signal.Jin
+  
   const size_t num_threads = compact_->sub_compact_states.size();
   assert(num_threads > 0);
   const uint64_t start_micros = db_options_.clock->NowMicros();
@@ -1058,6 +1064,9 @@ void CompactionJob::ProcessKeyValueCompactionWithCompactionService(
 void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   assert(sub_compact);
   assert(sub_compact->compaction);
+
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - ProcessKeyValueCompaction() in compaction_job.cc\n"); // Signal.Jin
 
 #ifndef ROCKSDB_LITE
   if (db_options_.compaction_service) {

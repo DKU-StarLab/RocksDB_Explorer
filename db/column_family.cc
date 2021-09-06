@@ -1078,6 +1078,10 @@ bool ColumnFamilyData::NeedsCompaction() const {
 Compaction* ColumnFamilyData::PickCompaction(
     const MutableCFOptions& mutable_options,
     const MutableDBOptions& mutable_db_options, LogBuffer* log_buffer) {
+
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in column_family.cc\n"); // Signal.Jin
+
   SequenceNumber earliest_mem_seqno =
       std::min(mem_->GetEarliestSequenceNumber(),
                imm_.current()->GetEarliestSequenceNumber(false));

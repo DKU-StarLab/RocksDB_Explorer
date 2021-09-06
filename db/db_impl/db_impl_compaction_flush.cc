@@ -2375,6 +2375,10 @@ ColumnFamilyData* DBImpl::PickCompactionFromQueue(
     std::unique_ptr<TaskLimiterToken>* token, LogBuffer* log_buffer) {
   assert(!compaction_queue_.empty());
   assert(*token == nullptr);
+
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - PickCompactionFromQueue() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   autovector<ColumnFamilyData*> throttled_candidates;
   ColumnFamilyData* cfd = nullptr;
   while (!compaction_queue_.empty()) {
@@ -2460,6 +2464,10 @@ void DBImpl::BGWorkCompaction(void* arg) {
   delete reinterpret_cast<CompactionArg*>(arg);
   IOSTATS_SET_THREAD_POOL_ID(Env::Priority::LOW);
   TEST_SYNC_POINT("DBImpl::BGWorkCompaction");
+
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - BGWorkCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   auto prepicked_compaction =
       static_cast<PrepickedCompaction*>(ca.prepicked_compaction);
   static_cast_with_check<DBImpl>(ca.db)->BackgroundCallCompaction(
@@ -2693,6 +2701,10 @@ void DBImpl::BackgroundCallCompaction(PrepickedCompaction* prepicked_compaction,
   bool made_progress = false;
   JobContext job_context(next_job_id_.fetch_add(1), true);
   TEST_SYNC_POINT("BackgroundCallCompaction:0");
+
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - BackgroundCallCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+
   LogBuffer log_buffer(InfoLogLevel::INFO_LEVEL,
                        immutable_db_options_.info_log.get());
   {
@@ -2819,6 +2831,10 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
                                     LogBuffer* log_buffer,
                                     PrepickedCompaction* prepicked_compaction,
                                     Env::Priority thread_pri) {
+  
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - BackgroundCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  
   ManualCompactionState* manual_compaction =
       prepicked_compaction == nullptr
           ? nullptr

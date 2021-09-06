@@ -1065,6 +1065,10 @@ Status CompactionPicker::SanitizeCompactionInputFiles(
 #endif  // !ROCKSDB_LITE
 
 void CompactionPicker::RegisterCompaction(Compaction* c) {
+
+  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
+    fprintf(stdout, "db_bench Compaction Flow - RegisterCompaction() in compaction_picker.cc\n"); // Signal.Jin
+
   if (c == nullptr) {
     return;
   }
