@@ -117,6 +117,15 @@ You need to edit your DEV_PATH before starting experiments.
 
 5.1.2 Compaction Operation Flow
 
+        If you want to see compaction operation flow, change value 0 to 1 in options/cf_options.h - DB_LVL_COMPACTION_FLOW or DB_UNI_COMPACTION_FLOW variable
+        
+        DB_LVL_COMPACTION_FLOW = Leveled compaction / DB_UNI_COMPACTION_FLOW = Universal compaction
+        
+        db_bench option = compation_style (0 = Leveled, 1 = Universal, 2 = FIFO)
+        
+        Then, make db_bench
+        
+        While do db_bench, you can see compaction(LVL, UNI) operation flow (Functions) - What functions are you working with
 
 5.1.3 Read Operation Flow
 
