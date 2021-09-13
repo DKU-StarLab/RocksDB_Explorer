@@ -217,6 +217,8 @@ inline void BlockFetcher::GetBlockContents() {
 
 IOStatus BlockFetcher::ReadBlockContents() {
 
+  //clock_t start, end; // Signal.Jin
+
   if (DB_READ_FLOW == 1)
     fprintf(stdout, "db_bench Read Flow - ReadBlockContents() in block_fetcher.cc\n"); // Signal.Jin
 
@@ -238,17 +240,23 @@ IOStatus BlockFetcher::ReadBlockContents() {
     if (io_status_.ok()) {
       if (file_->use_direct_io()) {
         PERF_TIMER_GUARD(block_read_time);
+        //start = clock(); // Signal.Jin
         io_status_ =
             file_->Read(opts, handle_.offset(), block_size_with_trailer_,
                         &slice_, nullptr, &direct_io_buf_, for_compaction_);
+        //end = clock();
+        //fprintf(stdout, "DIO: Offset = %lu, Time = %lf\n", handle_.offset(), (double)(end-start)); // Signal.Jin
         PERF_COUNTER_ADD(block_read_count, 1);
         used_buf_ = const_cast<char*>(slice_.data());
       } else {
         PrepareBufferForBlockFromFile();
         PERF_TIMER_GUARD(block_read_time);
+        //start = clock(); // Signal.Jin
         io_status_ =
             file_->Read(opts, handle_.offset(), block_size_with_trailer_,
                         &slice_, used_buf_, nullptr, for_compaction_);
+        //end = clock();
+        //fprintf(stdout, "Offset = %lu, Time = %lf\n", handle_.offset(), (double)(end-start)); // Signal.Jin
         PERF_COUNTER_ADD(block_read_count, 1);
 #ifndef NDEBUG
         if (slice_.data() == &stack_buf_[0]) {

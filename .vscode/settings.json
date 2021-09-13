@@ -10,6 +10,7 @@
 		"ctime": "cpp",
 		"cwchar": "cpp",
 		"cwctype": "cpp",
-		"sstream": "cpp"
+		"sstream": "cpp",
+		"future": "cpp"
 	}
 }

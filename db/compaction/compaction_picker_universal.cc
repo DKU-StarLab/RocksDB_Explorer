@@ -359,6 +359,7 @@ UniversalCompactionBuilder::CalculateSortedRuns(
 // time-range to compact.
 Compaction* UniversalCompactionBuilder::PickCompaction() {
 
+
   if (DB_UNI_COMPACTION_FLOW == 1)
     fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in compaction_picker_universal.cc\n"); // Signal.Jin
 
@@ -400,6 +401,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
           static_cast<size_t>(
               mutable_cf_options_.level0_file_num_compaction_trigger)) {
     if ((c = PickCompactionToReduceSizeAmp()) != nullptr) { // Execution of Compaction if the set value is exceeded - Signal.Jin
+      //fprintf(stdout, "PickCompactionToReduceSizeAmp - compaction_picker_universal.cc 404\n"); // Just one time with db_bench - Signal.Jin 
       ROCKS_LOG_BUFFER(log_buffer_, "[%s] Universal: compacting for size amp\n",
                        cf_name_.c_str());
     } else {
@@ -409,6 +411,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
           mutable_cf_options_.compaction_options_universal.size_ratio;
 
       if ((c = PickCompactionToReduceSortedRuns(ratio, UINT_MAX)) != nullptr) {
+        //fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 414\n"); // Signal.Jin 
         ROCKS_LOG_BUFFER(log_buffer_,
                          "[%s] Universal: compacting for size ratio\n",
                          cf_name_.c_str());
@@ -422,6 +425,9 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
                static_cast<size_t>(
                    mutable_cf_options_.level0_file_num_compaction_trigger));
         // Get the total number of sorted runs that are not being compacted
+        
+        //fprintf(stdout, "compaction_picker_universal.cc 429\n"); // Not in here with db_bench - Signal.Jin
+        
         int num_sr_not_compacted = 0;
         for (size_t i = 0; i < sorted_runs_.size(); i++) {
           if (sorted_runs_[i].being_compacted == false) {
@@ -438,6 +444,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
               mutable_cf_options_.level0_file_num_compaction_trigger + 1;
           if ((c = PickCompactionToReduceSortedRuns(UINT_MAX, num_files)) !=
               nullptr) {
+            fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 447\n");// Not in here with db_bench - Signal.Jin
             ROCKS_LOG_BUFFER(log_buffer_,
                              "[%s] Universal: compacting for file num -- %u\n",
                              cf_name_.c_str(), num_files);
@@ -553,6 +560,8 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
   if (DB_UNI_COMPACTION_FLOW == 1)
     fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSortedRuns() in compaction_picker_universal.cc\n"); // Signal.Jin
 
+  fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 563\n"); // Signal.Jin 
+
   const SortedRun* sr = nullptr;
   bool done = false;
   size_t start_index = 0;
@@ -598,15 +607,19 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
       sr->Dump(file_num_buf, sizeof(file_num_buf), true);
       ROCKS_LOG_BUFFER(log_buffer_,
                        "[%s] Universal: Possible candidate %s[%d].",
-                       cf_name_.c_str(), file_num_buf, loop);
+                       cf_name_.c_str(), file_num_buf, loop); // db_bench through here!! - Signal.Jin
     }
 
     // Check if the succeeding files need compaction.
     for (size_t i = loop + 1;
          candidate_count < max_files_to_compact && i < sorted_runs_.size();
          i++) {
+
+      //fprintf(stdout, "i = %lu, loop = %lu\n", i, loop);
+
       const SortedRun* succeeding_sr = &sorted_runs_[i];
       if (succeeding_sr->being_compacted) {
+        // No
         break;
       }
       // Pick files if the total/last candidate file size (increased by the
@@ -616,7 +629,12 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
       // kCompactionStopStyleSimilarSize, it's simply the size of the last
       // picked file.
       double sz = candidate_size * (100.0 + ratio) / 100.0;
+
+      fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->size));
+      //fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->compensated_file_size));
+
       if (sz < static_cast<double>(succeeding_sr->size)) {
+        // Yes
         break;
       }
       if (mutable_cf_options_.compaction_options_universal.stop_style ==
@@ -629,11 +647,12 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
           // files, we'll pick them up on a future iteration of the outer
           // loop. If it's some lonely straggler, it'll eventually get picked
           // by the last-resort read amp strategy which disregards size ratios.
+          // No
           break;
         }
         candidate_size = succeeding_sr->compensated_file_size;
       } else {  // default kCompactionStopStyleTotalSize
-        candidate_size += succeeding_sr->compensated_file_size;
+        candidate_size += succeeding_sr->compensated_file_size; // compensated_file_size == size - Signal.Jin
       }
       candidate_count++;
     }
@@ -642,7 +661,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
     if (candidate_count >= (unsigned int)min_merge_width) {
       start_index = loop;
       done = true;
-      break;
+      break; // db_bench through here - Signal.Jin
     } else {
       for (size_t i = loop;
            i < loop + candidate_count && i < sorted_runs_.size(); i++) {
@@ -658,6 +677,9 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
     return nullptr;
   }
   size_t first_index_after = start_index + candidate_count;
+
+  //fprintf(stdout, "start_index = %lu, candidate_count = %d\n", start_index, candidate_count);
+
   // Compression is enabled if files compacted earlier already reached
   // size ratio of compression.
   bool enable_compression = true;
@@ -677,7 +699,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
         break;
       }
     }
-  }
+  } // Not in here becasue compression_size_percent(ratio_to_compress) = -1 (default) - Signal.Jin
 
   uint64_t estimated_total_size = 0;
   for (unsigned int i = 0; i < first_index_after; i++) {
@@ -694,6 +716,8 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
   } else {
     output_level = sorted_runs_[first_index_after].level - 1;
   }
+
+  //fprintf(stdout, "first_index_after = %lu, output_level = %d, sorted_runs_.size() = %lu\n", first_index_after, output_level, sorted_runs_.size());
 
   // last level is reserved for the files ingested behind
   if (ioptions_.allow_ingest_behind &&
@@ -757,6 +781,8 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
   if (DB_UNI_COMPACTION_FLOW == 1)
     fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSizeAmp() in compaction_picker_universal.cc\n"); // Signal.Jin
 
+  fprintf(stdout, "PickCompactionToReduceSizeAmp - compaction_picker_universal.cc 769\n"); // Just one time with db_bench - Signal.Jin 
+
   unsigned int candidate_count = 0;
   uint64_t candidate_size = 0;
   size_t start_index = 0;
@@ -772,6 +798,8 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
     sr = &sorted_runs_[loop];
     if (!sr->being_compacted) {
       start_index = loop;  // Consider this as the first candidate.
+      //fprintf(stdout, "start_index = %ld\n", start_index);
+      // start_index = 0, if background compaction thread num = 1 - Signal.Jin
       break;
     }
     char file_num_buf[kFormatFileNumberBufSize];
@@ -786,9 +814,10 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
   if (sr == nullptr) {
     return nullptr;  // no candidate files
   }
+
   {
     // Almost through Here with db_bench - Signal.Jin
-    char file_num_buf[kFormatFileNumberBufSize];
+    char file_num_buf[kFormatFileNumberBufSize]; // KFormatFileNumberBufSize = 38 (default)
     sr->Dump(file_num_buf, sizeof(file_num_buf), true);
     ROCKS_LOG_BUFFER(
         log_buffer_,
@@ -810,13 +839,14 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
     }
     candidate_size += sr->compensated_file_size; // compensated_file_size == all file size in level - Signal.Jin
     candidate_count++;
+    //fprintf(stdout, "candidate count = %u\n", candidate_count);
   }
   if (candidate_count == 0) {
     return nullptr;
   }
 
   // size of earliest file
-  uint64_t earliest_file_size = sorted_runs_.back().size;
+  uint64_t earliest_file_size = sorted_runs_.back().size; // why use earlist_file_size = last ref sorted_run
 
   // size amplification = percentage of additional size
   if (candidate_size * 100 < ratio * earliest_file_size) { // New output file size < Existing file size ? - Signal.Jin
@@ -825,7 +855,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
         "[%s] Universal: size amp not needed. newer-files-total-size %" PRIu64
         " earliest-file-size %" PRIu64,
         cf_name_.c_str(), candidate_size, earliest_file_size);
-    return nullptr;
+    return nullptr; // Except first time, always through here
   } else {
     ROCKS_LOG_BUFFER(
         log_buffer_,
@@ -977,6 +1007,7 @@ Compaction* UniversalCompactionBuilder::PickDeleteTriggeredCompaction() {
 
 Compaction* UniversalCompactionBuilder::PickCompactionToOldest(
     size_t start_index, CompactionReason compaction_reason) {
+
   assert(start_index < sorted_runs_.size());
 
   if (DB_UNI_COMPACTION_FLOW == 1)
@@ -1033,6 +1064,8 @@ Compaction* UniversalCompactionBuilder::PickCompactionToOldest(
     assert(output_level > 1);
     output_level--;
   }
+
+  //fprintf(stdout, "output_level = %d\n", output_level);
 
   // We never check size for
   // compaction_options_universal.compression_size_percent,
