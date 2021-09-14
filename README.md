@@ -5,7 +5,7 @@
 This is a place for stduying RocksDB (Facebook) by Dankook University
 - Writer : Hojin Shin
 - Laboratory : Embedded System Lab. in Dankook University
-- 2021 DKU RocksDB Festival Lecture Information [link]()
+- 2021 DKU RocksDB Festival Lecture Information [link](https://github.com/DKU-StarLab/RocksDB_Festival)
 
 ## How to use This Github
 
