@@ -57,6 +57,8 @@ You need to edit your DEV_PATH before starting experiments.
         
         Ex) ./compaction_latency.sh ../mnt
         
+        cd ../python_parser
+        
         python3 latency_parser.py [RESULT_TXT] [RESULT_CSV]
         
         Ex) python3 latency_parser.py ../result_txt/compaction_on_latency_result.txt ../parsing_csv/compaction_on_latecny.csv
