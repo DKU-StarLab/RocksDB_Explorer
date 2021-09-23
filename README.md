@@ -5,7 +5,7 @@
 This is a place for stduying RocksDB (Facebook) by Dankook University
 - Writer : Hojin Shin
 - Laboratory : Embedded System Lab. in Dankook University
-- 2021 DKU RocksDB Festival Lecture Information [link]()
+- 2021 DKU RocksDB Festival Lecture Information [link](https://github.com/DKU-StarLab/RocksDB_Festival)
 
 ## How to use This Github
 
@@ -56,6 +56,8 @@ You need to edit your DEV_PATH before starting experiments.
         ./compaction_latency.sh [YOUR_DEV_PATH]
         
         Ex) ./compaction_latency.sh ../mnt
+        
+        cd ../python_parser
         
         python3 latency_parser.py [RESULT_TXT] [RESULT_CSV]
         
