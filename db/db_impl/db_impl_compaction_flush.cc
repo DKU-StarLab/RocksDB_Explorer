@@ -2845,6 +2845,7 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
 
   bool is_manual = (manual_compaction != nullptr);
   std::unique_ptr<Compaction> c;
+
   if (prepicked_compaction != nullptr &&
       prepicked_compaction->compaction != nullptr) {
     c.reset(prepicked_compaction->compaction);
@@ -3213,6 +3214,14 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
     TEST_SYNC_POINT_CALLBACK("DBImpl::BackgroundCompaction:AfterCompaction",
                              c->column_family_data());
   }
+
+  uint64_t total_size = 0;
+
+  for(int i = 0; i < 7; i++) {
+      fprintf(stdout, "Level = %d, File Size = %lu\n", i, c->column_family_data()->current()->storage_info()->NumLevelBytes(i));
+      total_size += c->column_family_data()->current()->storage_info()->NumLevelBytes(i);
+  }
+  fprintf(stdout, "Total size = %lu\n=====================\n", total_size); // Signal.Jin
 
   if (status.ok() && !io_s.ok()) {
     status = io_s;

@@ -391,7 +391,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
     // Always need to do a full compaction for periodic compaction.
     // Universal compaction proceeds with full compaction beacause it always has oldest data. - Signal.Jin
     c = PickPeriodicCompaction();
-    fprintf(stdout, "PickPeriodicCompaction - compaction_picker_universal.cc 389\n"); // Not in here with db_bench - Signal.Jin 
+    //fprintf(stdout, "PickPeriodicCompaction - compaction_picker_universal.cc 389\n"); // Not in here with db_bench - Signal.Jin 
   }
 
   // Check for size amplification. // size amplification == space amplification ?? - Signal.Jin
@@ -444,7 +444,7 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
               mutable_cf_options_.level0_file_num_compaction_trigger + 1;
           if ((c = PickCompactionToReduceSortedRuns(UINT_MAX, num_files)) !=
               nullptr) {
-            fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 447\n");// Not in here with db_bench - Signal.Jin
+            //fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 447\n");// Not in here with db_bench - Signal.Jin
             ROCKS_LOG_BUFFER(log_buffer_,
                              "[%s] Universal: compacting for file num -- %u\n",
                              cf_name_.c_str(), num_files);
@@ -560,7 +560,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
   if (DB_UNI_COMPACTION_FLOW == 1)
     fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSortedRuns() in compaction_picker_universal.cc\n"); // Signal.Jin
 
-  fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 563\n"); // Signal.Jin 
+  //fprintf(stdout, "PickCompactionToReduceSortedRuns - compaction_picker_universal.cc 563\n"); // Signal.Jin 
 
   const SortedRun* sr = nullptr;
   bool done = false;
@@ -630,7 +630,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
       // picked file.
       double sz = candidate_size * (100.0 + ratio) / 100.0;
 
-      fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->size));
+      //fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->size));
       //fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->compensated_file_size));
 
       if (sz < static_cast<double>(succeeding_sr->size)) {
@@ -781,7 +781,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
   if (DB_UNI_COMPACTION_FLOW == 1)
     fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSizeAmp() in compaction_picker_universal.cc\n"); // Signal.Jin
 
-  fprintf(stdout, "PickCompactionToReduceSizeAmp - compaction_picker_universal.cc 769\n"); // Just one time with db_bench - Signal.Jin 
+  //fprintf(stdout, "PickCompactionToReduceSizeAmp - compaction_picker_universal.cc 769\n"); // Just one time with db_bench - Signal.Jin 
 
   unsigned int candidate_count = 0;
   uint64_t candidate_size = 0;

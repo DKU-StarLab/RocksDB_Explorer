@@ -77,6 +77,8 @@ Status DeleteScheduler::DeleteFile(const std::string& file_path,
                      total_trash_size_.load(), max_trash_db_ratio_.load());
       InstrumentedMutexLock l(&mu_);
       RecordTick(stats_.get(), FILES_DELETED_IMMEDIATELY);
+      
+      fprintf(stdout, "Delete File %s\n", file_path.c_str()); // Signal.Jin
     }
     return s;
   }
