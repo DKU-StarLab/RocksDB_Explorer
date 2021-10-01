@@ -47,6 +47,9 @@
 #include "util/mutexlock.h"
 #include "util/stop_watch.h"
 
+// Control Write Flow Print
+int flush_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 const char* GetFlushReasonString (FlushReason flush_reason) {
@@ -170,8 +173,12 @@ void FlushJob::PickMemTable() {
   db_mutex_->AssertHeld();
   assert(!pick_memtable_called);
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - PickMemTable() in flush_job.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - PickMemTable() in flush_job.cc (line 178) |\n"); // Signal.Jin
+    fprintf(stdout, "| PickMemTable() : Pick the Memtable to flush from the list |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   pick_memtable_called = true;
   // Save the contents of the earliest memtable as a new Table
@@ -206,8 +213,12 @@ Status FlushJob::Run(LogsWithPrepTracker* prep_tracker,
   db_mutex_->AssertHeld();
   assert(pick_memtable_called);
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - Run() in flush_job.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - Run() in flush_job.cc (line 218) |\n"); // Signal.Jin
+    fprintf(stdout, "| Run() : A background thread performs the flush operation |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   AutoThreadOperationStageUpdater stage_run(
       ThreadStatus::STAGE_FLUSH_RUN);
@@ -322,8 +333,11 @@ Status FlushJob::WriteLevel0Table() {
   const uint64_t start_cpu_micros = clock_->CPUNanos() / 1000;
   Status s;
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - WriteLevel0Table() in flush_job.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - WriteLevel0Table() in flush_job.cc (line 338) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   std::vector<BlobFileAddition> blob_file_additions;
 
@@ -461,8 +475,12 @@ Status FlushJob::WriteLevel0Table() {
 
     if (s.ok() && output_file_directory_ != nullptr && sync_output_directory_) {
       s = output_file_directory_->Fsync(IOOptions(), nullptr);
-      if (DB_WRITE_FLOW == 1)
-        fprintf(stdout, "db_bench Write Flow - Fsync() in flush_job.cc or io_posix.cc\n"); // Signal.Jin
+      if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
+        printf("--------------------------------------------------------------------------------------\n");
+        fprintf(stdout, "| db_bench Write Flow - Fsync() in flush_job.cc or io_posix.cc (line 480) |\n"); // Signal.Jin
+        printf("--------------------------------------------------------------------------------------\n");
+        flush_flag = 0;
+      }
     }
     TEST_SYNC_POINT_CALLBACK("FlushJob::WriteLevel0Table", &mems_);
     db_mutex_->Lock();

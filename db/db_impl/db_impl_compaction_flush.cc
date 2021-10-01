@@ -21,6 +21,10 @@
 #include "util/cast_util.h"
 #include "util/concurrent_task_limiter_impl.h"
 
+// Contorl Write Flow Print - Signal.Jin
+int write_check_flag = 1;
+int write_flush_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 bool DBImpl::EnoughRoomForCompaction(
@@ -152,8 +156,12 @@ Status DBImpl::FlushMemTableToOutputFile(
   assert(cfd->imm()->NumNotFlushed() != 0);
   assert(cfd->imm()->IsFlushPending());
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - FlushMemtableToOutputFile() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - FlushMemtableToOutputFile() in db_impl_compaction_flush.cc (line 161) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+    write_flush_flag = 0;
+  }
 
   FlushJob flush_job(
       dbname_, cfd, immutable_db_options_, mutable_cf_options,
@@ -320,8 +328,11 @@ Status DBImpl::FlushMemTablesToOutputFiles(
     const autovector<BGFlushArg>& bg_flush_args, bool* made_progress,
     JobContext* job_context, LogBuffer* log_buffer, Env::Priority thread_pri) {
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - FlushMemtablesToOutputFiles() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - FlushMemtablesToOutputFiles() in db_impl_compaction_flush.cc (line 329) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   if (immutable_db_options_.atomic_flush) {
     return AtomicFlushMemTablesToOutputFiles(
@@ -2221,8 +2232,13 @@ void DBImpl::EnableManualCompaction() {
 void DBImpl::MaybeScheduleFlushOrCompaction() {
   mutex_.AssertHeld();
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - MaybeScheduleFlushOrCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_check_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - MaybeScheduleFlushOrCompaction() in db_impl_compaction_flush.cc (line 2230) |\n"); // Signal.Jin
+    fprintf(stdout, "| MaybeScheduleFlushOrCompaction() : Always Check whether flush or compaction is required |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+    write_check_flag = 0;
+  }
 
   if (!opened_successfully_) {
     // Compaction may introduce data race to DB open
@@ -2450,8 +2466,11 @@ void DBImpl::BGWorkFlush(void* arg) {
   FlushThreadArg fta = *(reinterpret_cast<FlushThreadArg*>(arg));
   delete reinterpret_cast<FlushThreadArg*>(arg);
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - BGWorkFlush() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - BGWorkFlush() in db_impl_compaction_flush.cc (line 2463) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   IOSTATS_SET_THREAD_POOL_ID(fta.thread_pri_);
   TEST_SYNC_POINT("DBImpl::BGWorkFlush");
@@ -2533,8 +2552,12 @@ Status DBImpl::BackgroundFlush(bool* made_progress, JobContext* job_context,
                                Env::Priority thread_pri) {
   mutex_.AssertHeld();
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - BackgroundFlush() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - BackgroundFlush() in db_impl_compaction_flush.cc (line 2550) |\n"); // Signal.Jin
+    fprintf(stdout, "| BackgroundFlush() : It actually flushes the immutable memtable to storage via a background thread |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   Status status;
   *reason = FlushReason::kOthers;
@@ -2615,8 +2638,11 @@ void DBImpl::BackgroundCallFlush(Env::Priority thread_pri) {
   bool made_progress = false;
   JobContext job_context(next_job_id_.fetch_add(1), true);
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - BackgroundCallFlush() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - BackgroundCallFlush() in db_impl_compaction_flush.cc (line 2632) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   TEST_SYNC_POINT("DBImpl::BackgroundCallFlush:start");
 
@@ -3210,18 +3236,19 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
                                          &job_context->superversion_contexts[0],
                                          *c->mutable_cf_options());
     }
+
+    uint64_t total_size = 0;
+
+    for(int i = 0; i < 7; i++) {
+      //fprintf(stdout, "Level = %d, File Size = %lu\n", i, c->column_family_data()->current()->storage_info()->NumLevelBytes(i));
+      total_size += c->column_family_data()->current()->storage_info()->NumLevelBytes(i);
+    }
+    //fprintf(stdout, "Total size = %lu\n=====================\n", total_size); // Signal.Jin
+    
     *made_progress = true;
     TEST_SYNC_POINT_CALLBACK("DBImpl::BackgroundCompaction:AfterCompaction",
                              c->column_family_data());
   }
-
-  uint64_t total_size = 0;
-
-  for(int i = 0; i < 7; i++) {
-      fprintf(stdout, "Level = %d, File Size = %lu\n", i, c->column_family_data()->current()->storage_info()->NumLevelBytes(i));
-      total_size += c->column_family_data()->current()->storage_info()->NumLevelBytes(i);
-  }
-  fprintf(stdout, "Total size = %lu\n=====================\n", total_size); // Signal.Jin
 
   if (status.ok() && !io_s.ok()) {
     status = io_s;

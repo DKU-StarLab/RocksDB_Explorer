@@ -4555,8 +4555,15 @@ class Benchmark {
     const int test_duration = write_mode == RANDOM ? FLAGS_duration : 0;
     const int64_t num_ops = writes_ == 0 ? num_ : writes_;
 
-    if (DB_WRITE_FLOW == 1)
-      fprintf(stdout, "db_bench Write Flow - DoWrite() in db_bench_tool.cc\n"); // Signal.Jin
+    int write_flag = 1;
+
+    if (DB_WRITE_FLOW == 1 && write_flag == 1) {
+      printf("--------------------------------------------------------------------------------------\n");
+      fprintf(stdout, "| db_bench Write Flow - DoWrite() in db_bench_tool.cc (line 4559) |\n"); // Signal.Jin
+      fprintf(stdout, "| DoWrite() : Generate Random or Sequential Key and Value for Put(key, value) Operations |\n");
+      printf("--------------------------------------------------------------------------------------\n");
+      write_flag = 0;
+    }
 
     size_t num_key_gens = 1;
     if (db_.db == nullptr) {

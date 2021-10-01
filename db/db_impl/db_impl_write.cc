@@ -16,6 +16,11 @@
 #include "test_util/sync_point.h"
 #include "util/cast_util.h"
 
+// Control Write Flow Print
+int write_flag = 1; // Signal.Jin
+int schedule_flag = 1;
+int switch_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 // Convenience methods
 Status DBImpl::Put(const WriteOptions& o, ColumnFamilyHandle* column_family,
@@ -50,8 +55,12 @@ void DBImpl::SetRecoverableStatePreReleaseCallback(
 }
 
 Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - Write() in db_impl_write.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - Write() in db_impl_write.cc (line 59) |\n"); // Signal.Jin
+    fprintf(stdout, "| Write() : Call WriteImpl() function |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+  }
   return WriteImpl(write_options, my_batch, nullptr, nullptr);
 }
 
@@ -74,8 +83,12 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
                          PreReleaseCallback* pre_release_callback) {
   assert(!seq_per_batch_ || batch_cnt != 0);
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - WriteImpl() in db_impl_write.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - WriteImpl() in db_impl_write.cc (line 87) |\n"); // Signal.Jin
+    fprintf(stdout, "| WriteImpl() : Control main write queue and write options |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   if (my_batch == nullptr) {
     return Status::Corruption("Batch is nullptr!");
@@ -480,8 +493,11 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
   WriteThread::Writer w(write_options, my_batch, callback, log_ref,
                         disable_memtable);
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - PipelinedWriteImpl() in db_impl_write.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - PipelinedWriteImpl() in db_impl_write.cc (line 497) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+  }
 
   write_thread_.JoinBatchGroup(&w);
   TEST_SYNC_POINT("DBImplWrite::PipelinedWriteImpl:AfterJoinBatchGroup");
@@ -926,8 +942,12 @@ Status DBImpl::PreprocessWrite(const WriteOptions& write_options,
   assert(write_context != nullptr && need_log_sync != nullptr);
   Status status;
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - PreprocessWrite() in db_impl_write.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && write_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - PreprocessWrite() in db_impl_write.cc (line 946) |\n"); // Signal.Jin
+    printf("--------------------------------------------------------------------------------------\n");
+    write_flag = 0;
+  }
 
   if (error_handler_.IsDBStopped()) {
     status = error_handler_.GetBGError();
@@ -1682,8 +1702,13 @@ Status DBImpl::TrimMemtableHistory(WriteContext* context) {
 Status DBImpl::ScheduleFlushes(WriteContext* context) {
   autovector<ColumnFamilyData*> cfds;
 
-  if (DB_WRITE_FLOW == 1)
-    fprintf(stdout, "db_bench Write Flow - ScheduleFlushes() in db_impl_write.cc\n"); // Signal.Jin
+  if (DB_WRITE_FLOW == 1 && schedule_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - ScheduleFlushes() in db_impl_write.cc (line 1706)|\n"); // Signal.Jin
+    fprintf(stdout, "| ScheduleFlushes() : If memtable full, signal to flush to Storage |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+    schedule_flag = 0;
+  }
 
   if (immutable_db_options_.atomic_flush) {
     SelectColumnFamiliesForAtomicFlush(&cfds);
@@ -1765,6 +1790,14 @@ Status DBImpl::SwitchMemtable(ColumnFamilyData* cfd, WriteContext* context) {
   log::Writer* new_log = nullptr;
   MemTable* new_mem = nullptr;
   IOStatus io_s;
+
+  if (DB_WRITE_FLOW == 1 && switch_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - SwitchMemtable() in db_impl_write.cc (line 1796)|\n"); // Signal.Jin
+    fprintf(stdout, "| SwitchMemtable() : Change memtable to immutable memtable, ready to flush |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+    switch_flag = 0;
+  }
 
   // Recoverable state is persisted in WAL. After memtable switch, WAL might
   // be deleted, so we write the state to memtable to be persisted as well.
@@ -2006,6 +2039,14 @@ Status DB::Put(const WriteOptions& opt, ColumnFamilyHandle* column_family,
     }
     return Write(opt, &batch);
   }
+  
+  if (DB_WRITE_FLOW == 1 && write_flag == 1) {
+    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "| db_bench Write Flow - Put() in db_impl_write.cc (line 2045) |\n");
+    fprintf(stdout, "| Put() : Add key, value and timestamp to batch |\n");
+    printf("--------------------------------------------------------------------------------------\n");
+  }
+
   const Slice* ts = opt.timestamp;
   assert(nullptr != ts);
   size_t ts_sz = ts->size();
