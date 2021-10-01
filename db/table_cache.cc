@@ -106,6 +106,8 @@ Status TableCache::GetTableReader(
     size_t max_file_size_for_l0_meta_pin) {
   std::string fname =
       TableFileName(ioptions_.cf_paths, fd.GetNumber(), fd.GetPathId());
+
+  //printf("GetTableReader\n"); // Signal.Jin
   std::unique_ptr<FSRandomAccessFile> file;
   FileOptions fopts = file_options;
   Status s = PrepareIOFromReadOptions(ro, ioptions_.clock, fopts.io_options);
@@ -186,7 +188,7 @@ Status TableCache::FindTable(const ReadOptions& ro,
         ro, file_options, internal_comparator, fd, false /* sequential mode */,
         record_read_stats, file_read_hist, &table_reader, prefix_extractor,
         skip_filters, level, prefetch_index_and_filter_in_cache,
-        max_file_size_for_l0_meta_pin);
+        max_file_size_for_l0_meta_pin); // Read All SSTables in Storage - Signal.Jin
     if (!s.ok()) {
       assert(table_reader == nullptr);
       RecordTick(ioptions_.stats, NO_FILE_ERRORS);
@@ -400,7 +402,7 @@ Status TableCache::Get(const ReadOptions& options,
   if (DB_READ_FLOW == 1)
     fprintf(stdout, "db_bench Read Flow - Get() in table_cache.cc\n"); // Signal.Jin
 
-#ifndef ROCKSDB_LITE
+  #ifndef ROCKSDB_LITE
   IterKey row_cache_key;
   std::string row_cache_entry_buffer;
 
@@ -447,6 +449,7 @@ Status TableCache::Get(const ReadOptions& options,
     if (s.ok()) {
       get_context->SetReplayLog(row_cache_entry);  // nullptr if no cache.
       s = t->Get(options, k, get_context, prefix_extractor, skip_filters);
+      //printf("Get\n"); // Signal.Jin
       get_context->SetReplayLog(nullptr);
     } else if (options.read_tier == kBlockCacheTier && s.IsIncomplete()) {
       // Couldn't find Table in cache but treat as kFound if no_io set

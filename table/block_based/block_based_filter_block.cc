@@ -285,7 +285,7 @@ bool BlockBasedFilterBlockReader::MayMatch(
       assert(table()->get_rep());
       const FilterPolicy* const policy = table()->get_rep()->filter_policy;
 
-      const bool may_match = policy->KeyMayMatch(entry, filter);
+      const bool may_match = policy->KeyMayMatch(entry, filter); // bloom filter hash function decoding - Signal.Jin
       if (may_match) {
         PERF_COUNTER_ADD(bloom_sst_hit_count, 1);
         return true;

@@ -1905,7 +1905,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
       user_comparator(), internal_comparator());
   FdWithKeyRange* f = fp.GetNextFile();
 
-  while (f != nullptr) {
+  while (f != nullptr) { // Read All Files - Signal.Jin
     if (*max_covering_tombstone_seq > 0) {
       // The remaining files we look at will only contain covered keys, so we
       // stop here.
@@ -1919,6 +1919,9 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         GetPerfLevel() >= PerfLevel::kEnableTimeExceptForMutex &&
         get_perf_context()->per_level_perf_context_enabled;
     StopWatchNano timer(clock_, timer_enabled /* auto_start */);
+
+    //fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
+
     *status = table_cache_->Get(
         read_options, *internal_comparator(), *f->file_metadata, ikey,
         &get_context, mutable_cf_options_.prefix_extractor.get(),

@@ -1773,7 +1773,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
       if (sv->mem->Get(lkey, get_impl_options.value->GetSelf(), timestamp, &s,
                        &merge_context, &max_covering_tombstone_seq,
                        read_options, get_impl_options.callback,
-                       get_impl_options.is_blob_index)) {
+                       get_impl_options.is_blob_index)) { // Read from MemTable - Signal.Jin
         done = true;
         get_impl_options.value->PinSelf();
         RecordTick(stats_, MEMTABLE_HIT);
@@ -1782,7 +1782,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
                               timestamp, &s, &merge_context,
                               &max_covering_tombstone_seq, read_options,
                               get_impl_options.callback,
-                              get_impl_options.is_blob_index)) {
+                              get_impl_options.is_blob_index)) { // Read from Immutable MemTable - Signal.Jin
         done = true;
         get_impl_options.value->PinSelf();
         RecordTick(stats_, MEMTABLE_HIT);
@@ -1817,7 +1817,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
         nullptr, nullptr,
         get_impl_options.get_value ? get_impl_options.callback : nullptr,
         get_impl_options.get_value ? get_impl_options.is_blob_index : nullptr,
-        get_impl_options.get_value);
+        get_impl_options.get_value); // Read from Database (SSTable) - Signal.Jin
     RecordTick(stats_, MEMTABLE_MISS);
   }
 
