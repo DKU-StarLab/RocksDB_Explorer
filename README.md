@@ -137,7 +137,7 @@ You need to edit your DEV_PATH before starting experiments.
 
         While do db_bench, you can see read(readrandom) operation flow (Functions) - What functions are you working with
 
-5. Note: Not all functions executed are output. Notice that only the important functions are printed.
+#### Note: Not all functions executed are output. Notice that only the important functions are printed.
 
 ## Note: Our experimental environment
 
