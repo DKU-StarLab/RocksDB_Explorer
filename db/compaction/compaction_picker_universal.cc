@@ -282,7 +282,7 @@ Compaction* UniversalCompactionPicker::PickCompaction(
   UniversalCompactionBuilder builder(ioptions_, icmp_, cf_name,
                                      mutable_cf_options, mutable_db_options,
                                      vstorage, this, log_buffer);
-  fprintf(stdout, "PickCompaction - Universal Compaction Picker (compaction_picker_universal.cc - 285)\n");
+  //fprintf(stdout, "PickCompaction - Universal Compaction Picker (compaction_picker_universal.cc - 285)\n");
   return builder.PickCompaction();
 }
 
