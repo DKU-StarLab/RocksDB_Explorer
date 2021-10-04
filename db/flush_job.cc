@@ -174,10 +174,8 @@ void FlushJob::PickMemTable() {
   assert(!pick_memtable_called);
 
   if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - PickMemTable() in flush_job.cc (line 178) |\n"); // Signal.Jin
-    fprintf(stdout, "| PickMemTable() : Pick the Memtable to flush from the list |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [19]        \t|        PickMemTable()     \t\t| db_impl_compaction_and_flush.cc (line 177)\n"); // Signal.Jin
+    //fprintf(stdout, "| PickMemTable() : Pick the Memtable to flush from the list |\n");
   }
 
   pick_memtable_called = true;
@@ -214,10 +212,8 @@ Status FlushJob::Run(LogsWithPrepTracker* prep_tracker,
   assert(pick_memtable_called);
 
   if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - Run() in flush_job.cc (line 218) |\n"); // Signal.Jin
-    fprintf(stdout, "| Run() : A background thread performs the flush operation |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [20]        \t|        Run() {     \t\t\t| flush_job.cc (line 215)\n"); // Signal.Jin
+    //fprintf(stdout, "| Run() : A background thread performs the flush operation |\n");
   }
 
   AutoThreadOperationStageUpdater stage_run(
@@ -334,9 +330,7 @@ Status FlushJob::WriteLevel0Table() {
   Status s;
 
   if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - WriteLevel0Table() in flush_job.cc (line 338) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [21]        \t|         WriteLevel0Table() {     \t| flush_job.cc (line 333)\n"); // Signal.Jin
   }
 
   std::vector<BlobFileAddition> blob_file_additions;
@@ -476,8 +470,25 @@ Status FlushJob::WriteLevel0Table() {
     if (s.ok() && output_file_directory_ != nullptr && sync_output_directory_) {
       s = output_file_directory_->Fsync(IOOptions(), nullptr);
       if (DB_WRITE_FLOW == 1 && flush_flag == 1) {
-        printf("--------------------------------------------------------------------------------------\n");
-        fprintf(stdout, "| db_bench Write Flow - Fsync() in flush_job.cc or io_posix.cc (line 480) |\n"); // Signal.Jin
+        fprintf(stdout, "  [22]        \t|          Fsync()     \t\t\t| flush_job.cc or io_posix (line 473)\n"); // Signal.Jin
+        fprintf(stdout, "  [23]        \t|         }\n");
+        fprintf(stdout, "  [24]        \t|        }\n");
+        fprintf(stdout, "  [25]        \t|       }\n");
+        fprintf(stdout, "  [26]        \t|      }\n");
+        fprintf(stdout, "  [27]        \t|     }\n");
+        fprintf(stdout, "  [28]        \t|    }\n");
+        fprintf(stdout, "  [29]        \t|   }\n");
+        fprintf(stdout, "  [30]        \t|  }\n");
+        fprintf(stdout, "  [31]        \t| } /*MemTable Flush To Storage Finish(One Time Loop)*/\n");
+        printf("#\n# Function Explanation (Write Flow)\n");
+        printf("# DoWrite() : Generate Random or Sequential Key and Value for Put(key, value) Operations\n");
+        printf("# Write() : Call WriteImpl() function\n");
+        printf("# WriteImpl() : Control main write queue and write options\n");
+        printf("# ScheduleFlushes() : If memtable full, signal to flush to Storage\n");
+        printf("# SwitchMemtable() : Change memtable to immutable memtable, ready to flush\n");
+        printf("# BackgroundFlush() : It actually flushes the immutable memtable to storage via a background thread\n");
+        printf("# PickMemTable() : Pick the Memtable to flush from the list\n");
+        printf("# Run() : A background thread performs the flush operation\n");
         printf("--------------------------------------------------------------------------------------\n");
         flush_flag = 0;
       }

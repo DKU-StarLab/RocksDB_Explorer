@@ -157,9 +157,7 @@ Status DBImpl::FlushMemTableToOutputFile(
   assert(cfd->imm()->IsFlushPending());
 
   if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - FlushMemtableToOutputFile() in db_impl_compaction_flush.cc (line 161) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [18]        \t|       FlushMemTablesToOutputFile() {  | db_impl_compaction_and_flush.cc (line 160)\n"); // Signal.Jin
     write_flush_flag = 0;
   }
 
@@ -329,9 +327,7 @@ Status DBImpl::FlushMemTablesToOutputFiles(
     JobContext* job_context, LogBuffer* log_buffer, Env::Priority thread_pri) {
 
   if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - FlushMemtablesToOutputFiles() in db_impl_compaction_flush.cc (line 329) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [17]        \t|      FlushMemTablesToOutputFiles() {  | db_impl_compaction_and_flush.cc (line 332)\n"); // Signal.Jin
   }
 
   if (immutable_db_options_.atomic_flush) {
@@ -2233,10 +2229,8 @@ void DBImpl::MaybeScheduleFlushOrCompaction() {
   mutex_.AssertHeld();
 
   if (DB_WRITE_FLOW == 1 && write_check_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - MaybeScheduleFlushOrCompaction() in db_impl_compaction_flush.cc (line 2230) |\n"); // Signal.Jin
-    fprintf(stdout, "| MaybeScheduleFlushOrCompaction() : Always Check whether flush or compaction is required |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    //fprintf(stdout, "| db_bench Write Flow - MaybeScheduleFlushOrCompaction() in db_impl_compaction_flush.cc (line 2230) |\n"); // Signal.Jin
+    //fprintf(stdout, "| MaybeScheduleFlushOrCompaction() : Always Check whether flush or compaction is required |\n");
     write_check_flag = 0;
   }
 
@@ -2467,9 +2461,7 @@ void DBImpl::BGWorkFlush(void* arg) {
   delete reinterpret_cast<FlushThreadArg*>(arg);
 
   if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - BGWorkFlush() in db_impl_compaction_flush.cc (line 2463) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [14]        \t|   BGWorkFlush() {      \t\t| db_impl_compaction_and_flush.cc (line 2407)\n"); // Signal.Jin
   }
 
   IOSTATS_SET_THREAD_POOL_ID(fta.thread_pri_);
@@ -2553,10 +2545,8 @@ Status DBImpl::BackgroundFlush(bool* made_progress, JobContext* job_context,
   mutex_.AssertHeld();
 
   if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - BackgroundFlush() in db_impl_compaction_flush.cc (line 2550) |\n"); // Signal.Jin
-    fprintf(stdout, "| BackgroundFlush() : It actually flushes the immutable memtable to storage via a background thread |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [16]        \t|     BackgroundFlush() {      \t\t| db_impl_compaction_and_flush.cc (line 2554)\n"); // Signal.Jin
+    //fprintf(stdout, "| BackgroundFlush() : It actually flushes the immutable memtable to storage via a background thread |\n");
   }
 
   Status status;
@@ -2639,9 +2629,7 @@ void DBImpl::BackgroundCallFlush(Env::Priority thread_pri) {
   JobContext job_context(next_job_id_.fetch_add(1), true);
 
   if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - BackgroundCallFlush() in db_impl_compaction_flush.cc (line 2632) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [15]        \t|    BackgroundCallFlush() {      \t| db_impl_compaction_and_flush.cc (line 2640)\n"); // Signal.Jin
   }
 
   TEST_SYNC_POINT("DBImpl::BackgroundCallFlush:start");

@@ -56,10 +56,9 @@ void DBImpl::SetRecoverableStatePreReleaseCallback(
 
 Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - Write() in db_impl_write.cc (line 59) |\n"); // Signal.Jin
-    fprintf(stdout, "| Write() : Call WriteImpl() function |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    printf("  [2]        \t| While Start { /*Write Each Key-Value Pair*/\n");
+    fprintf(stdout, "  [3]        \t|  Write() {      \t\t| db_impl_write.cc (line 59)\n"); // Signal.Jin
+    //fprintf(stdout, "| Write() : Call WriteImpl() function |\n");
   }
   return WriteImpl(write_options, my_batch, nullptr, nullptr);
 }
@@ -84,10 +83,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
   assert(!seq_per_batch_ || batch_cnt != 0);
 
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - WriteImpl() in db_impl_write.cc (line 87) |\n"); // Signal.Jin
-    fprintf(stdout, "| WriteImpl() : Control main write queue and write options |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [4]        \t|   WriteImpl() {      \t\t| db_impl_write.cc (line 86)\n"); // Signal.Jin
   }
 
   if (my_batch == nullptr) {
@@ -494,9 +490,7 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
                         disable_memtable);
 
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - PipelinedWriteImpl() in db_impl_write.cc (line 497) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [5]        \t|    PipelinedWriteImpl()   \t| db_impl_write.cc (line 493)\n"); // Signal.Jin
   }
 
   write_thread_.JoinBatchGroup(&w);
@@ -943,9 +937,10 @@ Status DBImpl::PreprocessWrite(const WriteOptions& write_options,
   Status status;
 
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - PreprocessWrite() in db_impl_write.cc (line 946) |\n"); // Signal.Jin
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [6]        \t|    PreporcessWrite()   \t| db_impl_write.cc (line 940)\n"); // Signal.Jin
+    fprintf(stdout, "  [7]        \t|   }\n"); 
+    fprintf(stdout, "  [8]        \t|  }\n"); 
+    fprintf(stdout, "  [9]        \t| } While End /*MemTable Full*/\n"); 
     write_flag = 0;
   }
 
@@ -1703,10 +1698,9 @@ Status DBImpl::ScheduleFlushes(WriteContext* context) {
   autovector<ColumnFamilyData*> cfds;
 
   if (DB_WRITE_FLOW == 1 && schedule_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - ScheduleFlushes() in db_impl_write.cc (line 1706)|\n"); // Signal.Jin
-    fprintf(stdout, "| ScheduleFlushes() : If memtable full, signal to flush to Storage |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [10]        \t| /*Will be Background Work Start*/\n"); // Signal.Jin
+    fprintf(stdout, "  [11]        \t| ScheduleFlushes() {     \t\t| db_impl_write.cc (line 1702)\n"); // Signal.Jin
+    //fprintf(stdout, "| ScheduleFlushes() : If memtable full, signal to flush to Storage |\n");
     schedule_flag = 0;
   }
 
@@ -1792,10 +1786,9 @@ Status DBImpl::SwitchMemtable(ColumnFamilyData* cfd, WriteContext* context) {
   IOStatus io_s;
 
   if (DB_WRITE_FLOW == 1 && switch_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - SwitchMemtable() in db_impl_write.cc (line 1796)|\n"); // Signal.Jin
-    fprintf(stdout, "| SwitchMemtable() : Change memtable to immutable memtable, ready to flush |\n");
-    printf("--------------------------------------------------------------------------------------\n");
+    fprintf(stdout, "  [12]        \t|  SwitchMemtable()      \t\t| db_impl_write.cc (line 1789)\n"); // Signal.Jin
+    fprintf(stdout, "  [13]        \t|  MaybeScheduleFlushOrCompaction() {   | db_impl_compaction_flush.cc (line 2230)\n"); // Signal.Jin
+    //fprintf(stdout, "| SwitchMemtable() : Change memtable to immutable memtable, ready to flush |\n");
     switch_flag = 0;
   }
 
@@ -2039,14 +2032,6 @@ Status DB::Put(const WriteOptions& opt, ColumnFamilyHandle* column_family,
     }
     return Write(opt, &batch);
   }
-  
-  if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    printf("--------------------------------------------------------------------------------------\n");
-    fprintf(stdout, "| db_bench Write Flow - Put() in db_impl_write.cc (line 2045) |\n");
-    fprintf(stdout, "| Put() : Add key, value and timestamp to batch |\n");
-    printf("--------------------------------------------------------------------------------------\n");
-  }
-
   const Slice* ts = opt.timestamp;
   assert(nullptr != ts);
   size_t ts_sz = ts->size();
