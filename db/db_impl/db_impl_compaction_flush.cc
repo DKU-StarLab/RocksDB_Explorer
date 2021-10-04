@@ -25,6 +25,9 @@
 int write_check_flag = 1;
 int write_flush_flag = 1;
 
+//Control Compaction Flow Print
+int comp_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 bool DBImpl::EnoughRoomForCompaction(
@@ -2386,8 +2389,10 @@ ColumnFamilyData* DBImpl::PickCompactionFromQueue(
   assert(!compaction_queue_.empty());
   assert(*token == nullptr);
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickCompactionFromQueue() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_flag == 1)) {
+    fprintf(stdout, "  [4]        \t|    PickCompactionFromQueue()    \t| db_impl_compaction_flush.cc (line 2393)\n"); // Signal.Jin
+    comp_flag = 0;
+  }
 
   autovector<ColumnFamilyData*> throttled_candidates;
   ColumnFamilyData* cfd = nullptr;
@@ -2476,8 +2481,12 @@ void DBImpl::BGWorkCompaction(void* arg) {
   IOSTATS_SET_THREAD_POOL_ID(Env::Priority::LOW);
   TEST_SYNC_POINT("DBImpl::BGWorkCompaction");
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - BGWorkCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_flag == 1)) {
+    printf("--------------------------------------------------------------------------------------\n");
+    printf("# RocksDB Tracer: Function Graph (Compaction Flow)\n#\n");
+    printf("# Seq. Number\t Function Calls\t\t\t\t File Location\n");
+    fprintf(stdout, "  [1]        \t| BGWorkCompaction() {    \t\t| db_impl_compaction_flush.cc (line 2486)\n"); // Signal.Jin
+  }
 
   auto prepicked_compaction =
       static_cast<PrepickedCompaction*>(ca.prepicked_compaction);
@@ -2716,8 +2725,9 @@ void DBImpl::BackgroundCallCompaction(PrepickedCompaction* prepicked_compaction,
   JobContext job_context(next_job_id_.fetch_add(1), true);
   TEST_SYNC_POINT("BackgroundCallCompaction:0");
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - BackgroundCallCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_flag == 1)) {
+    fprintf(stdout, "  [2]        \t|  BackgroudCallCompaction() {    \t| db_impl_compaction_flush.cc (line 2727)\n"); // Signal.Jin
+  }
 
   LogBuffer log_buffer(InfoLogLevel::INFO_LEVEL,
                        immutable_db_options_.info_log.get());
@@ -2846,8 +2856,9 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
                                     PrepickedCompaction* prepicked_compaction,
                                     Env::Priority thread_pri) {
   
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - BackgroundCompaction() in db_impl_compaction_flush.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_flag == 1)) {
+    fprintf(stdout, "  [3]        \t|   BackgroudCompaction() {    \t\t| db_impl_compaction_flush.cc (line 2858)\n"); // Signal.Jin
+  }
   
   ManualCompactionState* manual_compaction =
       prepicked_compaction == nullptr

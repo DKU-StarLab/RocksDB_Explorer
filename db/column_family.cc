@@ -40,6 +40,9 @@
 #include "util/cast_util.h"
 #include "util/compression.h"
 
+//Control Comp Flow Print - Signal.Jin
+int comp_col_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 ColumnFamilyHandleImpl::ColumnFamilyHandleImpl(
@@ -1079,8 +1082,10 @@ Compaction* ColumnFamilyData::PickCompaction(
     const MutableCFOptions& mutable_options,
     const MutableDBOptions& mutable_db_options, LogBuffer* log_buffer) {
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in column_family.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_col_flag == 1)) {
+    fprintf(stdout, "  [5]        \t|    PickCompaction() {    \t\t| column_family.cc (line 1086)\n"); // Signal.Jin
+    comp_col_flag = 0;
+  }
 
   SequenceNumber earliest_mem_seqno =
       std::min(mem_->GetEarliestSequenceNumber(),

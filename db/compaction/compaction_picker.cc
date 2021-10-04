@@ -23,6 +23,9 @@
 #include "util/random.h"
 #include "util/string_util.h"
 
+//Control Comp Flow Print - Signal.Jin
+int comp_regist_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 namespace {
@@ -1066,8 +1069,13 @@ Status CompactionPicker::SanitizeCompactionInputFiles(
 
 void CompactionPicker::RegisterCompaction(Compaction* c) {
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - RegisterCompaction() in compaction_picker.cc\n"); // Signal.Jin
+  if ((DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1) && comp_regist_flag == 1) {
+    fprintf(stdout, "  [11]        \t|       RegisterCompaction()   \t\t| compaction_picker.cc (line 1070)\n"); // Signal.Jin
+    fprintf(stdout, "  [12]        \t|      }\n");
+    fprintf(stdout, "  [13]        \t|     }\n");
+    fprintf(stdout, "  [14]        \t|    }\n");
+    comp_regist_flag = 0;
+  }
 
   if (c == nullptr) {
     return;

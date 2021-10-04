@@ -15,6 +15,9 @@
 #include "logging/log_buffer.h"
 #include "test_util/sync_point.h"
 
+//Control Comp LVL Flow Print - Signal.Jin
+int comp_picker_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 bool LevelCompactionPicker::NeedsCompaction(
@@ -165,8 +168,9 @@ void LevelCompactionBuilder::PickFileToCompact(
 void LevelCompactionBuilder::SetupInitialFiles() {
   // Find the compactions by size on all levels.
 
-  if (DB_LVL_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - SetupInitialFiles() in compaction_picker_level.cc\n"); // Signal.Jin
+  if (DB_LVL_COMPACTION_FLOW == 1 && comp_picker_flag == 1) {
+    fprintf(stdout, "  [7]        \t|      SetupInitialFiles() {    \t| compaction_picker_level.cc (line 172)\n"); // Signal.Jin
+  }
 
   bool skipped_l0_to_base = false;
   for (int i = 0; i < compaction_picker_->NumberLevels() - 1; i++) {
@@ -300,8 +304,9 @@ bool LevelCompactionBuilder::SetupOtherInputsIfNeeded() {
 }
 
 Compaction* LevelCompactionBuilder::PickCompaction() {
-  if (DB_LVL_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in compaction_picker_level.cc\n"); // Signal.Jin
+  if (DB_LVL_COMPACTION_FLOW == 1 && comp_picker_flag == 1) {
+    fprintf(stdout, "  [6]        \t|     PickCompaction() {    \t\t| compaction_picker_level.cc (line 307)\n"); // Signal.Jin
+  }
 
   // Pick up the first file to start compaction. It may have been extended
   // to a clean cut.
@@ -333,9 +338,10 @@ Compaction* LevelCompactionBuilder::PickCompaction() {
 
 Compaction* LevelCompactionBuilder::GetCompaction() {
 
-  if (DB_LVL_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - GetCompaction() in compaction_picker_level.cc\n"); // Signal.Jin
-
+  if (DB_LVL_COMPACTION_FLOW == 1 && comp_picker_flag == 1) {
+    fprintf(stdout, "  [10]        \t|      GetCompaction() {   \t\t| compaction_picker_level.cc (line 342)\n"); // Signal.Jin
+    comp_picker_flag = 0;
+  }
   auto c = new Compaction(
       vstorage_, ioptions_, mutable_cf_options_, mutable_db_options_,
       std::move(compaction_inputs_), output_level_,
@@ -422,8 +428,10 @@ bool LevelCompactionBuilder::PickFileToCompact() {
   // could be made better by looking at key-ranges that are
   // being compacted at level 0.
 
-  if (DB_LVL_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickFileToCompact() in compaction_picker_level.cc\n"); // Signal.Jin
+  if (DB_LVL_COMPACTION_FLOW == 1 && comp_picker_flag == 1) {
+    fprintf(stdout, "  [8]        \t|       PickFileToCompact()    \t\t| compaction_picker_level.cc (line 431)\n"); // Signal.Jin
+    fprintf(stdout, "  [9]        \t|      }\n"); // Signal.Jin
+  }
 
   if (start_level_ == 0 &&
       !compaction_picker_->level0_compactions_in_progress()->empty()) {

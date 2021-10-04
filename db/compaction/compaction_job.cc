@@ -69,6 +69,9 @@
 #include "util/stop_watch.h"
 #include "util/string_util.h"
 
+//Control Comp Flow Print - Signal.Jin
+int comp_job_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 const char* GetCompactionReasonString(CompactionReason compaction_reason) {
@@ -418,8 +421,9 @@ void CompactionJob::Prepare() {
   AutoThreadOperationStageUpdater stage_updater(
       ThreadStatus::STAGE_COMPACTION_PREPARE);
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - Prepare() in compaction_job.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_job_flag == 1)) {
+    fprintf(stdout, "  [15]        \t|    Prepare()     \t\t\t| compaction_job.cc (line 425)\n"); // Signal.Jin
+  }
 
   // Generate file_levels_ for compaction before making Iterator
   auto* c = compact_->compaction;
@@ -598,8 +602,9 @@ Status CompactionJob::Run() {
   log_buffer_->FlushBufferToLog();
   LogCompaction();
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - Run() in compaction_job.cc\n"); // Signal.Jin
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_job_flag == 1)) {
+    fprintf(stdout, "  [16]        \t|    Run() {    \t\t\t| compaction_job.cc (line 606)\n"); // Signal.Jin
+  }
   
   const size_t num_threads = compact_->sub_compact_states.size();
   assert(num_threads > 0);
@@ -1065,9 +1070,31 @@ void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   assert(sub_compact);
   assert(sub_compact->compaction);
 
-  if (DB_LVL_COMPACTION_FLOW == 1 || DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - ProcessKeyValueCompaction() in compaction_job.cc\n"); // Signal.Jin
-
+  if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_job_flag == 1)) {
+    fprintf(stdout, "  [17]        \t|     ProcessKeyValueCompaction()    \t| compaction_job.cc (line 1074)\n"); // Signal.Jin
+    fprintf(stdout, "  [18]        \t|    }\n");
+    fprintf(stdout, "  [19]        \t|   }\n");
+    fprintf(stdout, "  [20]        \t|  }\n");
+    fprintf(stdout, "  [21]        \t| } /*Compaction Trigger and Finished (One Time Loop)*/\n");
+    
+    if (DB_LVL_COMPACTION_FLOW == 1) {
+      printf("#\n# Function Explanation (Leveled Compaction Flow)\n");
+      printf("# SetupInitialFiles() : Pick up the first file to start compaction\n");
+      printf("# PickFileToCompact() : Determines whether a file is included in the current compaction thread or not\n");
+      printf("# GetCompaction() : Form a compaction object containing the files we picked\n");
+    } else if (DB_UNI_COMPACTION_FLOW == 1) {
+      printf("#\n# Function Explanation (Universal Compaction Flow)\n");
+    }
+    printf("# BGWorkCompaction() : Call BackgroundCallCompaction() function\n");
+    printf("# BackgroundCallCompaction() : Control background thread for compaction\n");
+    printf("# BackgroundCompaction() : Controlling the entire compaction operation\n");
+    printf("# PickCompactionFromQueue() : Get the object to be compacted from the queue\n");
+    printf("# RegisterCompaction() : The object that stores the compaction information is passed to the thread to perform the actual work\n");
+    printf("# Run() : Call ProcessKeyValueCompaction() function\n");
+    printf("# ProcessKeyValueCompaction() : Do Merge Sort and Create new output files\n");
+    printf("--------------------------------------------------------------------------------------\n");
+    comp_job_flag = 0;
+  }
 #ifndef ROCKSDB_LITE
   if (db_options_.compaction_service) {
     return ProcessKeyValueCompactionWithCompactionService(sub_compact);
