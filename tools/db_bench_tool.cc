@@ -4560,8 +4560,8 @@ class Benchmark {
     if (DB_WRITE_FLOW == 1 && write_flag == 1) {
       printf("--------------------------------------------------------------------------------------\n");
       printf("# RocksDB Tracer: Function Graph (Write Flow)\n#\n");
-      printf("# Seq. Number\t Function Calls\t\t\t File Location\n");
-      fprintf(stdout, "  [1]        \t| DoWrite()     \t\t| db_bench_tool.cc (line 4559)\n"); // Signal.Jin
+      printf("# Seq. Number\t Function Calls\t\t\t\t File Location\n");
+      fprintf(stdout, "  [1]        \t| DoWrite()     \t\t\t| db_bench_tool.cc (line 4559)\n"); // Signal.Jin
       //fprintf(stdout, "| DoWrite() : Generate Random or Sequential Key and Value for Put(key, value) Operations |\n");
       write_flag = 0;
     }
