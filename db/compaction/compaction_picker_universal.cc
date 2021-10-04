@@ -23,6 +23,9 @@
 #include "util/random.h"
 #include "util/string_util.h"
 
+// Control Universal Comp Flow Print - Signal.Jin
+int comp_uni_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 namespace {
 // A helper class that form universal compactions. The class is used by
@@ -359,9 +362,9 @@ UniversalCompactionBuilder::CalculateSortedRuns(
 // time-range to compact.
 Compaction* UniversalCompactionBuilder::PickCompaction() {
 
-
-  if (DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickCompaction() in compaction_picker_universal.cc\n"); // Signal.Jin
+  if (DB_UNI_COMPACTION_FLOW == 1 && comp_uni_flag == 1) {
+    fprintf(stdout, "  [6]        \t|     PickCompaction() {    \t\t| compaction_picker_universal.cc (line 366)\n"); // Signal.Jin
+  }
 
   const int kLevel0 = 0;
   score_ = vstorage_->CompactionScore(kLevel0); // Calculate Compaction Score, How? Why? - Signal.Jin
@@ -453,6 +456,11 @@ Compaction* UniversalCompactionBuilder::PickCompaction() {
       }
     }
   }
+
+  if (DB_UNI_COMPACTION_FLOW == 1 && comp_uni_flag == 1) {
+        fprintf(stdout, "  [10]        \t|      PickCompactionToReduceSortedRuns() /*Once compaction occurs, this function is called*/\n"); // Signal.Jin
+        comp_uni_flag = 0;
+      }
 
   if (c == nullptr) {
     if ((c = PickDeleteTriggeredCompaction()) != nullptr) {
@@ -778,8 +786,9 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSizeAmp() {
   uint64_t ratio = mutable_cf_options_.compaction_options_universal
                        .max_size_amplification_percent;
 
-  if (DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickCompactionToReduceSizeAmp() in compaction_picker_universal.cc\n"); // Signal.Jin
+  if (DB_UNI_COMPACTION_FLOW == 1 && comp_uni_flag == 1) {
+    fprintf(stdout, "  [7]        \t|      PickCompactionToReduceSizeAmp() {| compaction_picker_universal.cc (line 785)\n"); // Signal.Jin
+  }
 
   //fprintf(stdout, "PickCompactionToReduceSizeAmp - compaction_picker_universal.cc 769\n"); // Just one time with db_bench - Signal.Jin 
 
@@ -1010,8 +1019,10 @@ Compaction* UniversalCompactionBuilder::PickCompactionToOldest(
 
   assert(start_index < sorted_runs_.size());
 
-  if (DB_UNI_COMPACTION_FLOW == 1)
-    fprintf(stdout, "db_bench Compaction Flow - PickCompactionToOldest() in compaction_picker_universal.cc\n"); // Signal.Jin
+  if (DB_UNI_COMPACTION_FLOW == 1 && comp_uni_flag == 1) {
+    fprintf(stdout, "  [8]        \t|       PickCompactionToOldest()   \t| compaction_picker_universal.cc (line 1018)\n"); // Signal.Jin
+    fprintf(stdout, "  [9]        \t|      } /*This function is called once at startup*/\n");
+  }
 
   // Estimate total file size
   uint64_t estimated_total_size = 0;

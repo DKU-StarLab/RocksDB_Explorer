@@ -1084,6 +1084,8 @@ void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
       printf("# GetCompaction() : Form a compaction object containing the files we picked\n");
     } else if (DB_UNI_COMPACTION_FLOW == 1) {
       printf("#\n# Function Explanation (Universal Compaction Flow)\n");
+      printf("# PickCompactionToReduceSizeAmp() : Look at overall size amplification. If size amplification exceeds the configured value, then do a compaction of the candidate files all the way upto the earliest base file \n");
+      printf("# PickCompactionToReduceSortedRuns() : Consider compaction files based on their size differences with the next file in time order\n");
     }
     printf("# BGWorkCompaction() : Call BackgroundCallCompaction() function\n");
     printf("# BackgroundCallCompaction() : Control background thread for compaction\n");
