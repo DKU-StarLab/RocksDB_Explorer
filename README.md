@@ -69,6 +69,15 @@ You need to edit your DEV_PATH before starting experiments.
         
 2.3 Details explanation about options
 
+* WAL (Write-Ahead-Log)
+        
+        - disalbe_wal = true/false (Control WAL operation)
+
+* Compaction
+
+        - disable_auto_compactions = true/false (Control automatic compactions)
+        - level0_file_num_compaction_trigger = integer (Number of files to trigger level-0 compaction. A value < 0 means that level-0 compaction will not be triggered by number of files at all)
+
 ### 3. Configuration-related experiments
 
 3.1 What if we change the number of background thread
@@ -87,6 +96,10 @@ You need to edit your DEV_PATH before starting experiments.
 
 3.3 Details explanation about options
 
+        - max_background_jobs = integer (Maximum number of concurrent background jobs, compactions and flushes)
+        - max_write_buffer_number = integer (Maximum number of memtable)
+        - write_buffer_size = integer (byte, Memtable size)
+
 ### 4. Workload-related experiments
 
 4.1 + 2 What if the key-value size and the key pattern are changed
@@ -104,6 +117,11 @@ You need to edit your DEV_PATH before starting experiments.
         Ex) ./workload_value_size_distribution.sh ../mnt fillrandom uniform 1024 100
 
 4.4 Details explanation about options
+
+        - key_size = integer (Control key size)
+        - value_size = integer (Control value size)
+        - value_size_distribution = fixed/uniform/normal
+        - value_size_min, value_size_manx = integer (Control value max, min size)
 
 ### 5. Source-level Analysis
 
