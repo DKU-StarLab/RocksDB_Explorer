@@ -57,7 +57,7 @@ void DBImpl::SetRecoverableStatePreReleaseCallback(
 Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
     printf("  [2]        \t| While Start { /*Write Each Key-Value Pair*/\n");
-    fprintf(stdout, "  [3]        \t|  Write() {      \t\t| db_impl_write.cc (line 59)\n"); // Signal.Jin
+    fprintf(stdout, "  [3]        \t|  Write() {      \t\t\t| db_impl_write.cc (line 59)\n"); // Signal.Jin
     //fprintf(stdout, "| Write() : Call WriteImpl() function |\n");
   }
   return WriteImpl(write_options, my_batch, nullptr, nullptr);
@@ -83,7 +83,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
   assert(!seq_per_batch_ || batch_cnt != 0);
 
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    fprintf(stdout, "  [4]        \t|   WriteImpl() {      \t\t| db_impl_write.cc (line 86)\n"); // Signal.Jin
+    fprintf(stdout, "  [4]        \t|   WriteImpl() {      \t\t\t| db_impl_write.cc (line 86)\n"); // Signal.Jin
   }
 
   if (my_batch == nullptr) {
@@ -490,7 +490,7 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
                         disable_memtable);
 
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    fprintf(stdout, "  [5]        \t|    PipelinedWriteImpl()   \t| db_impl_write.cc (line 493)\n"); // Signal.Jin
+    fprintf(stdout, "  [5]        \t|    PipelinedWriteImpl()   \t\t| db_impl_write.cc (line 493)\n"); // Signal.Jin
   }
 
   write_thread_.JoinBatchGroup(&w);
@@ -937,7 +937,7 @@ Status DBImpl::PreprocessWrite(const WriteOptions& write_options,
   Status status;
 
   if (DB_WRITE_FLOW == 1 && write_flag == 1) {
-    fprintf(stdout, "  [6]        \t|    PreporcessWrite()   \t| db_impl_write.cc (line 940)\n"); // Signal.Jin
+    fprintf(stdout, "  [6]        \t|    PreporcessWrite()   \t\t| db_impl_write.cc (line 940)\n"); // Signal.Jin
     fprintf(stdout, "  [7]        \t|   }\n"); 
     fprintf(stdout, "  [8]        \t|  }\n"); 
     fprintf(stdout, "  [9]        \t| } While End /*MemTable Full*/\n"); 

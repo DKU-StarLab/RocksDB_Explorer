@@ -488,6 +488,7 @@ Status FlushJob::WriteLevel0Table() {
         printf("# SwitchMemtable() : Change memtable to immutable memtable, ready to flush\n");
         printf("# BackgroundFlush() : It actually flushes the immutable memtable to storage via a background thread\n");
         printf("# PickMemTable() : Pick the Memtable to flush from the list\n");
+        printf("# MaybeScheduleFlushOrCompaction() : Always Check whether flush or compaction is required\n");
         printf("# Run() : A background thread performs the flush operation\n");
         printf("--------------------------------------------------------------------------------------\n");
         flush_flag = 0;
