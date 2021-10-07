@@ -132,6 +132,7 @@ bool FullFilterBlockReader::KeyMayMatch(
 #ifdef NDEBUG
   (void)block_offset;
 #endif
+  //printf("KeyMayMatch\n"); // Not in Here db_bench - Signal.Jin
   assert(block_offset == kNotValid);
   if (!whole_key_filtering()) {
     return true;

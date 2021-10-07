@@ -40,9 +40,6 @@ IOStatus RandomAccessFileReader::Read(const IOOptions& opts, uint64_t offset,
                                       bool for_compaction) const {
   (void)aligned_buf;
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - Read() in random_access_file_reader.cc\n"); // Signal.Jin
-
   TEST_SYNC_POINT_CALLBACK("RandomAccessFileReader::Read", nullptr);
   IOStatus io_s;
   uint64_t elapsed = 0;

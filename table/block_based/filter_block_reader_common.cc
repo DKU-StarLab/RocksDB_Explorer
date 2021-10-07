@@ -23,9 +23,6 @@ Status FilterBlockReaderCommon<TBlocklike>::ReadFilterBlock(
   assert(filter_block);
   assert(filter_block->IsEmpty());
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - ReadFilterBlock() in filter_block_reader_common.cc\n"); // Signal.Jin
-
   const BlockBasedTable::Rep* const rep = table->get_rep();
   assert(rep);
 
@@ -71,9 +68,6 @@ Status FilterBlockReaderCommon<TBlocklike>::GetOrReadFilterBlock(
     BlockCacheLookupContext* lookup_context,
     CachableEntry<TBlocklike>* filter_block) const {
   assert(filter_block);
-
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - GetOrReadFilterBlock() in filter_block_reader_common.cc\n"); // Signal.Jin
 
   if (!filter_block_.IsEmpty()) {
     filter_block->SetUnownedValue(filter_block_.GetValue());

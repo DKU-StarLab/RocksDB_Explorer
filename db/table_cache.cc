@@ -30,6 +30,9 @@
 #include "util/coding.h"
 #include "util/stop_watch.h"
 
+// Control Print Flow - Signal.Jin
+int cache_get_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 namespace {
@@ -399,8 +402,10 @@ Status TableCache::Get(const ReadOptions& options,
   std::string* row_cache_entry = nullptr;
   bool done = false;
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - Get() in table_cache.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && cache_get_flag == 1) {
+    fprintf(stdout, "  [8]        \t|     Get() {    \t\t\t| table_cache.cc (line 403)\n"); // Signal.Jin
+    cache_get_flag = 0;
+  }
 
   #ifndef ROCKSDB_LITE
   IterKey row_cache_key;
@@ -449,7 +454,7 @@ Status TableCache::Get(const ReadOptions& options,
     if (s.ok()) {
       get_context->SetReplayLog(row_cache_entry);  // nullptr if no cache.
       s = t->Get(options, k, get_context, prefix_extractor, skip_filters);
-      //printf("Get\n"); // Signal.Jin
+      //printf("After Get from block_based_table_reader.cc\n"); // Signal.Jin
       get_context->SetReplayLog(nullptr);
     } else if (options.read_tier == kBlockCacheTier && s.IsIncomplete()) {
       // Couldn't find Table in cache but treat as kFound if no_io set

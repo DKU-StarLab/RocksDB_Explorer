@@ -62,6 +62,9 @@
 #include "util/string_util.h"
 #include "util/user_comparator_wrapper.h"
 
+// Control Print Flow - Signal.Jin
+int sst_get_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 namespace {
@@ -159,8 +162,10 @@ class FilePicker {
 
   FdWithKeyRange* GetNextFile() {
 
-    if (DB_READ_FLOW == 1)
-      fprintf(stdout, "db_bench Read Flow - GetNextFile() in version_set.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && sst_get_flag == 1) {
+    fprintf(stdout, "  [7]        \t|     GetNextFile()     \t\t| version_set.cc (line 166)\n"); // Signal.Jin
+    sst_get_flag = 0;
+  }
 
     while (!search_ended_) {  // Loops over different levels.
       while (curr_index_in_curr_level_ < curr_file_level_->num_files) {
@@ -1859,8 +1864,9 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
                   bool* key_exists, SequenceNumber* seq, ReadCallback* callback,
                   bool* is_blob, bool do_merge) {
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - Get() (for search in SSTables) in version_set.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && sst_get_flag == 1) {
+    fprintf(stdout, "  [6]        \t|    Get() { /*SSTable*/     \t\t| version_set.cc (line 1866)\n"); // Signal.Jin
+  }
 
   Slice ikey = k.internal_key();
   Slice user_key = k.user_key();

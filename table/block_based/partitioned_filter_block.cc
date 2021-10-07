@@ -194,6 +194,7 @@ bool PartitionedFilterBlockReader::KeyMayMatch(
     GetContext* get_context, BlockCacheLookupContext* lookup_context) {
   assert(const_ikey_ptr != nullptr);
   assert(block_offset == kNotValid);
+  //printf("KeyMayMatch\n"); // Not in Here db_bench - Signal.Jin
   if (!whole_key_filtering()) {
     return true;
   }

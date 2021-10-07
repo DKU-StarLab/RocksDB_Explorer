@@ -218,10 +218,6 @@ inline void BlockFetcher::GetBlockContents() {
 IOStatus BlockFetcher::ReadBlockContents() {
 
   //clock_t start, end; // Signal.Jin
-
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - ReadBlockContents() in block_fetcher.cc\n"); // Signal.Jin
-
   if (TryGetUncompressBlockFromPersistentCache()) {
     compression_type_ = kNoCompression;
 #ifndef NDEBUG

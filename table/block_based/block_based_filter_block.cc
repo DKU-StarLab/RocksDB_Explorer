@@ -208,6 +208,7 @@ bool BlockBasedFilterBlockReader::KeyMayMatch(
     const Slice* const /*const_ikey_ptr*/, GetContext* get_context,
     BlockCacheLookupContext* lookup_context) {
   assert(block_offset != kNotValid);
+  //printf("KeyMayMatch\n"); // Not in Here db_bench - Signal.Jin
   if (!whole_key_filtering()) {
     return true;
   }
@@ -253,9 +254,6 @@ bool BlockBasedFilterBlockReader::MayMatch(
     const Slice& entry, uint64_t block_offset, bool no_io,
     GetContext* get_context, BlockCacheLookupContext* lookup_context) const {
   CachableEntry<BlockContents> filter_block;
-
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - MayMatch() in block_based_filter_block.cc\n"); // Signal.Jin
 
   const Status s =
       GetOrReadFilterBlock(no_io, get_context, lookup_context, &filter_block);

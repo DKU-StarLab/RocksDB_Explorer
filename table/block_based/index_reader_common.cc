@@ -22,7 +22,7 @@ Status BlockBasedTable::IndexReaderCommon::ReadIndexBlock(
 
   const Rep* const rep = table->get_rep();
   assert(rep != nullptr);
-
+  
   const Status s = table->RetrieveBlock(
       prefetch_buffer, read_options, rep->footer.index_handle(),
       UncompressionDict::GetEmptyDict(), index_block, BlockType::kIndex,
@@ -36,9 +36,10 @@ Status BlockBasedTable::IndexReaderCommon::GetOrReadIndexBlock(
     BlockCacheLookupContext* lookup_context,
     CachableEntry<Block>* index_block) const {
   assert(index_block != nullptr);
-
+  //printf("break GORIB\n");
   if (!index_block_.IsEmpty()) {
     index_block->SetUnownedValue(index_block_.GetValue());
+    //printf("break SUV\n");
     return Status::OK();
   }
 

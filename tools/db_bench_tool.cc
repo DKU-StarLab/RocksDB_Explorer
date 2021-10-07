@@ -5311,8 +5311,12 @@ class Benchmark {
       ts_guard.reset(new char[user_timestamp_size_]);
     }
 
-    if (DB_READ_FLOW == 1)
-      fprintf(stdout, "db_bench Read Flow - ReadRandom() in db_bench_tool.cc\n"); // Signal.Jin
+    if (DB_READ_FLOW == 1) {
+      printf("--------------------------------------------------------------------------------------\n");
+      printf("# RocksDB Tracer: Function Graph (Read Flow)\n#\n");
+      printf("# Seq. Number\t Function Calls\t\t\t\t File Location\n");
+      fprintf(stdout, "  [1]        \t| ReadRandom() {     \t\t\t| db_bench_tool.cc (line 5318)\n"); // Signal.Jin
+    }
 
     Duration duration(FLAGS_duration, reads_);
     while (!duration.Done(1)) {

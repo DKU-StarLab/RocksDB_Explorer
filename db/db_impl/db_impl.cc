@@ -102,6 +102,9 @@
 #include "util/stop_watch.h"
 #include "util/string_util.h"
 
+// Control Print Flow - Signal.Jin
+int read_get_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 const std::string kDefaultColumnFamilyName("default");
@@ -1637,8 +1640,9 @@ Status DBImpl::Get(const ReadOptions& read_options,
   get_impl_options.value = value;
   get_impl_options.timestamp = timestamp;
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - Get() in db_impl.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && read_get_flag == 1) {
+    fprintf(stdout, "  [2]        \t|  Get() {     \t\t\t\t| db_impl.cc (line 1644)\n"); // Signal.Jin
+  }
 
   Status s = GetImpl(read_options, key, get_impl_options);
   return s;
@@ -1675,8 +1679,10 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   }
 #endif  // NDEBUG
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - GetImpl() in db_impl.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && read_get_flag == 1) {
+    fprintf(stdout, "  [3]        \t|   GetImpl() {     \t\t\t| db_impl.cc (line 1683)\n"); // Signal.Jin
+    read_get_flag = 0;
+  }
 
   PERF_CPU_TIMER_GUARD(get_cpu_nanos, immutable_db_options_.clock);
   StopWatch sw(immutable_db_options_.clock, stats_, DB_GET);

@@ -64,6 +64,10 @@
 #include "util/stop_watch.h"
 #include "util/string_util.h"
 
+// Control Print Flow - Signal.Jin
+int block_get_flag = 1;
+int retrieve_get_flag = 0;
+
 namespace ROCKSDB_NAMESPACE {
 
 extern const uint64_t kBlockBasedTableMagicNumber;
@@ -1364,9 +1368,14 @@ InternalIteratorBase<IndexValue>* BlockBasedTable::NewIndexIterator(
     BlockCacheLookupContext* lookup_context) const {
   assert(rep_ != nullptr);
   assert(rep_->index_reader != nullptr);
-
+  //printf("break NII\n");
   // We don't return pinned data from index blocks, so no need
   // to set `block_contents_pinned`.
+
+  if (DB_READ_FLOW == 1 && block_get_flag == 1) {
+    fprintf(stdout, "  [11]        \t|       NewIndexIterator()    \t\t| block_based_table_reader.cc (line 1375)\n"); // Signal.Jin
+  }
+
   return rep_->index_reader->NewIterator(read_options, disable_prefix_seek,
                                          input_iter, get_context,
                                          lookup_context);
@@ -1407,9 +1416,6 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
     BlockContents* contents) const {
   assert(block_entry != nullptr);
   const bool no_io = (ro.read_tier == kBlockCacheTier);
-
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - MaybeReadBlockAndLoadToCache() in block_based_table_reader.cc\n"); // Signal.Jin
 
   Cache* block_cache = rep_->table_options.block_cache.get();
   Cache* block_cache_compressed =
@@ -1869,8 +1875,27 @@ Status BlockBasedTable::RetrieveBlock(
   assert(block_entry);
   assert(block_entry->IsEmpty());
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - RetrieveBlock() in block_based_table_reader.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && retrieve_get_flag == 1) {
+    fprintf(stdout, "  [13]        \t|        RetrieveBlock()    \t\t| block_based_table_reader.cc (line 1881)\n"); // Signal.Jin
+    fprintf(stdout, "  [14]        \t|       }\n");
+    fprintf(stdout, "  [15]        \t|      }\n");
+    fprintf(stdout, "  [16]        \t|     }\n");
+    fprintf(stdout, "  [17]        \t|    }\n");
+    fprintf(stdout, "  [18]        \t|   }\n");
+    fprintf(stdout, "  [19]        \t|  }\n");
+    fprintf(stdout, "  [20]        \t| } /*The process of executing the get operation once*/\n");
+    printf("#\n# Function Explanation (Read(Get) Flow)\n");
+    printf("# ReadRandom() :\n");
+    printf("# memtable.cc Get() :\n");
+    printf("# memtable_list.cc GetListFrom() :\n");
+    printf("# version_set.cc Get() :\n");
+    printf("# GetNextFile() :\n");
+    printf("# FullFilterKeyMayMatch() :\n");
+    printf("# NewIndexIterator() :\n");
+    printf("# NewDataBlockIterator() :\n");
+    printf("# RetrieveBlock() :\n");
+    retrieve_get_flag = 0;
+  }
 
   Status s;
   if (use_cache) {
@@ -2179,8 +2204,9 @@ bool BlockBasedTable::FullFilterKeyMayMatch(
     const SliceTransform* prefix_extractor, GetContext* get_context,
     BlockCacheLookupContext* lookup_context) const {
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - FullFilterKeyMayMatch() in block_based_table_reader.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && block_get_flag == 1) {
+    fprintf(stdout, "  [10]        \t|       FullFilterKeyMayMatch()    \t| block_based_table_reader.cc (line 2186)\n"); // Signal.Jin
+  }
 
   if (filter == nullptr || filter->IsBlockBased()) {
     return true;
@@ -2191,6 +2217,7 @@ bool BlockBasedTable::FullFilterKeyMayMatch(
   size_t ts_sz = rep_->internal_comparator.user_comparator()->timestamp_size();
   Slice user_key_without_ts = StripTimestampFromUserKey(user_key, ts_sz);
   if (rep_->whole_key_filtering) {
+    //printf("KeyMayMatch\n"); // Not in Here - Signal.Jin
     may_match =
         filter->KeyMayMatch(user_key_without_ts, prefix_extractor, kNotValid,
                             no_io, const_ikey_ptr, get_context, lookup_context);
@@ -2260,8 +2287,9 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   Status s;
   const bool no_io = read_options.read_tier == kBlockCacheTier;
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - Get() in block_based_table_reader.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && block_get_flag == 1) {
+    fprintf(stdout, "  [9]        \t|      Get() {    \t\t\t| block_based_table_reader.cc (line 2265)\n"); // Signal.Jin
+  }
 
   FilterBlockReader* const filter =
       !skip_filters ? rep_->filter.get() : nullptr;
@@ -2282,6 +2310,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   const bool may_match =
       FullFilterKeyMayMatch(read_options, filter, key, no_io, prefix_extractor,
                             get_context, &lookup_context);
+  //printf("%d\n", may_match); // Always return true - Signal.Jin
   TEST_SYNC_POINT("BlockBasedTable::Get:AfterFilterMatch");
   if (!may_match) {
     RecordTick(rep_->ioptions.stats, BLOOM_FILTER_USEFUL);
@@ -2309,14 +2338,14 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
     bool done = false;
     for (iiter->Seek(key); iiter->Valid() && !done; iiter->Next()) {
       IndexValue v = iiter->value();
-
+      //printf("KeyMayMatch\n"); // Signal.Jin
       bool not_exist_in_filter =
           filter != nullptr && filter->IsBlockBased() == true &&
           !filter->KeyMayMatch(ExtractUserKeyAndStripTimestamp(key, ts_sz),
                                prefix_extractor, v.handle.offset(), no_io,
                                /*const_ikey_ptr=*/nullptr, get_context,
                                &lookup_context);
-
+      //printf("%d\n", not_exist_in_filter); // Signal.Jin
       if (not_exist_in_filter) {
         // Not found
         // TODO: think about interaction with Merge. If a user key cannot
@@ -2343,6 +2372,12 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
       bool does_referenced_key_exist = false;
       DataBlockIter biter;
       uint64_t referenced_data_size = 0;
+      
+      if (DB_READ_FLOW == 1 && block_get_flag == 1) {
+        fprintf(stdout, "  [12]        \t|       NewDataBlockIterator() {    \t| block_based_table_reader.cc (line 2361)\n"); // Signal.Jin
+        block_get_flag = 0;
+        retrieve_get_flag = 1;
+      }
       NewDataBlockIterator<DataBlockIter>(
           read_options, v.handle, &biter, BlockType::kData, get_context,
           &lookup_data_block_context,
@@ -2359,8 +2394,10 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
         s = biter.status();
         break;
       }
-
+      //printf("Before SeekForGet\n");
       bool may_exist = biter.SeekForGet(key);
+      //printf("%s\n", key.data());
+      //printf("%d\n\n", may_exist); // Signal.Jin
       // If user-specified timestamp is supported, we cannot end the search
       // just because hash index lookup indicates the key+ts does not exist.
       if (!may_exist && ts_sz == 0) {

@@ -40,6 +40,9 @@
 #include "util/coding.h"
 #include "util/mutexlock.h"
 
+// Control Print Flow - Signal.Jin
+int mem_get_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 ImmutableMemTableOptions::ImmutableMemTableOptions(
@@ -869,8 +872,10 @@ bool MemTable::Get(const LookupKey& key, std::string* value,
                    ReadCallback* callback, bool* is_blob_index, bool do_merge) {
   // The sequence number is updated synchronously in version_set.h
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - Get() (for search in memtable) in memtable.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && mem_get_flag == 1) {
+    fprintf(stdout, "  [4]        \t|    Get() /*Memtable*     \t\t| memtable.cc (line 876)\n"); // Signal.Jin
+    mem_get_flag = 0;
+  }
 
   if (IsEmpty()) {
     // Avoiding recording stats for speed.

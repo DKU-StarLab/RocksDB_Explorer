@@ -235,6 +235,7 @@ void DataBlockIter::PrevImpl() {
 }
 
 void DataBlockIter::SeekImpl(const Slice& target) {
+  //printf("through data\n");
   Slice seek_key = target;
   PERF_TIMER_GUARD(block_seek_nanos);
   if (data_ == nullptr) {  // Not init yet
@@ -372,6 +373,8 @@ bool DataBlockIter::SeekForGetImpl(const Slice& target) {
 void IndexBlockIter::SeekImpl(const Slice& target) {
   TEST_SYNC_POINT("IndexBlockIter::Seek:0");
   PERF_TIMER_GUARD(block_seek_nanos);
+  //printf("through index\n"); // Signal.Jin
+
   if (data_ == nullptr) {  // Not init yet
     return;
   }
@@ -397,6 +400,7 @@ void IndexBlockIter::SeekImpl(const Slice& target) {
     // search simply lands at the right place.
     skip_linear_scan = true;
   } else if (value_delta_encoded_) {
+    //printf("through BinarySeek\n"); // Signal.Jin
     ok = BinarySeek<DecodeKeyV4>(seek_key, &index, &skip_linear_scan);
   } else {
     ok = BinarySeek<DecodeKey>(seek_key, &index, &skip_linear_scan);
@@ -642,6 +646,8 @@ void BlockIter<TValue>::FindKeyAfterBinarySeek(const Slice& target,
   // SeekToRestartPoint() only does the lookup in the restart block. We need
   // to follow it up with NextImpl() to position the iterator at the restart
   // key.
+  //printf("through FindKeyAfterBinarySeek\n"); // Signal.Jin
+
   SeekToRestartPoint(index);
   NextImpl();
 
@@ -1008,6 +1014,7 @@ IndexBlockIter* Block::NewIndexIterator(
     bool have_first_key, bool key_includes_seq, bool value_is_full,
     bool block_contents_pinned, BlockPrefixIndex* prefix_index) {
   IndexBlockIter* ret_iter;
+  //printf("break NII2\n");
   if (iter != nullptr) {
     ret_iter = iter;
   } else {

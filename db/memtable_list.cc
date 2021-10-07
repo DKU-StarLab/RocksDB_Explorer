@@ -22,6 +22,9 @@
 #include "test_util/sync_point.h"
 #include "util/coding.h"
 
+// Control Print Flow - Signal.Jin
+int imm_get_flag = 1;
+
 namespace ROCKSDB_NAMESPACE {
 
 class InternalKeyComparator;
@@ -153,8 +156,10 @@ bool MemTableListVersion::GetFromList(
     const ReadOptions& read_opts, ReadCallback* callback, bool* is_blob_index) {
   *seq = kMaxSequenceNumber;
 
-  if (DB_READ_FLOW == 1)
-    fprintf(stdout, "db_bench Read Flow - GetFromList() (for search in Immutable memtable) in memtable_list.cc\n"); // Signal.Jin
+  if (DB_READ_FLOW == 1 && imm_get_flag == 1) {
+    fprintf(stdout, "  [5]        \t|    GetFromList()/*Immutable memtable*/| memtable_list.cc (line 160)\n"); // Signal.Jin
+    imm_get_flag = 0;
+  }
 
   for (auto& memtable : *list) {
     SequenceNumber current_seq = kMaxSequenceNumber;
