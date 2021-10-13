@@ -2974,9 +2974,14 @@ class Benchmark {
     }
 
     int bytes_to_fill = std::min(key_size_ - static_cast<int>(pos - start), 8);
+    
     if (port::kLittleEndian) {
       for (int i = 0; i < bytes_to_fill; ++i) {
         pos[i] = (v >> ((bytes_to_fill - i - 1) << 3)) & 0xFF;
+        if (i == 7) { // Signal.Jin - Key pattern Control
+          //pos[i] = 256;
+          //printf("pos = %d\n", pos[i]);
+        }
       }
     } else {
       memcpy(pos, static_cast<void*>(&v), bytes_to_fill);
