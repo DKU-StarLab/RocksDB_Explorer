@@ -2209,6 +2209,7 @@ bool BlockBasedTable::FullFilterKeyMayMatch(
   }
 
   if (filter == nullptr || filter->IsBlockBased()) {
+    //printf("Return Here?\n"); // Yes - Signal.Jin
     return true;
   }
   Slice user_key = ExtractUserKey(internal_key);
@@ -2216,6 +2217,7 @@ bool BlockBasedTable::FullFilterKeyMayMatch(
   bool may_match = true;
   size_t ts_sz = rep_->internal_comparator.user_comparator()->timestamp_size();
   Slice user_key_without_ts = StripTimestampFromUserKey(user_key, ts_sz);
+  //printf("user_key_without_ts = %s\n", user_key_without_ts.ToString().c_str());
   if (rep_->whole_key_filtering) {
     //printf("KeyMayMatch\n"); // Not in Here - Signal.Jin
     may_match =
