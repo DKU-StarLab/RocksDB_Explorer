@@ -2974,12 +2974,11 @@ class Benchmark {
     }
 
     int bytes_to_fill = std::min(key_size_ - static_cast<int>(pos - start), 8);
-    
+    // num_keys == db_bench number of key-value pair - Signal.Jin    
     if (port::kLittleEndian) {
       for (int i = 0; i < bytes_to_fill; ++i) {
         pos[i] = (v >> ((bytes_to_fill - i - 1) << 3)) & 0xFF;
         if (i == 7) { // Signal.Jin - Key pattern Control
-          //pos[i] = 256;
           //printf("pos = %d\n", pos[i]);
         }
       }
@@ -4513,13 +4512,14 @@ class Benchmark {
                       static_cast<uint32_t>(FLAGS_seed));
       }
     }
-
+    
     uint64_t Next() {
       switch (mode_) {
         case SEQUENTIAL:
           return next_++;
         case RANDOM:
           return rand_->Next() % num_;
+          //return GenerateNormalKey(num_);
         case UNIQUE_RANDOM:
           assert(next_ < num_);
           return values_[next_++];
@@ -4555,7 +4555,20 @@ class Benchmark {
   double SineRate(double x) {
     return FLAGS_sine_a*sin((FLAGS_sine_b*x) + FLAGS_sine_c) + FLAGS_sine_d;
   }
+/*
+  void GenerateNormalKey(int64_t *tot_keys) {
+    std::default_random_engine generator;
+    std::normal_distribution<double> distribution(num_/2, num_);
 
+    for(int i = 0; i < num_; i++) {
+      double number = distribution(generator);
+      printf("%lu\n", lround(number));
+      if ((number >=0.0)&&(number < num_)) {
+        tot_keys[i] = lround(number);
+      }
+    }
+  }
+*/
   void DoWrite(ThreadState* thread, WriteMode write_mode) {
     const int test_duration = write_mode == RANDOM ? FLAGS_duration : 0;
     const int64_t num_ops = writes_ == 0 ? num_ : writes_;
@@ -4596,7 +4609,7 @@ class Benchmark {
       snprintf(msg, sizeof(msg), "(%" PRIu64 " ops)", num_);
       thread->stats.AddMessage(msg);
     }
-
+    
     RandomGenerator gen;
     WriteBatch batch(/*reserved_bytes=*/0, /*max_bytes=*/0,
                      user_timestamp_size_);
@@ -4623,9 +4636,14 @@ class Benchmark {
       ts_guard.reset(new char[user_timestamp_size_]);
     }
 
+    /* Key Pattern Control (Zipfian, Latest, Uniform, Normal) - Signal.Jin*/
+    //int nextk_ = 0;
+    //int64_t *key_pattern = new int64_t[num_];
+    //GenerateNormalKey(key_pattern);
+
     int64_t stage = 0;
     int64_t num_written = 0;
-    while (!duration.Done(entries_per_batch_)) {
+    while (!duration.Done(entries_per_batch_)) { // loop in here - Signal.Jin
       if (duration.GetStage() != stage) {
         stage = duration.GetStage();
         if (db_.db != nullptr) {
@@ -4636,14 +4654,17 @@ class Benchmark {
           }
         }
       }
-
+      
       size_t id = thread->rand.Next() % num_key_gens;
       DBWithColumnFamilies* db_with_cfh = SelectDBWithCfh(id);
       batch.Clear();
       int64_t batch_bytes = 0;
-
+      
       for (int64_t j = 0; j < entries_per_batch_; j++) {
         int64_t rand_num = key_gens[id]->Next();
+        //int64_t rand_num = key_pattern[nextk_]; // Key Pattern Control by Signal.Jin
+        //nextk_++;
+        //printf("%lu\n", rand_num);
         GenerateKeyFromInt(rand_num, FLAGS_num, &key);
         Slice val = gen.Generate();
         if (use_blob_db_) {
