@@ -60,6 +60,9 @@ Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
     fprintf(stdout, "  [3]        \t|  Write() {      \t\t\t| db_impl_write.cc (line 59)\n"); // Signal.Jin
     //fprintf(stdout, "| Write() : Call WriteImpl() function |\n");
   }
+
+  //printf("Write() in db_impl_write.cc\n");
+
   return WriteImpl(write_options, my_batch, nullptr, nullptr);
 }
 

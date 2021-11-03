@@ -4403,8 +4403,10 @@ Status DBImpl::IngestExternalFile(
   return IngestExternalFiles({arg});
 }
 
-Status DBImpl::IngestExternalFiles(
+Status DBImpl::IngestExternalFiles( // Before BG Compaction, do ingest sstables from storage
     const std::vector<IngestExternalFileArg>& args) {
+
+  printf("Through IngestExternalFiles()\n");
   if (args.empty()) {
     return Status::InvalidArgument("ingestion arg list is empty");
   }
@@ -4586,7 +4588,7 @@ Status DBImpl::IngestExternalFiles(
     // Run ingestion jobs.
     if (status.ok()) {
       for (size_t i = 0; i != num_cfs; ++i) {
-        status = ingestion_jobs[i].Run();
+        status = ingestion_jobs[i].Run(); // Ingest SSTables from Storage - Signal.Jin
         if (!status.ok()) {
           break;
         }
@@ -4682,7 +4684,7 @@ Status DBImpl::IngestExternalFiles(
     ReleaseFileNumberFromPendingOutputs(pending_output_elem);
     num_running_ingest_file_ -= static_cast<int>(num_cfs);
     if (0 == num_running_ingest_file_) {
-      bg_cv_.SignalAll();
+      bg_cv_.SignalAll(); // Signal To BG Compaction Thread - Signal.Jin
     }
     TEST_SYNC_POINT("DBImpl::AddFile:MutexUnlock");
   }
