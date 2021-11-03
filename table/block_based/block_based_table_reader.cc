@@ -1885,15 +1885,15 @@ Status BlockBasedTable::RetrieveBlock(
     fprintf(stdout, "  [19]        \t|  }\n");
     fprintf(stdout, "  [20]        \t| } /*The process of executing the get operation once*/\n");
     printf("#\n# Function Explanation (Read(Get) Flow)\n");
-    printf("# ReadRandom() :\n");
-    printf("# memtable.cc Get() :\n");
-    printf("# memtable_list.cc GetListFrom() :\n");
-    printf("# version_set.cc Get() :\n");
-    printf("# GetNextFile() :\n");
-    printf("# FullFilterKeyMayMatch() :\n");
-    printf("# NewIndexIterator() :\n");
-    printf("# NewDataBlockIterator() :\n");
-    printf("# RetrieveBlock() :\n");
+    printf("# ReadRandom() : Functions performed via readrandom option in db_bench\n");
+    printf("# memtable.cc Get() : If the requested key is in the memtable, read key and value\n");
+    printf("# memtable_list.cc GetListFrom() : If the requested key is in the immutable memtable, read key and value\n");
+    printf("# version_set.cc Get() : If the requested key is in the storage(sstable), read key and value\n");
+    printf("# GetNextFile() : Sequentially fetching sstable information\n");
+    printf("# FullFilterKeyMayMatch() : Check if the requested key exists using a bloom filter\n");
+    printf("# NewIndexIterator() : Find out where the key is inside sstable through index block\n");
+    printf("# NewDataBlockIterator() : Find the data block inside sstable using offset obtained through index block\n");
+    printf("# RetrieveBlock() : Read the actual data block and load it into the cache if neccessary\n");
     retrieve_get_flag = 0;
   }
 

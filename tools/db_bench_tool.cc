@@ -4672,6 +4672,7 @@ class Benchmark {
           // Stacked BlobDB
           blob_db::BlobDB* blobdb =
               static_cast<blob_db::BlobDB*>(db_with_cfh->db);
+          // If enable_blob_files=true ==> Not in Here! Signal.Jin
           if (FLAGS_blob_db_max_ttl_range > 0) {
             int ttl = rand() % FLAGS_blob_db_max_ttl_range;
             s = blobdb->PutWithTTL(write_options_, key, val, ttl);
