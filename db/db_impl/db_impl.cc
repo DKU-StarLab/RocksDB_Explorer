@@ -4405,8 +4405,6 @@ Status DBImpl::IngestExternalFile(
 
 Status DBImpl::IngestExternalFiles( // Before BG Compaction, do ingest sstables from storage
     const std::vector<IngestExternalFileArg>& args) {
-
-  printf("Through IngestExternalFiles()\n");
   if (args.empty()) {
     return Status::InvalidArgument("ingestion arg list is empty");
   }
