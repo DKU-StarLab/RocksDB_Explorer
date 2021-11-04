@@ -1420,6 +1420,10 @@ void DBImpl::NotifyOnCompactionBegin(ColumnFamilyData* cfd, Compaction* c,
   {
     CompactionJobInfo info{};
     BuildCompactionJobInfo(cfd, c, st, job_stats, job_id, current, &info);
+    for(uint i = 0; i < info.input_files.size(); i++) { // Candidate for compaction - Signal.Jin
+      printf("info for SSTable = %s\n", info.input_files[i].c_str());
+    }
+    printf("\n");
     for (auto listener : immutable_db_options_.listeners) {
       listener->OnCompactionBegin(this, info);
     }
@@ -2737,7 +2741,7 @@ void DBImpl::BackgroundCallCompaction(PrepickedCompaction* prepicked_compaction,
     // This call will unlock/lock the mutex to wait for current running
     // IngestExternalFile() calls to finish.
     WaitForIngestFile();
-
+    
     num_running_compactions_++;
 
     std::unique_ptr<std::list<uint64_t>::iterator>
@@ -3103,6 +3107,7 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
 
     compaction_job_stats.num_input_files = c->num_input_files(0);
 
+    printf("Trivial Move compaction (Before BuildCompactionJob)\n"); // Candidate for Trivial Move - Signal.Jin
     NotifyOnCompactionBegin(c->column_family_data(), c.get(), status,
                             compaction_job_stats, job_context->job_id);
 
@@ -3218,6 +3223,7 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
         db_session_id_, c->column_family_data()->GetFullHistoryTsLow());
     compaction_job.Prepare();
 
+    printf("Merge Sort compaction (Before BuildCompactionJob)\n"); // Candidate for Merge Sorting - Signal.Jin
     NotifyOnCompactionBegin(c->column_family_data(), c.get(), status,
                             compaction_job_stats, job_context->job_id);
     mutex_.Unlock();
@@ -3470,6 +3476,7 @@ void DBImpl::BuildCompactionJobInfo(
       const uint64_t file_number = desc.GetNumber();
       auto fn = TableFileName(c->immutable_options()->cf_paths, file_number,
                               desc.GetPathId());
+      //printf("fn = %s\n", fn.c_str()); // Signal.Jin
       compaction_job_info->input_files.push_back(fn);
       compaction_job_info->input_file_infos.push_back(CompactionFileInfo{
           static_cast<int>(i), file_number, fmd->oldest_blob_file_number});
