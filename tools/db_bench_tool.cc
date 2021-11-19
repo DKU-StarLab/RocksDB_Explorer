@@ -4584,6 +4584,9 @@ class Benchmark {
       write_flag = 0;
     }
 
+    // Signal.Jin time
+    clock_t start, end;
+
     size_t num_key_gens = 1;
     if (db_.db == nullptr) {
       num_key_gens = multi_dbs_.size();
@@ -4640,6 +4643,8 @@ class Benchmark {
     //int nextk_ = 0;
     //int64_t *key_pattern = new int64_t[num_];
     //GenerateNormalKey(key_pattern);
+
+    int rocksdb_count = 0;
 
     int64_t stage = 0;
     int64_t num_written = 0;
@@ -4759,7 +4764,13 @@ class Benchmark {
       }
       if (!use_blob_db_) {
         // Not stacked BlobDB
+        start = clock(); // Signal.Jin
         s = db_with_cfh->db->Write(write_options_, &batch);
+        end = clock();
+        rocksdb_count++;
+        if (rocksdb_count % 10000 == 0) {
+          printf("Write Time = %f\n", (float)(end - start));
+        }
       }
       thread->stats.FinishedOps(db_with_cfh, db_with_cfh->db,
                                 entries_per_batch_, kWrite);

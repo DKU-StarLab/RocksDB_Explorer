@@ -229,7 +229,12 @@ std::string HistogramStat::ToString() const {
   }*/
   //fprintf(stdout, "line\n");
 #endif
-
+  /*
+  for (float i = 0; i <= 100;) {
+    printf("Latecny %.2f = %lf\n", i, Percentile(i));
+    i = i+0.01;
+  }
+  */
   return r;
 }
 
