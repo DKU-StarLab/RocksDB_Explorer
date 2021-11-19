@@ -1420,10 +1420,10 @@ void DBImpl::NotifyOnCompactionBegin(ColumnFamilyData* cfd, Compaction* c,
   {
     CompactionJobInfo info{};
     BuildCompactionJobInfo(cfd, c, st, job_stats, job_id, current, &info);
-    for(uint i = 0; i < info.input_files.size(); i++) { // Candidate for compaction - Signal.Jin
+    /*for(uint i = 0; i < info.input_files.size(); i++) { // Candidate for compaction - Signal.Jin
       printf("info for SSTable = %s\n", info.input_files[i].c_str());
     }
-    printf("\n");
+    printf("\n");*/
     for (auto listener : immutable_db_options_.listeners) {
       listener->OnCompactionBegin(this, info);
     }
@@ -2864,6 +2864,9 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
     fprintf(stdout, "  [3]        \t|   BackgroudCompaction() {    \t\t| db_impl_compaction_flush.cc (line 2858)\n"); // Signal.Jin
   }
   
+  /* Signal.Jin Time */
+  //clock_t start, end;
+
   ManualCompactionState* manual_compaction =
       prepicked_compaction == nullptr
           ? nullptr
@@ -3107,7 +3110,7 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
 
     compaction_job_stats.num_input_files = c->num_input_files(0);
 
-    printf("Trivial Move compaction (Before BuildCompactionJob)\n"); // Candidate for Trivial Move - Signal.Jin
+    //printf("Trivial Move compaction (Before BuildCompactionJob)\n"); // Candidate for Trivial Move - Signal.Jin
     NotifyOnCompactionBegin(c->column_family_data(), c.get(), status,
                             compaction_job_stats, job_context->job_id);
 
@@ -3223,14 +3226,17 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
         db_session_id_, c->column_family_data()->GetFullHistoryTsLow());
     compaction_job.Prepare();
 
-    printf("Merge Sort compaction (Before BuildCompactionJob)\n"); // Candidate for Merge Sorting - Signal.Jin
+    //printf("Merge Sort compaction (Before BuildCompactionJob)\n"); // Candidate for Merge Sorting - Signal.Jin
     NotifyOnCompactionBegin(c->column_family_data(), c.get(), status,
                             compaction_job_stats, job_context->job_id);
     mutex_.Unlock();
     TEST_SYNC_POINT_CALLBACK(
         "DBImpl::BackgroundCompaction:NonTrivial:BeforeRun", nullptr);
     // Should handle erorr?
+    //start = clock();
     compaction_job.Run().PermitUncheckedError();
+    //end= clock();
+    //printf("Run Time = %f\n", (float)(end - start)/CLOCKS_PER_SEC);
     TEST_SYNC_POINT("DBImpl::BackgroundCompaction:NonTrivial:AfterRun");
     mutex_.Lock();
 

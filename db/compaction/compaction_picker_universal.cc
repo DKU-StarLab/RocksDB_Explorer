@@ -639,7 +639,7 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
       double sz = candidate_size * (100.0 + ratio) / 100.0;
 
       //fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->size));
-      //fprintf(stdout, "sz = %lf, succeeding_sr->size = %lf\n", sz, static_cast<double>(succeeding_sr->compensated_file_size));
+      //fprintf(stdout, "sz = %lf, succeeding_sr->compensated_file_size = %lf\n", sz, static_cast<double>(succeeding_sr->compensated_file_size));
 
       if (sz < static_cast<double>(succeeding_sr->size)) {
         // Yes
@@ -664,6 +664,8 @@ Compaction* UniversalCompactionBuilder::PickCompactionToReduceSortedRuns(
       }
       candidate_count++;
     }
+
+    fprintf(stdout, "candidata size = %lu\n", candidate_size);
 
     // Found a series of consecutive files that need compaction.
     if (candidate_count >= (unsigned int)min_merge_width) {
