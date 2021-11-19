@@ -1,0 +1,246 @@
+Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+Keys:       64 bytes each (+ 0 bytes user-defined timestamp)
+Values:     1024 bytes each (1024 bytes after compression)
+Entries:    5000000
+Prefix:    0 bytes
+Keys per prefix:    0
+RawSize:    5188.0 MB (estimated)
+FileSize:   5188.0 MB (estimated)
+Write rate: 0 bytes/second
+Read rate: 0 ops/second
+Compression: Snappy
+Compression sampling rate: 0
+Memtablerep: skip_list
+Perf Level: 1
+WARNING: Assertions are enabled; benchmarks unnecessarily slow
+------------------------------------------------
+Initializing RocksDB Options from the specified file
+Initializing RocksDB Options from command-line flags
+DB path: [../mnt/rocksdb_test/]
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000015.sst
+info for SSTable = ../mnt/rocksdb_test//000013.sst
+info for SSTable = ../mnt/rocksdb_test//000011.sst
+info for SSTable = ../mnt/rocksdb_test//000009.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000030.sst
+info for SSTable = ../mnt/rocksdb_test//000028.sst
+info for SSTable = ../mnt/rocksdb_test//000025.sst
+info for SSTable = ../mnt/rocksdb_test//000023.sst
+info for SSTable = ../mnt/rocksdb_test//000020.sst
+info for SSTable = ../mnt/rocksdb_test//000018.sst
+info for SSTable = ../mnt/rocksdb_test//000016.sst
+info for SSTable = ../mnt/rocksdb_test//000021.sst
+info for SSTable = ../mnt/rocksdb_test//000026.sst
+info for SSTable = ../mnt/rocksdb_test//000031.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000066.sst
+info for SSTable = ../mnt/rocksdb_test//000064.sst
+info for SSTable = ../mnt/rocksdb_test//000061.sst
+info for SSTable = ../mnt/rocksdb_test//000058.sst
+info for SSTable = ../mnt/rocksdb_test//000056.sst
+info for SSTable = ../mnt/rocksdb_test//000053.sst
+info for SSTable = ../mnt/rocksdb_test//000051.sst
+info for SSTable = ../mnt/rocksdb_test//000048.sst
+info for SSTable = ../mnt/rocksdb_test//000046.sst
+info for SSTable = ../mnt/rocksdb_test//000043.sst
+info for SSTable = ../mnt/rocksdb_test//000041.sst
+info for SSTable = ../mnt/rocksdb_test//000038.sst
+info for SSTable = ../mnt/rocksdb_test//000036.sst
+info for SSTable = ../mnt/rocksdb_test//000033.sst
+info for SSTable = ../mnt/rocksdb_test//000035.sst
+info for SSTable = ../mnt/rocksdb_test//000039.sst
+info for SSTable = ../mnt/rocksdb_test//000044.sst
+info for SSTable = ../mnt/rocksdb_test//000049.sst
+info for SSTable = ../mnt/rocksdb_test//000054.sst
+info for SSTable = ../mnt/rocksdb_test//000059.sst
+info for SSTable = ../mnt/rocksdb_test//000063.sst
+info for SSTable = ../mnt/rocksdb_test//000067.sst
+info for SSTable = ../mnt/rocksdb_test//000068.sst
+info for SSTable = ../mnt/rocksdb_test//000069.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000102.sst
+info for SSTable = ../mnt/rocksdb_test//000085.sst
+info for SSTable = ../mnt/rocksdb_test//000082.sst
+info for SSTable = ../mnt/rocksdb_test//000079.sst
+info for SSTable = ../mnt/rocksdb_test//000077.sst
+info for SSTable = ../mnt/rocksdb_test//000074.sst
+info for SSTable = ../mnt/rocksdb_test//000072.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000126.sst
+info for SSTable = ../mnt/rocksdb_test//000123.sst
+info for SSTable = ../mnt/rocksdb_test//000121.sst
+info for SSTable = ../mnt/rocksdb_test//000118.sst
+info for SSTable = ../mnt/rocksdb_test//000115.sst
+info for SSTable = ../mnt/rocksdb_test//000112.sst
+info for SSTable = ../mnt/rocksdb_test//000110.sst
+info for SSTable = ../mnt/rocksdb_test//000107.sst
+info for SSTable = ../mnt/rocksdb_test//000105.sst
+info for SSTable = ../mnt/rocksdb_test//000109.sst
+info for SSTable = ../mnt/rocksdb_test//000113.sst
+info for SSTable = ../mnt/rocksdb_test//000116.sst
+info for SSTable = ../mnt/rocksdb_test//000120.sst
+info for SSTable = ../mnt/rocksdb_test//000124.sst
+info for SSTable = ../mnt/rocksdb_test//000127.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000154.sst
+info for SSTable = ../mnt/rocksdb_test//000152.sst
+info for SSTable = ../mnt/rocksdb_test//000149.sst
+info for SSTable = ../mnt/rocksdb_test//000147.sst
+info for SSTable = ../mnt/rocksdb_test//000144.sst
+info for SSTable = ../mnt/rocksdb_test//000142.sst
+info for SSTable = ../mnt/rocksdb_test//000139.sst
+info for SSTable = ../mnt/rocksdb_test//000137.sst
+info for SSTable = ../mnt/rocksdb_test//000134.sst
+info for SSTable = ../mnt/rocksdb_test//000132.sst
+info for SSTable = ../mnt/rocksdb_test//000129.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000186.sst
+info for SSTable = ../mnt/rocksdb_test//000183.sst
+info for SSTable = ../mnt/rocksdb_test//000180.sst
+info for SSTable = ../mnt/rocksdb_test//000177.sst
+info for SSTable = ../mnt/rocksdb_test//000174.sst
+info for SSTable = ../mnt/rocksdb_test//000172.sst
+info for SSTable = ../mnt/rocksdb_test//000169.sst
+info for SSTable = ../mnt/rocksdb_test//000166.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000213.sst
+info for SSTable = ../mnt/rocksdb_test//000210.sst
+info for SSTable = ../mnt/rocksdb_test//000207.sst
+info for SSTable = ../mnt/rocksdb_test//000204.sst
+info for SSTable = ../mnt/rocksdb_test//000201.sst
+info for SSTable = ../mnt/rocksdb_test//000198.sst
+info for SSTable = ../mnt/rocksdb_test//000196.sst
+info for SSTable = ../mnt/rocksdb_test//000193.sst
+info for SSTable = ../mnt/rocksdb_test//000191.sst
+info for SSTable = ../mnt/rocksdb_test//000195.sst
+info for SSTable = ../mnt/rocksdb_test//000199.sst
+info for SSTable = ../mnt/rocksdb_test//000202.sst
+info for SSTable = ../mnt/rocksdb_test//000205.sst
+info for SSTable = ../mnt/rocksdb_test//000208.sst
+info for SSTable = ../mnt/rocksdb_test//000212.sst
+info for SSTable = ../mnt/rocksdb_test//000215.sst
+info for SSTable = ../mnt/rocksdb_test//000164.sst
+info for SSTable = ../mnt/rocksdb_test//000168.sst
+info for SSTable = ../mnt/rocksdb_test//000171.sst
+info for SSTable = ../mnt/rocksdb_test//000175.sst
+info for SSTable = ../mnt/rocksdb_test//000178.sst
+info for SSTable = ../mnt/rocksdb_test//000181.sst
+info for SSTable = ../mnt/rocksdb_test//000184.sst
+info for SSTable = ../mnt/rocksdb_test//000187.sst
+info for SSTable = ../mnt/rocksdb_test//000188.sst
+info for SSTable = ../mnt/rocksdb_test//000189.sst
+info for SSTable = ../mnt/rocksdb_test//000190.sst
+info for SSTable = ../mnt/rocksdb_test//000130.sst
+info for SSTable = ../mnt/rocksdb_test//000135.sst
+info for SSTable = ../mnt/rocksdb_test//000140.sst
+info for SSTable = ../mnt/rocksdb_test//000145.sst
+info for SSTable = ../mnt/rocksdb_test//000150.sst
+info for SSTable = ../mnt/rocksdb_test//000155.sst
+info for SSTable = ../mnt/rocksdb_test//000156.sst
+info for SSTable = ../mnt/rocksdb_test//000157.sst
+info for SSTable = ../mnt/rocksdb_test//000158.sst
+info for SSTable = ../mnt/rocksdb_test//000159.sst
+info for SSTable = ../mnt/rocksdb_test//000160.sst
+info for SSTable = ../mnt/rocksdb_test//000161.sst
+info for SSTable = ../mnt/rocksdb_test//000162.sst
+info for SSTable = ../mnt/rocksdb_test//000163.sst
+info for SSTable = ../mnt/rocksdb_test//000070.sst
+info for SSTable = ../mnt/rocksdb_test//000075.sst
+info for SSTable = ../mnt/rocksdb_test//000080.sst
+info for SSTable = ../mnt/rocksdb_test//000084.sst
+info for SSTable = ../mnt/rocksdb_test//000086.sst
+info for SSTable = ../mnt/rocksdb_test//000087.sst
+info for SSTable = ../mnt/rocksdb_test//000088.sst
+info for SSTable = ../mnt/rocksdb_test//000089.sst
+info for SSTable = ../mnt/rocksdb_test//000090.sst
+info for SSTable = ../mnt/rocksdb_test//000091.sst
+info for SSTable = ../mnt/rocksdb_test//000092.sst
+info for SSTable = ../mnt/rocksdb_test//000093.sst
+info for SSTable = ../mnt/rocksdb_test//000094.sst
+info for SSTable = ../mnt/rocksdb_test//000095.sst
+info for SSTable = ../mnt/rocksdb_test//000096.sst
+info for SSTable = ../mnt/rocksdb_test//000097.sst
+info for SSTable = ../mnt/rocksdb_test//000098.sst
+info for SSTable = ../mnt/rocksdb_test//000099.sst
+info for SSTable = ../mnt/rocksdb_test//000100.sst
+info for SSTable = ../mnt/rocksdb_test//000103.sst
+info for SSTable = ../mnt/rocksdb_test//000104.sst
+
+Merge Sort compaction (Before BuildCompactionJob)
+info for SSTable = ../mnt/rocksdb_test//000269.sst
+info for SSTable = ../mnt/rocksdb_test//000253.sst
+info for SSTable = ../mnt/rocksdb_test//000236.sst
+info for SSTable = ../mnt/rocksdb_test//000233.sst
+info for SSTable = ../mnt/rocksdb_test//000231.sst
+info for SSTable = ../mnt/rocksdb_test//000229.sst
+info for SSTable = ../mnt/rocksdb_test//000226.sst
+info for SSTable = ../mnt/rocksdb_test//000224.sst
+info for SSTable = ../mnt/rocksdb_test//000221.sst
+info for SSTable = ../mnt/rocksdb_test//000219.sst
+info for SSTable = ../mnt/rocksdb_test//000216.sst
+
+fillrandom   :      14.491 micros/op 69006 ops/sec;   71.6 MB/s
+
+Level Files Size(MB)
+--------------------
+  0       16      994
+  1        0        0
+  2        0        0
+  3        0        0
+  4        0        0
+  5        0        0
+  6       45     2855
+
+
+
+** Compaction Stats [default] **
+Level    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop Rblob(GB) Wblob(GB)
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  L0     16/11  994.34 MB   0.0      0.0     0.0      0.0       5.0      5.0       0.0   1.0      0.0    148.1     34.41              9.06        82    0.420       0      0       0.0       0.0
+  L3      0/0    0.00 KB   0.0      0.5     0.5      0.0       0.5      0.5       0.0   1.0    107.0    102.6      4.65              1.49         1    4.647    474K    19K       0.0       0.0
+  L4      0/0    0.00 KB   0.0      0.7     0.7      0.0       0.6      0.6       0.0   0.9    118.8    111.9      5.75              2.09         1    5.755    651K    37K       0.0       0.0
+  L5      0/0    0.00 KB   0.0      1.3     0.9      0.4       1.2      0.8       0.0   1.4    110.7    104.7     12.21              4.29         2    6.105   1289K    70K       0.0       0.0
+  L6     45/0    2.79 GB   0.0      6.0     3.9      2.1       4.9      2.8       0.0   1.3    135.9    111.1     44.93             18.47         4   11.233   5823K  1060K       0.0       0.0
+ Sum     61/11   3.76 GB   0.0      8.4     5.9      2.5      12.2      9.7       0.0   2.5     84.7    122.5    101.95             35.41        90    1.133   8238K  1187K       0.0       0.0
+ Int      0/0    0.00 KB   0.0      8.4     5.9      2.5      11.8      9.3       0.0   2.6     86.5    120.7     99.88             34.82        83    1.203   8238K  1187K       0.0       0.0
+
+** Compaction Stats [default] **
+Priority    Files   Size     Score Read(GB)  Rn(GB) Rnp1(GB) Write(GB) Wnew(GB) Moved(GB) W-Amp Rd(MB/s) Wr(MB/s) Comp(sec) CompMergeCPU(sec) Comp(cnt) Avg(sec) KeyIn KeyDrop Rblob(GB) Wblob(GB)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Low      0/0    0.00 KB   0.0      8.4     5.9      2.5       7.2      4.7       0.0   0.0    127.9    109.4     67.54             26.35         8    8.443   8238K  1187K       0.0       0.0
+High      0/0    0.00 KB   0.0      0.0     0.0      0.0       5.0      5.0       0.0   0.0      0.0    148.1     34.41              9.06        82    0.420       0      0       0.0       0.0
+
+Blob file count: 0, total size: 0.0 GB
+
+Uptime(secs): 72.5 total, 69.5 interval
+Flush(GB): cumulative 4.976, interval 4.551
+AddFile(GB): cumulative 0.000, interval 0.000
+AddFile(Total Files): cumulative 0, interval 0
+AddFile(L0 Files): cumulative 0, interval 0
+AddFile(Keys): cumulative 0, interval 0
+Cumulative compaction: 12.19 GB write, 172.30 MB/s write, 8.44 GB read, 119.19 MB/s read, 101.9 seconds
+Interval compaction: 11.77 GB write, 173.52 MB/s write, 8.44 GB read, 124.37 MB/s read, 99.9 seconds
+Stalls(count): 16 level0_slowdown, 16 level0_slowdown_with_compaction, 0 level0_numfiles, 0 level0_numfiles_with_compaction, 0 stop for pending_compaction_bytes, 0 slowdown for pending_compaction_bytes, 70 memtable_compaction, 0 memtable_slowdown, interval 82 total count
+Block cache LRUCache@0x556052efbeb0 capacity: 8.00 MB collections: 1 last_copies: 2 last_secs: 6e-05 secs_since: 72
+Block cache entry stats(count,size,portion): Misc(1,0.00 KB,0%)
+
+** File Read Latency Histogram By Level [default] **
+
+** DB Stats **
+Uptime(secs): 72.5 total, 69.5 interval
+Cumulative writes: 5000K writes, 5000K keys, 5000K commit groups, 1.0 writes per commit group, ingest: 5.14 GB, 72.64 MB/s
+Cumulative WAL: 5000K writes, 0 syncs, 5000000.00 writes per sync, written: 5.14 GB, 72.64 MB/s
+Cumulative stall: 00:00:44.780 H:M:S, 61.8 percent
+Interval writes: 4463K writes, 4463K keys, 4463K commit groups, 1.0 writes per commit group, ingest: 4699.45 MB, 67.66 MB/s
+Interval WAL: 4463K writes, 0 syncs, 4463528.00 writes per sync, written: 4.59 GB, 67.66 MB/s
+Interval stall: 00:00:44.601 H:M:S, 64.2 percent
+
