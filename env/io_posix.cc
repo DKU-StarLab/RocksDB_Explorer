@@ -100,10 +100,17 @@ bool PosixWrite(int fd, const char* buf, size_t nbyte) {
   const char* src = buf;
   size_t left = nbyte;
 
+  //Latency check -lsh
+  /*double duration;
+  struct timeval startTime, endTime;*/
+  
   while (left != 0) {
     size_t bytes_to_write = std::min(left, kLimit1Gb);
-
+    //gettimeofday(&startTime, NULL); -lsh
     ssize_t done = write(fd, src, bytes_to_write);
+    /*gettimeofday(&endTime, NULL); - lsh
+    duration = ( endTime.tv_sec - startTime.tv_sec ) + ( endTime.tv_usec - startTime.tv_usec );*/
+
     if (done < 0) {
       if (errno == EINTR) {
         continue;
