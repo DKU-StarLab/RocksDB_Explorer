@@ -2553,7 +2553,7 @@ class Benchmark {
             (((FLAGS_key_size + avg_value_size * FLAGS_compression_ratio)
               * num_)
              / 1048576.0));
-    fprintf(stdout, "Write rate: %" PRIu64 " bytes/second\n",
+    fprintf(stdout, "Wrtie rate: %" PRIu64 " bytes/second\n",
             FLAGS_benchmark_write_rate_limit);
     fprintf(stdout, "Read rate: %" PRIu64 " ops/second\n",
             FLAGS_benchmark_read_rate_limit);
@@ -4644,7 +4644,7 @@ class Benchmark {
     //int64_t *key_pattern = new int64_t[num_];
     //GenerateNormalKey(key_pattern);
 
-    int rocksdb_count = 0;
+    //int rocksdb_count = 0;
 
     int64_t stage = 0;
     int64_t num_written = 0;
@@ -4767,10 +4767,11 @@ class Benchmark {
         start = clock(); // Signal.Jin
         s = db_with_cfh->db->Write(write_options_, &batch);
         end = clock();
-        rocksdb_count++;
-        if (rocksdb_count % 10000 == 0) {
-          printf("Write Time = %f\n", (float)(end - start));
-        }
+        printf("Write Time = %d\n", (int)(end - start));
+        //rocksdb_count++;
+        /*if (rocksdb_count % 10000 == 0) {
+          
+        }*/
       }
       thread->stats.FinishedOps(db_with_cfh, db_with_cfh->db,
                                 entries_per_batch_, kWrite);
