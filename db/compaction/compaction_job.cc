@@ -71,7 +71,7 @@
 
 //Control Comp Flow Print - Signal.Jin
 int comp_job_flag = 1;
-
+int comp_num = 0;
 namespace ROCKSDB_NAMESPACE {
 
 const char* GetCompactionReasonString(CompactionReason compaction_reason) {
@@ -1069,6 +1069,7 @@ void CompactionJob::ProcessKeyValueCompactionWithCompactionService(
 void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   assert(sub_compact);
   assert(sub_compact->compaction);
+  
 
   if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_job_flag == 1)) {
     fprintf(stdout, "  [17]        \t|     ProcessKeyValueCompaction()    \t| compaction_job.cc (line 1074)\n"); // Signal.Jin
@@ -1097,6 +1098,13 @@ void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
     printf("--------------------------------------------------------------------------------------\n");
     comp_job_flag = 0;
   }
+
+  //Compacion time check - lsh
+  /*clock_t start_time, finish_time; 
+  double duration;
+  start_time = clock();
+  comp_num++;*/
+
 #ifndef ROCKSDB_LITE
   if (db_options_.compaction_service) {
     return ProcessKeyValueCompactionWithCompactionService(sub_compact);
@@ -1456,6 +1464,12 @@ void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   clip.reset();
   raw_input.reset();
   sub_compact->status = status;
+
+  //Compaction time check - lsh
+  /*finish_time = clock();
+  duration = (double)(finish_time - start_time) / CLOCKS_PER_SEC;
+  fprintf(stderr, "\nCompaciton %d : %f초\n", comp_num, duration);*/
+
 }
 
 void CompactionJob::RecordDroppedKeys(
