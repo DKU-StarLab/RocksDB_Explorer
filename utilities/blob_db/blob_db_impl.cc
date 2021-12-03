@@ -1003,7 +1003,6 @@ Status BlobDBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
       static_cast_with_check<ColumnFamilyHandleImpl>(DefaultColumnFamily())
           ->GetID();
   Status s;
-
   BlobInserter blob_inserter(options, this, default_cf_id);
   {
     // Release write_mutex_ before DB write to avoid race condition with
