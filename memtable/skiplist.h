@@ -380,6 +380,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::FindLast()
   }
 }
 
+//
 template <typename Key, class Comparator>
 uint64_t SkipList<Key, Comparator>::EstimateCount(const Key& key) const {
   uint64_t count = 0;
@@ -455,8 +456,8 @@ void SkipList<Key, Comparator>::Insert(const Key& key) {
   // Our data structure does not allow duplicate insertion
   assert(prev_[0]->Next(0) == nullptr || !Equal(key, prev_[0]->Next(0)->key));
 
-  int height = RandomHeight();
-  if (height > GetMaxHeight()) {
+  int height = RandomHeight(); // Height is defined randomly - Lee Jeyeon.
+  if (height > GetMaxHeight()) { // Change Total skiplist heigth - Lee Jeyeon.
     for (int i = GetMaxHeight(); i < height; i++) {
       prev_[i] = head_;
     }
