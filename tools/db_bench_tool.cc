@@ -2089,6 +2089,13 @@ class Stats {
     if (reporter_agent_) {
       reporter_agent_->ReportFinishedOps(num_ops);
     }
+
+    /*Time Estimation with Gettimeofday() in RocksDB - Signal.Jin*/
+    /*uint64_t now_ = FLAGS_env->NowMicros();
+    uint64_t micros_ = now_ - last_op_finish_;
+    printf("Write Time = %lu\n", micros_);
+    last_op_finish_ = now_;*/
+
     if (FLAGS_histogram) {
       uint64_t now = clock_->NowMicros();
       uint64_t micros = now - last_op_finish_;
@@ -4585,7 +4592,7 @@ class Benchmark {
     }
 
     // Signal.Jin time
-    clock_t start, end;
+    //clock_t start, end;
 
     size_t num_key_gens = 1;
     if (db_.db == nullptr) {
@@ -4764,10 +4771,10 @@ class Benchmark {
       }
       if (!use_blob_db_) {
         // Not stacked BlobDB
-        start = clock(); // Signal.Jin
+        //start = clock(); // Signal.Jin
         s = db_with_cfh->db->Write(write_options_, &batch);
-        end = clock();
-        printf("Write Time = %d\n", (int)(end - start));
+        //end = clock();
+        //printf("Write Time = %d\n", (int)(end - start));
         //rocksdb_count++;
         /*if (rocksdb_count % 10000 == 0) {
           
