@@ -2469,6 +2469,8 @@ void DBImpl::BGWorkFlush(void* arg) {
   FlushThreadArg fta = *(reinterpret_cast<FlushThreadArg*>(arg));
   delete reinterpret_cast<FlushThreadArg*>(arg);
 
+  //printf("Trigger Flush\n"); //Signal.Jin
+
   if (DB_WRITE_FLOW == 1 && write_flush_flag == 1) {
     fprintf(stdout, "  [14]        \t|   BGWorkFlush() {      \t\t| db_impl_compaction_and_flush.cc (line 2407)\n"); // Signal.Jin
   }
@@ -2484,6 +2486,8 @@ void DBImpl::BGWorkCompaction(void* arg) {
   delete reinterpret_cast<CompactionArg*>(arg);
   IOSTATS_SET_THREAD_POOL_ID(Env::Priority::LOW);
   TEST_SYNC_POINT("DBImpl::BGWorkCompaction");
+
+  //printf("Trigger Compaction\n"); // Signal.Jin
 
   if (((DB_LVL_COMPACTION_FLOW == 1) || (DB_UNI_COMPACTION_FLOW == 1)) && (comp_flag == 1)) {
     printf("--------------------------------------------------------------------------------------\n");
