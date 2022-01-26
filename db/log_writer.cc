@@ -105,7 +105,7 @@ IOStatus Writer::AddRecord(const Slice& slice) {
 
   if (s.ok()) {
     if (!manual_flush_) {
-      s = dest_->Flush();
+      s = dest_->Flush(); // WAL(Write Ahead Log) Do flush - Signal.Jin
     }
   }
 

@@ -168,7 +168,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
   if (immutable_db_options_.enable_pipelined_write) {
     return PipelinedWriteImpl(write_options, my_batch, callback, log_used,
                               log_ref, disable_memtable, seq_used);
-  }
+  } // WriteImpl function will be done. Call PiplelinedWriteImpl function - Signal.Jin
 
   PERF_TIMER_GUARD(write_pre_and_post_process_time);
   WriteThread::Writer w(write_options, my_batch, callback, log_ref,
@@ -177,7 +177,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
   if (!write_options.disableWAL) {
     RecordTick(stats_, WRITE_WITH_WAL);
   }
-
+  
   StopWatch write_sw(immutable_db_options_.clock, immutable_db_options_.stats,
                      DB_WRITE);
 
@@ -245,7 +245,6 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
 
     // PreprocessWrite does its own perf timing.
     PERF_TIMER_STOP(write_pre_and_post_process_time);
-
     status = PreprocessWrite(write_options, &need_log_sync, &write_context);
     if (!two_write_queues_) {
       // Assign it after ::PreprocessWrite since the sequence might advance
@@ -256,7 +255,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
     PERF_TIMER_START(write_pre_and_post_process_time);
   }
   log::Writer* log_writer = logs_.back().writer;
-
+  
   mutex_.Unlock();
 
   // Add to log and apply to memtable.  We can release the lock
@@ -563,9 +562,9 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
         RecordTick(stats_, WRITE_DONE_BY_OTHER, wal_write_group.size - 1);
       }
       io_s = WriteToWAL(wal_write_group, log_writer, log_used, need_log_sync,
-                        need_log_dir_sync, current_sequence);
+                        need_log_dir_sync, current_sequence); // Expected as a function that proceeds WAL operation - Signal.Jin
       w.status = io_s;
-    }
+    } // Write Log(WAL), before key-value pair written into memtable
 
     if (!w.CallbackFailed()) {
       if (!io_s.ok()) {
@@ -593,7 +592,7 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
   // that the inner context  of the `if` as a reference to it
   // may be used further below within the outer _write_thread
   WriteThread::WriteGroup memtable_write_group;
-
+  
   if (w.state == WriteThread::STATE_MEMTABLE_WRITER_LEADER) {
     PERF_TIMER_GUARD(write_memtable_time);
     assert(w.ShouldWriteToMemtable());
@@ -601,7 +600,7 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
     if (memtable_write_group.size > 1 &&
         immutable_db_options_.allow_concurrent_memtable_write) {
       write_thread_.LaunchParallelMemTableWriters(&memtable_write_group);
-    } else {
+    } else { // Put into Memtable with Key-Value pair - Signal.Jin
       memtable_write_group.status = WriteBatchInternal::InsertInto(
           memtable_write_group, w.sequence, column_family_memtables_.get(),
           &flush_scheduler_, &trim_history_scheduler_,
@@ -1141,6 +1140,7 @@ IOStatus DBImpl::WriteToWAL(const WriteThread::WriteGroup& write_group,
     cached_recoverable_state_empty_ = false;
   }
 
+  // This if statement is not executed by default - Signal.Jin
   if (io_s.ok() && need_log_sync) {
     StopWatch sw(immutable_db_options_.clock, stats_, WAL_FILE_SYNC_MICROS);
     // It's safe to access logs_ with unlocked mutex_ here because:

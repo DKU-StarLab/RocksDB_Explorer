@@ -594,7 +594,7 @@ Status WriteBatchInternal::Iterate(const WriteBatch* wb,
       last_was_try_again = false;
       tag = 0;
       column_family = 0;  // default
-
+      
       s = ReadRecordFromWriteBatch(&input, &tag, &column_family, &key, &value,
                                    &blob, &xid);
       if (!s.ok()) {
@@ -1592,7 +1592,7 @@ class MemTableInserter : public WriteBatch::Handler {
                                      value);
       // else insert the values to the memtable right away
     }
-
+    
     Status ret_status;
     if (UNLIKELY(!SeekToColumnFamily(column_family_id, &ret_status))) {
       if (ret_status.ok() && rebuilding_trx_ != nullptr) {
@@ -1612,12 +1612,12 @@ class MemTableInserter : public WriteBatch::Handler {
     }
     assert(ret_status.ok());
 
-    MemTable* mem = cf_mems_->GetMemTable();
+    MemTable* mem = cf_mems_->GetMemTable(); // Get memtable info from CF - Signal.Jin
     auto* moptions = mem->GetImmutableMemTableOptions();
     // inplace_update_support is inconsistent with snapshots, and therefore with
     // any kind of transactions including the ones that use seq_per_batch
     assert(!seq_per_batch_ || !moptions->inplace_update_support);
-    if (!moptions->inplace_update_support) {
+    if (!moptions->inplace_update_support) { // Last section to put data into memtable - Signal.Jin
       ret_status =
           mem->Add(sequence_, value_type, key, value, kv_prot_info,
                    concurrent_memtable_writes_, get_post_process_info(mem),
@@ -1711,7 +1711,7 @@ class MemTableInserter : public WriteBatch::Handler {
       MaybeAdvanceSeq(kBatchBoundary);
     } else if (ret_status.ok()) {
       MaybeAdvanceSeq();
-      CheckMemtableFull();
+      CheckMemtableFull(); // Check Memtable if full or not, for schedule flush - Signal.Jin
     }
     // optimize for non-recovery mode
     // If `ret_status` is `TryAgain` then the next (successful) try will add

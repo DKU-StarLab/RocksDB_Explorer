@@ -250,7 +250,7 @@ IOStatus WritableFileWriter::Flush() {
       start_ts = FileOperationInfo::StartNow();
     }
 #endif
-    s = writable_file_->Flush(IOOptions(), nullptr);
+    s = writable_file_->Flush(IOOptions(), nullptr); // cached data -> OS cache - Signal.Jin
 #ifndef ROCKSDB_LITE
     if (ShouldNotifyListeners()) {
       auto finish_ts = std::chrono::steady_clock::now();
