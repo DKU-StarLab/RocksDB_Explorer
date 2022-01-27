@@ -5130,7 +5130,7 @@ class Benchmark {
     }
   }
 
-  void ReadSequential(ThreadState* thread, DB* db) {
+  void ReadSequential(ThreadState* thread, DB* db) { // Perform Sequential Reads, Sequential means that key order is sequential - Signal.Jin
     ReadOptions options(FLAGS_verify_checksum, true);
     options.tailing = FLAGS_use_tailing_iterator;
     std::unique_ptr<char[]> ts_guard;

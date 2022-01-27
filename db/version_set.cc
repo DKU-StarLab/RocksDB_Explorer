@@ -1601,6 +1601,7 @@ void Version::AddIterators(const ReadOptions& read_options,
     AddIteratorsForLevel(read_options, soptions, merge_iter_builder, level,
                          range_del_agg, allow_unprepared_value);
   }
+  // SSTable(current) Iterator - Signal.Jin
 }
 
 void Version::AddIteratorsForLevel(const ReadOptions& read_options,
@@ -1617,11 +1618,10 @@ void Version::AddIteratorsForLevel(const ReadOptions& read_options,
     // No files in this level
     return;
   }
-
   bool should_sample = should_sample_file_read();
 
   auto* arena = merge_iter_builder->GetArena();
-  if (level == 0) {
+  if (level == 0) { // Merge Sort is performed before read sstable in L0 - Signal.Jin
     // Merge all level zero files together since they may overlap
     for (size_t i = 0; i < storage_info_.LevelFilesBrief(0).num_files; i++) {
       const auto& file = storage_info_.LevelFilesBrief(0).files[i];

@@ -2825,7 +2825,7 @@ bool DBImpl::KeyMayExist(const ReadOptions& read_options,
 }
 
 Iterator* DBImpl::NewIterator(const ReadOptions& read_options,
-                              ColumnFamilyHandle* column_family) {
+                              ColumnFamilyHandle* column_family) { // When do sequential read, flow through here - Signal.Jin
   if (read_options.managed) {
     return NewErrorIterator(
         Status::NotSupported("Managed iterator is not supported anymore."));
@@ -2844,6 +2844,7 @@ Iterator* DBImpl::NewIterator(const ReadOptions& read_options,
         "Iterator requested internal keys which are too old and are not"
         " guaranteed to be preserved, try larger iter_start_seqnum opt."));
   }
+  
   auto cfh = static_cast_with_check<ColumnFamilyHandleImpl>(column_family);
   ColumnFamilyData* cfd = cfh->cfd();
   assert(cfd != nullptr);
@@ -2872,7 +2873,7 @@ Iterator* DBImpl::NewIterator(const ReadOptions& read_options,
                                  ? read_options.snapshot->GetSequenceNumber()
                                  : kMaxSequenceNumber,
                              read_callback);
-  }
+  } // Call this function by default (function name = NewIteratorImpl()) - Signal.Jin
   return result;
 }
 
@@ -2953,7 +2954,7 @@ ArenaWrappedDBIter* DBImpl::NewIteratorImpl(const ReadOptions& read_options,
   InternalIterator* internal_iter = NewInternalIterator(
       db_iter->GetReadOptions(), cfd, sv, db_iter->GetArena(),
       db_iter->GetRangeDelAggregator(), snapshot,
-      /* allow_unprepared_value */ true);
+      /* allow_unprepared_value */ true); // Collect iterator for mutable memtable, immutable memtable, sstables - Signal.Jin
   db_iter->SetIterUnderDBIter(internal_iter);
 
   return db_iter;

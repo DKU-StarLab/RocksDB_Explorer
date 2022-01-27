@@ -113,6 +113,7 @@ bool MemTableListVersion::Get(const LookupKey& key, std::string* value,
   return GetFromList(&memlist_, key, value, timestamp, s, merge_context,
                      max_covering_tombstone_seq, seq, read_opts, callback,
                      is_blob_index);
+  // Function(GetFromList) = Immutable Memtable - Signal.Jin
 }
 
 void MemTableListVersion::MultiGet(const ReadOptions& read_options,
@@ -220,6 +221,7 @@ void MemTableListVersion::AddIterators(
     merge_iter_builder->AddIterator(
         m->NewIterator(options, merge_iter_builder->GetArena()));
   }
+  // Immutable memtable(memlist) Iterator - Signal.Jin
 }
 
 uint64_t MemTableListVersion::GetTotalNumEntries() const {

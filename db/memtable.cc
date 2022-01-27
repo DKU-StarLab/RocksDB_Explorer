@@ -441,6 +441,7 @@ InternalIterator* MemTable::NewIterator(const ReadOptions& read_options,
   assert(arena != nullptr);
   auto mem = arena->AllocateAligned(sizeof(MemTableIterator));
   return new (mem) MemTableIterator(*this, read_options, arena);
+  // Mutable Memtable Iterator - Signal.Jin
 }
 
 FragmentedRangeTombstoneIterator* MemTable::NewRangeTombstoneIterator(
@@ -909,7 +910,7 @@ bool MemTable::Get(const LookupKey& key, std::string* value,
                         prefix_extractor_->Transform(user_key_without_ts));
     }
   }
-
+  
   if (bloom_filter_ && !may_contain) {
     // iter is null if prefix bloom says the key does not exist
     PERF_COUNTER_ADD(bloom_memtable_miss_count, 1);
