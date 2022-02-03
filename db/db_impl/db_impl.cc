@@ -1816,6 +1816,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   }
   if (!done) {
     PERF_TIMER_GUARD(get_from_output_files_time);
+    printf("RandomRead Get SSTable Start\n"); // Signal.Jin
     sv->current->Get(
         read_options, lkey, get_impl_options.value, timestamp, &s,
         &merge_context, &max_covering_tombstone_seq,
@@ -1825,6 +1826,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
         get_impl_options.get_value ? get_impl_options.is_blob_index : nullptr,
         get_impl_options.get_value); // Read from Database (SSTable) - Signal.Jin
     RecordTick(stats_, MEMTABLE_MISS);
+    printf("RandomRead Get SSTable End\n"); // Signal.Jin
   }
 
   {

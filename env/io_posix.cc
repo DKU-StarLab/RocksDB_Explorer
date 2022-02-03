@@ -239,6 +239,7 @@ IOStatus PosixSequentialFile::Read(size_t n, const IOOptions& /*opts*/,
   assert(result != nullptr && !use_direct_io());
   IOStatus s;
   size_t r = 0;
+  printf("Seq-Read\n"); // Signal.Jin
   do {
     clearerr(file_);
     r = fread_unlocked(scratch, 1, n, file_);
@@ -271,6 +272,7 @@ IOStatus PosixSequentialFile::PositionedRead(uint64_t offset, size_t n,
   ssize_t r = -1;
   size_t left = n;
   char* ptr = scratch;
+  printf("Seq-PositionedRead\n"); // Signal.Jin
   while (left > 0) {
     r = pread(fd_, ptr, left, static_cast<off_t>(offset));
     if (r <= 0) {
@@ -578,6 +580,7 @@ IOStatus PosixRandomAccessFile::Read(uint64_t offset, size_t n,
     assert(IsSectorAligned(n, GetRequiredBufferAlignment()));
     assert(IsSectorAligned(scratch, GetRequiredBufferAlignment()));
   }
+  printf("Random-Read\n"); // Signal.Jin
   IOStatus s;
   ssize_t r = -1;
   size_t left = n;
@@ -621,7 +624,7 @@ IOStatus PosixRandomAccessFile::MultiRead(FSReadRequest* reqs,
       assert(IsSectorAligned(reqs[i].scratch, GetRequiredBufferAlignment()));
     }
   }
-
+  printf("Random-MultiRead\n"); // Signal.Jin
 #if defined(ROCKSDB_IOURING_PRESENT)
   struct io_uring* iu = nullptr;
   if (thread_local_io_urings_) {

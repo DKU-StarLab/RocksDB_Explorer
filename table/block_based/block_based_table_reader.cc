@@ -2329,6 +2329,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
     auto iiter =
         NewIndexIterator(read_options, need_upper_bound_check, &iiter_on_stack,
                          get_context, &lookup_context);
+    printf("NewIndexIterator\n"); // Signal.Jin
     std::unique_ptr<InternalIteratorBase<IndexValue>> iiter_unique_ptr;
     if (iiter != &iiter_on_stack) {
       iiter_unique_ptr.reset(iiter);
@@ -2384,7 +2385,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
           read_options, v.handle, &biter, BlockType::kData, get_context,
           &lookup_data_block_context,
           /*s=*/Status(), /*prefetch_buffer*/ nullptr);
-
+      printf("NewDataBlockIterator\n"); // Signal.Jin
       if (no_io && biter.status().IsIncomplete()) {
         // couldn't get block from block_cache
         // Update Saver.state to Found because we are only looking for

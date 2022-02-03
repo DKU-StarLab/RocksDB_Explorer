@@ -1899,7 +1899,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
       merge_context, do_merge, max_covering_tombstone_seq, clock_, seq,
       merge_operator_ ? &pinned_iters_mgr : nullptr, callback, is_blob_to_use,
       tracing_get_id, &blob_fetcher);
-
+  //printf("get_context\n"); // Signal.Jin
   // Pin blocks that we read to hold merge operands
   if (merge_operator_) {
     pinned_iters_mgr.StartPinning();
@@ -1910,7 +1910,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
       storage_info_.num_non_empty_levels_, &storage_info_.file_indexer_,
       user_comparator(), internal_comparator());
   FdWithKeyRange* f = fp.GetNextFile();
-
+  //printf("FilePicker\n"); // Signal.Jin
   while (f != nullptr) { // Read All Files - Signal.Jin
     if (*max_covering_tombstone_seq > 0) {
       // The remaining files we look at will only contain covered keys, so we
@@ -1926,8 +1926,8 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         get_perf_context()->per_level_perf_context_enabled;
     StopWatchNano timer(clock_, timer_enabled /* auto_start */);
 
-    //fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
-
+    fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
+    
     *status = table_cache_->Get(
         read_options, *internal_comparator(), *f->file_metadata, ikey,
         &get_context, mutable_cf_options_.prefix_extractor.get(),
@@ -1943,6 +1943,8 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     if (!status->ok()) {
       return;
     }
+
+    printf("table_cache->Get\n"); // Signal.Jin
 
     // report the counters before returning
     if (get_context.State() != GetContext::kNotFound &&

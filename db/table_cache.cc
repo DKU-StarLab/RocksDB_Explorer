@@ -407,7 +407,7 @@ Status TableCache::Get(const ReadOptions& options,
     cache_get_flag = 0;
   }
 
-  #ifndef ROCKSDB_LITE
+#ifndef ROCKSDB_LITE
   IterKey row_cache_key;
   std::string row_cache_entry_buffer;
 
