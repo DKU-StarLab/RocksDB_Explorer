@@ -3070,6 +3070,7 @@ class Benchmark {
       ErrorExit();
     }
     Open(&open_options_);
+    //sleep(2000); // Signal.Jin
     PrintHeader();
     std::stringstream benchmark_stream(FLAGS_benchmarks);
     std::string name;
@@ -5399,6 +5400,7 @@ class Benchmark {
         s = db_with_cfh->db->Get(options, db_with_cfh->GetCfh(key_rand), key,
                                  &pinnable_val, ts_ptr);
       } else {
+        //sleep(2000); // Signal.Jin
         s = db_with_cfh->db->Get(options,
                                  db_with_cfh->db->DefaultColumnFamily(), key,
                                  &pinnable_val, ts_ptr);

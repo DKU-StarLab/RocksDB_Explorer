@@ -222,6 +222,7 @@ bool GetContext::SaveValue(const ParsedInternalKey& parsed_key,
   assert(matched);
   assert((state_ != kMerge && parsed_key.type != kTypeMerge) ||
          merge_context_ != nullptr);
+
   if (ucmp_->EqualWithoutTimestamp(parsed_key.user_key, user_key_)) {
     *matched = true;
     // If the value is not in the snapshot, skip it
@@ -263,6 +264,7 @@ bool GetContext::SaveValue(const ParsedInternalKey& parsed_key,
             if (LIKELY(pinnable_val_ != nullptr)) {
               if (LIKELY(value_pinner != nullptr)) {
                 // If the backing resources for the value are provided, pin them
+                fprintf(stdout, "PinSlice\n"); // Signal.Jin
                 pinnable_val_->PinSlice(value, value_pinner);
               } else {
                 TEST_SYNC_POINT_CALLBACK("GetContext::SaveValue::PinSelf",

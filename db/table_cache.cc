@@ -452,6 +452,9 @@ Status TableCache::Get(const ReadOptions& options,
       }
     }
     if (s.ok()) {
+      if (skip_filters == true)
+        fprintf(stdout, "skip_filters is true\n"); // Signal.Jin
+
       get_context->SetReplayLog(row_cache_entry);  // nullptr if no cache.
       s = t->Get(options, k, get_context, prefix_extractor, skip_filters);
       //printf("After Get from block_based_table_reader.cc\n"); // Signal.Jin

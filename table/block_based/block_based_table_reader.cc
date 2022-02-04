@@ -104,6 +104,7 @@ Status ReadBlockFromFile(
       file, prefetch_buffer, footer, options, handle, &contents, ioptions,
       do_uncompress, maybe_compressed, block_type, uncompression_dict,
       cache_options, memory_allocator, nullptr, for_compaction);
+  //fprintf(stdout, "file_->Read\n"); // Signal.Jin
   Status s = block_fetcher.ReadBlockContents();
   if (s.ok()) {
     result->reset(BlocklikeTraits<TBlocklike>::Create(
@@ -1931,6 +1932,7 @@ Status BlockBasedTable::RetrieveBlock(
   {
     StopWatch sw(rep_->ioptions.clock, rep_->ioptions.stats,
                  READ_BLOCK_GET_MICROS);
+    //fprintf(stdout, "ReadBlockFromFile\n"); // Signal.Jin
     s = ReadBlockFromFile(
         rep_->file.get(), prefetch_buffer, rep_->footer, ro, handle, &block,
         rep_->ioptions, do_uncompress, maybe_compressed, block_type,
@@ -2296,6 +2298,10 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   FilterBlockReader* const filter =
       !skip_filters ? rep_->filter.get() : nullptr;
 
+  if (filter == nullptr) {
+    printf("filter is a nullptr\n"); // Signal.Jin
+  }
+
   // First check the full filter
   // If full filter not useful, Then go into each block
   uint64_t tracing_get_id = get_context->get_tracing_get_id();
@@ -2326,10 +2332,11 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
       need_upper_bound_check = PrefixExtractorChanged(
           rep_->table_properties.get(), prefix_extractor);
     }
+    printf("NewIndexIterator\n"); // Signal.Jin
     auto iiter =
         NewIndexIterator(read_options, need_upper_bound_check, &iiter_on_stack,
                          get_context, &lookup_context);
-    printf("NewIndexIterator\n"); // Signal.Jin
+    
     std::unique_ptr<InternalIteratorBase<IndexValue>> iiter_unique_ptr;
     if (iiter != &iiter_on_stack) {
       iiter_unique_ptr.reset(iiter);
@@ -2381,11 +2388,12 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
         block_get_flag = 0;
         retrieve_get_flag = 1;
       }
+      printf("NewDataBlockIterator\n"); // Signal.Jin
       NewDataBlockIterator<DataBlockIter>(
           read_options, v.handle, &biter, BlockType::kData, get_context,
           &lookup_data_block_context,
           /*s=*/Status(), /*prefetch_buffer*/ nullptr);
-      printf("NewDataBlockIterator\n"); // Signal.Jin
+      
       if (no_io && biter.status().IsIncomplete()) {
         // couldn't get block from block_cache
         // Update Saver.state to Found because we are only looking for
@@ -2418,7 +2426,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
           if (!pik_status.ok()) {
             s = pik_status;
           }
-
+          // If there is actually data(value), it is saved here via SaveValue() - Signal.Jin 
           if (!get_context->SaveValue(
                   parsed_key, biter.value(), &matched,
                   biter.IsValuePinned() ? &biter : nullptr)) {

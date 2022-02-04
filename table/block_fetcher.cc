@@ -249,10 +249,10 @@ IOStatus BlockFetcher::ReadBlockContents() {
         PrepareBufferForBlockFromFile();
         PERF_TIMER_GUARD(block_read_time);
         //start = clock(); // Signal.Jin
+        //fprintf(stdout, "file_->Read : %lu\n", handle_.offset()); // Signal.Jin
         io_status_ =
             file_->Read(opts, handle_.offset(), block_size_with_trailer_,
                         &slice_, used_buf_, nullptr, for_compaction_);
-        printf("file_->Read\n"); // Signal.Jin
         //end = clock();
         //fprintf(stdout, "Offset = %lu, Time = %lf\n", handle_.offset(), (double)(end-start)); // Signal.Jin
         PERF_COUNTER_ADD(block_read_count, 1);

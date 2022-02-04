@@ -1927,7 +1927,8 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     StopWatchNano timer(clock_, timer_enabled /* auto_start */);
 
     fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
-    
+    fprintf(stdout, "table_cache->Get\n"); // Signal.Jin
+
     *status = table_cache_->Get(
         read_options, *internal_comparator(), *f->file_metadata, ikey,
         &get_context, mutable_cf_options_.prefix_extractor.get(),
@@ -1943,8 +1944,6 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     if (!status->ok()) {
       return;
     }
-
-    printf("table_cache->Get\n"); // Signal.Jin
 
     // report the counters before returning
     if (get_context.State() != GetContext::kNotFound &&

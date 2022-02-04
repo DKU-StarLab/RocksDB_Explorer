@@ -580,7 +580,7 @@ IOStatus PosixRandomAccessFile::Read(uint64_t offset, size_t n,
     assert(IsSectorAligned(n, GetRequiredBufferAlignment()));
     assert(IsSectorAligned(scratch, GetRequiredBufferAlignment()));
   }
-  printf("Random-Read\n"); // Signal.Jin
+  //printf("Random-Read\n"); // Signal.Jin
   IOStatus s;
   ssize_t r = -1;
   size_t left = n;

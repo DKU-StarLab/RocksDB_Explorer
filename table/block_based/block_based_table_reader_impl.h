@@ -52,6 +52,7 @@ TBlockIter* BlockBasedTable::NewDataBlockIterator(
                                       : UncompressionDict::GetEmptyDict();
 
   CachableEntry<Block> block;
+  //fprintf(stdout, "DataBlock - RetrieveBlock\n"); // Signal.Jin
   s = RetrieveBlock(prefetch_buffer, ro, handle, dict, &block, block_type,
                     get_context, lookup_context, for_compaction,
                     /* use_cache */ true);
