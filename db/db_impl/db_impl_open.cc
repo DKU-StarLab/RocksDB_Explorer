@@ -1625,7 +1625,7 @@ Status DBImpl::Open(const DBOptions& db_options, const std::string& dbname,
       impl->logs_.emplace_back(new_log_number, new_log);
     }
 
-    if (s.ok()) {
+    if (s.ok()) { // Setting handles will be important for anlysis RocksDB - Signal.Jin
       // set column family handles
       for (auto cf : column_families) {
         auto cfd =

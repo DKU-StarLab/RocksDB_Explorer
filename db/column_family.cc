@@ -49,7 +49,8 @@ ColumnFamilyHandleImpl::ColumnFamilyHandleImpl(
     ColumnFamilyData* column_family_data, DBImpl* db, InstrumentedMutex* mutex)
     : cfd_(column_family_data), db_(db), mutex_(mutex) {
   if (cfd_ != nullptr) {
-    cfd_->Ref();
+    cfd_->Ref(); // How to deal Ref() function ?? - Signal.Jin 
+                 // Where do manage ref_ ?? - Signal.Jin
   }
 }
 
