@@ -897,6 +897,8 @@ bool MemTable::Get(const LookupKey& key, std::string* value,
   bool merge_in_progress = s->IsMergeInProgress();
   bool may_contain = true;
   size_t ts_sz = GetInternalKeyComparator().user_comparator()->timestamp_size();
+  
+  // From here, lkey(LookupKey) is used as user_key_without_ts - Signal.Jin
   Slice user_key_without_ts = StripTimestampFromUserKey(key.user_key(), ts_sz);
   if (bloom_filter_) {
     // when both memtable_whole_key_filtering and prefix_extractor_ are set,
@@ -918,7 +920,7 @@ bool MemTable::Get(const LookupKey& key, std::string* value,
   } else {
     if (bloom_filter_) {
       PERF_COUNTER_ADD(bloom_memtable_hit_count, 1);
-    }
+    } // In default, excute GetFromTable function - Signal.Jin
     GetFromTable(key, *max_covering_tombstone_seq, do_merge, callback,
                  is_blob_index, value, timestamp, s, merge_context, seq,
                  &found_final_value, &merge_in_progress);
@@ -959,7 +961,7 @@ void MemTable::GetFromTable(const LookupKey& key,
   saver.is_blob_index = is_blob_index;
   saver.do_merge = do_merge;
   saver.allow_data_in_errors = moptions_.allow_data_in_errors;
-  table_->Get(key, &saver, SaveValue);
+  table_->Get(key, &saver, SaveValue); // In default, Excute Get() function (skiplistrep) - Maybe
   *seq = saver.seq;
 }
 

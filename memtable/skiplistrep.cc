@@ -81,6 +81,7 @@ public:
           bool (*callback_func)(void* arg, const char* entry)) override {
    SkipListRep::Iterator iter(&skip_list_);
    Slice dummy_slice;
+   // When seek from memtable or immutable memtable, it will through here - Signal.Jin
    for (iter.Seek(dummy_slice, k.memtable_key().data());
         iter.Valid() && callback_func(callback_args, iter.key()); iter.Next()) {
    }
@@ -129,6 +130,7 @@ public:
     void Seek(const Slice& user_key, const char* memtable_key) override {
       if (memtable_key != nullptr) {
         iter_.Seek(memtable_key);
+        // In default, execute Seek() function - Signal.Jin
       } else {
         iter_.Seek(EncodeKey(&tmp_, user_key));
       }

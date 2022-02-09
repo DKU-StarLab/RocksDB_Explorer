@@ -2988,10 +2988,10 @@ class Benchmark {
         if (i == 7) { // Signal.Jin - Key pattern Control
           //printf("pos = %d\n", pos[i]);
         }
-        for (int j = 0; j < bytes_to_fill; ++j) {
+        /*for (int j = 0; j < bytes_to_fill; ++j) {
           fprintf(stdout, "%d ", pos[j]);
         }
-        printf("\n"); // Signal.Jin - Check Key Data
+        printf("\n");*/ // Signal.Jin - Check Key Data
       }
     } else {
       memcpy(pos, static_cast<void*>(&v), bytes_to_fill);

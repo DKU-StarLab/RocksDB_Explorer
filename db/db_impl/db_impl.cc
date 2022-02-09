@@ -1767,15 +1767,16 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   // s is both in/out. When in, s could either be OK or MergeInProgress.
   // merge_operands will contain the sequence of merges in the latter case.
   LookupKey lkey(key, snapshot, read_options.timestamp);
+  // From here, key variable is used as lkey - Signal.Jin
   PERF_TIMER_STOP(get_snapshot_time);
-
+  // In default, skip_memtable is false - Signal.Jin
   bool skip_memtable = (read_options.read_tier == kPersistedTier &&
                         has_unpersisted_data_.load(std::memory_order_relaxed));
   bool done = false;
   std::string* timestamp = ts_sz > 0 ? get_impl_options.timestamp : nullptr;
   if (!skip_memtable) {
     // Get value associated with key
-    if (get_impl_options.get_value) {
+    if (get_impl_options.get_value) { // In default, Check for memtable or immutable memtable key - Signal.Jin
       if (sv->mem->Get(lkey, get_impl_options.value->GetSelf(), timestamp, &s,
                        &merge_context, &max_covering_tombstone_seq,
                        read_options, get_impl_options.callback,
