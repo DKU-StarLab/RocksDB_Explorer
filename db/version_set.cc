@@ -162,10 +162,10 @@ class FilePicker {
 
   FdWithKeyRange* GetNextFile() {
 
-  if (DB_READ_FLOW == 1 && sst_get_flag == 1) {
-    fprintf(stdout, "  [7]        \t|     GetNextFile()     \t\t| version_set.cc (line 166)\n"); // Signal.Jin
-    sst_get_flag = 0;
-  }
+    if (DB_READ_FLOW == 1 && sst_get_flag == 1) {
+      fprintf(stdout, "  [7]        \t|     GetNextFile()     \t\t| version_set.cc (line 166)\n"); // Signal.Jin
+      sst_get_flag = 0;
+    }
 
     while (!search_ended_) {  // Loops over different levels.
       while (curr_index_in_curr_level_ < curr_file_level_->num_files) {
@@ -1904,14 +1904,25 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
   if (merge_operator_) {
     pinned_iters_mgr.StartPinning();
   }
-
+  // Check time for pick file(sstable) with metadata - Signal.Jin
+  struct timeval s_time, e_time;
+  double r_time;
+  gettimeofday(&s_time, NULL);
   FilePicker fp(
       storage_info_.files_, user_key, ikey, &storage_info_.level_files_brief_,
       storage_info_.num_non_empty_levels_, &storage_info_.file_indexer_,
       user_comparator(), internal_comparator());
   FdWithKeyRange* f = fp.GetNextFile();
+  gettimeofday(&e_time, NULL);
+  r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+  fprintf(stdout, "FilePicker time = %.2lf\n", r_time); // Signal.Jin
   //printf("FilePicker\n"); // Signal.Jin
-  while (f != nullptr) { // Read All Files - Signal.Jin
+  /*
+    Up to this point, it is a task to find out which sstable range
+    the user_key belongs to and retrieve the correspoding file meta
+    data information - Signal.Jin
+  */
+  while (f != nullptr) { // Read Files which may have user_key - Signal.Jin
     if (*max_covering_tombstone_seq > 0) {
       // The remaining files we look at will only contain covered keys, so we
       // stop here.
@@ -1926,8 +1937,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         get_perf_context()->per_level_perf_context_enabled;
     StopWatchNano timer(clock_, timer_enabled /* auto_start */);
 
-    fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
-    fprintf(stdout, "table_cache->Get\n"); // Signal.Jin
+    //fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
 
     *status = table_cache_->Get(
         read_options, *internal_comparator(), *f->file_metadata, ikey,
@@ -1936,6 +1946,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         IsFilterSkipped(static_cast<int>(fp.GetHitFileLevel()),
                         fp.IsHitFileLastInLevel()),
         fp.GetHitFileLevel(), max_file_size_for_l0_meta_pin_);
+    //fprintf(stdout, "table_cache->Get\n"); // Signal.Jin
     // TODO: examine the behavior for corrupted key
     if (timer_enabled) {
       PERF_COUNTER_BY_LEVEL_ADD(get_from_table_nanos, timer.ElapsedNanos(),

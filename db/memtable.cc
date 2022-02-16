@@ -913,6 +913,10 @@ bool MemTable::Get(const LookupKey& key, std::string* value,
     }
   }
   
+  if (bloom_filter_ == nullptr) {
+    //printf("NULL\n"); // bloom_filter is nullptr - Signal.Jin
+  }
+
   if (bloom_filter_ && !may_contain) {
     // iter is null if prefix bloom says the key does not exist
     PERF_COUNTER_ADD(bloom_memtable_miss_count, 1);

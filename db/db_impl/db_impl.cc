@@ -1777,11 +1777,13 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   if (!skip_memtable) {
     // Get value associated with key
     if (get_impl_options.get_value) { // In default, Check for memtable or immutable memtable key - Signal.Jin
+      fprintf(stdout, "\n[RandomRead Memtable Get Start]\n");
       if (sv->mem->Get(lkey, get_impl_options.value->GetSelf(), timestamp, &s,
                        &merge_context, &max_covering_tombstone_seq,
                        read_options, get_impl_options.callback,
                        get_impl_options.is_blob_index)) { // Read from MemTable - Signal.Jin
         done = true;
+        fprintf(stdout, "[Get in Memtable]\n");
         get_impl_options.value->PinSelf();
         RecordTick(stats_, MEMTABLE_HIT);
       } else if ((s.ok() || s.IsMergeInProgress()) &&
@@ -1791,9 +1793,11 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
                               get_impl_options.callback,
                               get_impl_options.is_blob_index)) { // Read from Immutable MemTable - Signal.Jin
         done = true;
+        fprintf(stdout, "[Get in Immutable Memtable]\n");
         get_impl_options.value->PinSelf();
         RecordTick(stats_, MEMTABLE_HIT);
       }
+      fprintf(stdout, "[RandomRead Memtable Get End]\n\n");
     } else {
       // Get Merge Operands associated with key, Merge Operands should not be
       // merged and raw values should be returned to the user.
@@ -1817,7 +1821,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   }
   if (!done) {
     PERF_TIMER_GUARD(get_from_output_files_time);
-    printf("RandomRead Get SSTable Start\n"); // Signal.Jin
+    printf("\n[RandomRead Get SSTable Start]\n"); // Signal.Jin
     sv->current->Get(
         read_options, lkey, get_impl_options.value, timestamp, &s,
         &merge_context, &max_covering_tombstone_seq,
@@ -1827,7 +1831,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
         get_impl_options.get_value ? get_impl_options.is_blob_index : nullptr,
         get_impl_options.get_value); // Read from Database (SSTable) - Signal.Jin
     RecordTick(stats_, MEMTABLE_MISS);
-    printf("RandomRead Get SSTable End\n"); // Signal.Jin
+    printf("[RandomRead Get SSTable End]\n\n"); // Signal.Jin
   }
 
   {

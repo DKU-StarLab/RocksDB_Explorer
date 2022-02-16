@@ -118,7 +118,6 @@ class ForwardLevelIterator : public InternalIterator {
   }
   void Seek(const Slice& internal_key) override {
     assert(file_iter_ != nullptr);
-
     // This deviates from the usual convention for InternalIterator::Seek() in
     // that it doesn't discard pre-existing error status. That's because this
     // Seek() is only supposed to be called immediately after SetFileIndex()
