@@ -39,7 +39,7 @@ Status BlockBasedTable::IndexReaderCommon::GetOrReadIndexBlock(
 
   if (!index_block_.IsEmpty()) {
     index_block->SetUnownedValue(index_block_.GetValue());
-    fprintf(stdout, "Index_block_ is not Empty\n");
+    //fprintf(stdout, "Index_block_ is not Empty\n");
     return Status::OK();
   }
 
@@ -47,7 +47,7 @@ Status BlockBasedTable::IndexReaderCommon::GetOrReadIndexBlock(
   if (no_io) {
     read_options.read_tier = kBlockCacheTier;
   }
-
+  
   return ReadIndexBlock(table_, /*prefetch_buffer=*/nullptr, read_options,
                         cache_index_blocks(), get_context, lookup_context,
                         index_block);

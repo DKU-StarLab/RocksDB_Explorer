@@ -14,6 +14,7 @@ void PartitionedIndexIterator::Seek(const Slice& target) { SeekImpl(&target); }
 void PartitionedIndexIterator::SeekToFirst() { SeekImpl(nullptr); }
 
 void PartitionedIndexIterator::SeekImpl(const Slice* target) {
+  printf("PartitionedIndexIterator::SeekImpl\n"); // Signal.Jin
   SavePrevIndexValue();
 
   if (target) {

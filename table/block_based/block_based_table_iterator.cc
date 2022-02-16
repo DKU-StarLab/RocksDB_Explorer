@@ -56,7 +56,6 @@ void BlockBasedTableIterator::SeekImpl(const Slice* target) {
       return;
     }
   }
-
   IndexValue v = index_iter_->value();
   const bool same_block = block_iter_points_to_real_block_ &&
                           v.handle.offset() == prev_block_offset_;

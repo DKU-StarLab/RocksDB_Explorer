@@ -48,7 +48,7 @@ InternalIteratorBase<IndexValue>* BinarySearchIndexReader::NewIterator(
   CachableEntry<Block> index_block;
   //printf("break BS\n"); // Signal.Jin
   if (index_block.IsEmpty()){
-    fprintf(stdout, "Index block is Empty\n");
+    //fprintf(stdout, "Index block is Empty\n");
   } // Signal.Jin
   const Status s =
       GetOrReadIndexBlock(no_io, get_context, lookup_context, &index_block);
@@ -64,7 +64,7 @@ InternalIteratorBase<IndexValue>* BinarySearchIndexReader::NewIterator(
   Statistics* kNullStats = nullptr;
   // We don't return pinned data from index blocks, so no need
   // to set `block_contents_pinned`.
-  printf("NewIndexIterator-Block\n"); // Signal.Jin
+  //printf("NewIndexIterator-Block\n"); // Signal.Jin
   auto it = index_block.GetValue()->NewIndexIterator(
       internal_comparator()->user_comparator(),
       rep->get_global_seqno(BlockType::kIndex), iter, kNullStats, true,

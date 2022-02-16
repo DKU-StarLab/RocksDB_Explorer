@@ -1029,7 +1029,7 @@ IndexBlockIter* Block::NewIndexIterator(
     ret_iter->Invalidate(Status::OK());
     return ret_iter;
   } else {
-    fprintf(stdout, "Initialize\n"); // Signal.Jin
+    //fprintf(stdout, "Initialize\n"); // Signal.Jin
     BlockPrefixIndex* prefix_index_ptr =
         total_order_seek ? nullptr : prefix_index;
     ret_iter->Initialize(raw_ucmp, data_, restart_offset_, num_restarts_,

@@ -1932,7 +1932,6 @@ Status BlockBasedTable::RetrieveBlock(
   {
     StopWatch sw(rep_->ioptions.clock, rep_->ioptions.stats,
                  READ_BLOCK_GET_MICROS);
-    //fprintf(stdout, "ReadBlockFromFile\n"); // Signal.Jin
     s = ReadBlockFromFile(
         rep_->file.get(), prefetch_buffer, rep_->footer, ro, handle, &block,
         rep_->ioptions, do_uncompress, maybe_compressed, block_type,
@@ -2214,6 +2213,7 @@ bool BlockBasedTable::FullFilterKeyMayMatch(
     //printf("Return Here?\n"); // Yes - Signal.Jin
     return true;
   }
+  //printf("fullfilter check\n");
   Slice user_key = ExtractUserKey(internal_key);
   const Slice* const const_ikey_ptr = &internal_key;
   bool may_match = true;
@@ -2290,6 +2290,9 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   assert(get_context != nullptr);
   Status s;
   const bool no_io = read_options.read_tier == kBlockCacheTier;
+  // Check time for Index, Data block - Signal.Jin
+  struct timeval s_time, e_time;
+  double r_time;
 
   if (DB_READ_FLOW == 1 && block_get_flag == 1) {
     fprintf(stdout, "  [9]        \t|      Get() {    \t\t\t| block_based_table_reader.cc (line 2265)\n"); // Signal.Jin
@@ -2299,7 +2302,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
       !skip_filters ? rep_->filter.get() : nullptr;
 
   if (filter == nullptr) {
-    printf("filter is a nullptr\n"); // Signal.Jin
+    //printf("filter is a nullptr\n"); // Signal.Jin
   }
 
   // First check the full filter
@@ -2332,11 +2335,15 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
       need_upper_bound_check = PrefixExtractorChanged(
           rep_->table_properties.get(), prefix_extractor);
     }
-    printf("NewIndexIterator\n"); // Signal.Jin
+    
+    gettimeofday(&s_time, NULL);
     auto iiter =
         NewIndexIterator(read_options, need_upper_bound_check, &iiter_on_stack,
                          get_context, &lookup_context);
-    
+    gettimeofday(&e_time, NULL);
+    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+    fprintf(stdout, "Index Iterator time = %.2lf\n", r_time); // Signal.Jin
+    //printf("NewIndexIterator\n"); // Signal.Jin
     std::unique_ptr<InternalIteratorBase<IndexValue>> iiter_unique_ptr;
     if (iiter != &iiter_on_stack) {
       iiter_unique_ptr.reset(iiter);
@@ -2355,7 +2362,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
                                prefix_extractor, v.handle.offset(), no_io,
                                /*const_ikey_ptr=*/nullptr, get_context,
                                &lookup_context);
-      //printf("%d\n", not_exist_in_filter); // Signal.Jin
+      //printf("%d\n", not_exist_in_filter); // Normally false - Signal.Jin
       if (not_exist_in_filter) {
         // Not found
         // TODO: think about interaction with Merge. If a user key cannot
@@ -2388,12 +2395,16 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
         block_get_flag = 0;
         retrieve_get_flag = 1;
       }
-      printf("NewDataBlockIterator\n"); // Signal.Jin
+      //printf("NewDataBlockIterator\n"); // Signal.Jin
+      gettimeofday(&s_time, NULL);
       NewDataBlockIterator<DataBlockIter>(
           read_options, v.handle, &biter, BlockType::kData, get_context,
           &lookup_data_block_context,
           /*s=*/Status(), /*prefetch_buffer*/ nullptr);
-      
+      gettimeofday(&e_time, NULL);
+      r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+      fprintf(stdout, "Data Iterator time = %.2lf\n", r_time); // Signal.Jin
+
       if (no_io && biter.status().IsIncomplete()) {
         // couldn't get block from block_cache
         // Update Saver.state to Found because we are only looking for
@@ -2408,7 +2419,7 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
       //printf("Before SeekForGet\n");
       bool may_exist = biter.SeekForGet(key);
       //printf("%s\n", key.data());
-      //printf("%d\n\n", may_exist); // Signal.Jin
+      //printf("%d\n\n", may_exist); // true - Signal.Jin
       // If user-specified timestamp is supported, we cannot end the search
       // just because hash index lookup indicates the key+ts does not exist.
       if (!may_exist && ts_sz == 0) {
