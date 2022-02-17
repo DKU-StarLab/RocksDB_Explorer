@@ -465,11 +465,15 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
   // to exit early on equality and the result wouldn't even be correct.
   // A concurrent insert might occur after FindLessThan(key) but before
   // we get a chance to call Next(0).
+  int count_skiplist = 0; // Check how many seek ops execution - Signal.Jin
+  
   Node* x = head_;
   int level = GetMaxHeight() - 1;
+  //printf("level = %d\n", level);
   Node* last_bigger = nullptr;
   const DecodedKey key_decoded = compare_.decode_key(key);
   while (true) {
+    count_skiplist++; // Signal.Jin
     Node* next = x->Next(level);
     if (next != nullptr) {
       PREFETCH(next->Next(level), 0, 1);
@@ -482,6 +486,7 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
                   ? 1
                   : compare_(next->Key(), key_decoded);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
+      fprintf(stdout, "Skiplist Loop count = %d\n", count_skiplist); // Signal.Jin
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
