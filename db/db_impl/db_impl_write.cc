@@ -166,6 +166,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
   }
 
   if (immutable_db_options_.enable_pipelined_write) {
+    //fprintf(stdout, "PipelinedWriteImpl\n"); // Signal.Jin
     return PipelinedWriteImpl(write_options, my_batch, callback, log_used,
                               log_ref, disable_memtable, seq_used);
   } // WriteImpl function will be done. Call PiplelinedWriteImpl function - Signal.Jin
@@ -601,6 +602,7 @@ Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
         immutable_db_options_.allow_concurrent_memtable_write) {
       write_thread_.LaunchParallelMemTableWriters(&memtable_write_group);
     } else { // Put into Memtable with Key-Value pair - Signal.Jin
+      //fprintf(stdout, "InsertInto\n");
       memtable_write_group.status = WriteBatchInternal::InsertInto(
           memtable_write_group, w.sequence, column_family_memtables_.get(),
           &flush_scheduler_, &trim_history_scheduler_,

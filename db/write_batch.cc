@@ -617,7 +617,7 @@ Status WriteBatchInternal::Iterate(const WriteBatch* wb,
       case kTypeValue:
         assert(wb->content_flags_.load(std::memory_order_relaxed) &
                (ContentFlags::DEFERRED | ContentFlags::HAS_PUT));
-        s = handler->PutCF(column_family, key, value);
+        s = handler->PutCF(column_family, key, value); // Memtable Put (Key, Value, ...) - Signal.Jin
         if (LIKELY(s.ok())) {
           empty_batch = false;
           found++;
@@ -1618,6 +1618,7 @@ class MemTableInserter : public WriteBatch::Handler {
     // any kind of transactions including the ones that use seq_per_batch
     assert(!seq_per_batch_ || !moptions->inplace_update_support);
     if (!moptions->inplace_update_support) { // Last section to put data into memtable - Signal.Jin
+      fprintf(stdout, "Skip mem->Add\n"); // Signal.Jin
       ret_status =
           mem->Add(sequence_, value_type, key, value, kv_prot_info,
                    concurrent_memtable_writes_, get_post_process_info(mem),
