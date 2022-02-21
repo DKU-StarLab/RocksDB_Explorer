@@ -1819,6 +1819,10 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
       return s;
     }
   }
+  // time check for total Get time at SST - Signal.Jin
+  struct timeval s_time, e_time;
+  double r_time;
+  gettimeofday(&s_time, NULL);
   if (!done) {
     PERF_TIMER_GUARD(get_from_output_files_time);
     printf("\n[RandomRead Get SSTable Start]\n"); // Signal.Jin
@@ -1833,6 +1837,9 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
     RecordTick(stats_, MEMTABLE_MISS);
     printf("[RandomRead Get SSTable End]\n\n"); // Signal.Jin
   }
+  gettimeofday(&e_time, NULL);
+  r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+  fprintf(stdout, "SST seek time = %.2lf\n", r_time); // Signal.Jin
 
   {
     PERF_TIMER_GUARD(get_post_process_time);

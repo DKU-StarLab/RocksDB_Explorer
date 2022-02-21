@@ -1922,6 +1922,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     the user_key belongs to and retrieve the correspoding file meta
     data information - Signal.Jin
   */
+  
   while (f != nullptr) { // Read Files which may have user_key - Signal.Jin
     if (*max_covering_tombstone_seq > 0) {
       // The remaining files we look at will only contain covered keys, so we
@@ -1938,7 +1939,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     StopWatchNano timer(clock_, timer_enabled /* auto_start */);
 
     //fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
-
+    gettimeofday(&s_time, NULL);
     *status = table_cache_->Get(
         read_options, *internal_comparator(), *f->file_metadata, ikey,
         &get_context, mutable_cf_options_.prefix_extractor.get(),
@@ -1946,6 +1947,9 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         IsFilterSkipped(static_cast<int>(fp.GetHitFileLevel()),
                         fp.IsHitFileLastInLevel()),
         fp.GetHitFileLevel(), max_file_size_for_l0_meta_pin_);
+    gettimeofday(&e_time, NULL);
+    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+    fprintf(stdout, "table_cache_->Get time = %.2lf\n", r_time); // Signal.Jin
     //fprintf(stdout, "table_cache->Get\n"); // Signal.Jin
     // TODO: examine the behavior for corrupted key
     if (timer_enabled) {

@@ -397,7 +397,21 @@ inline void InlineSkipList<Comparator>::Iterator::Prev() {
 
 template <class Comparator>
 inline void InlineSkipList<Comparator>::Iterator::Seek(const char* target) {
+  /*struct timeval s_time, e_time;
+  double r_time;
+  gettimeofday(&s_time, NULL);
   node_ = list_->FindGreaterOrEqual(target);
+  gettimeofday(&e_time, NULL);
+  r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+  fprintf(stdout, "Skiplist Find time = %.2lf\n", r_time);*/ // Signal.Jin
+
+  struct timespec s_time, e_time;
+  double r_time;
+  clock_gettime(CLOCK_MONOTONIC, &s_time);
+  node_ = list_->FindGreaterOrEqual(target);
+  clock_gettime(CLOCK_MONOTONIC, &e_time);
+  r_time = (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+  fprintf(stdout, "Skiplist Find time = %.2lf\n", r_time); // Signal.Jin
 }
 
 template <class Comparator>
@@ -670,6 +684,7 @@ InlineSkipList<Comparator>::AllocateSpliceOnHeap() {
 
 template <class Comparator>
 bool InlineSkipList<Comparator>::Insert(const char* key) {
+  //fprintf(stdout, "Skiplist Insert\n"); // Signal.Jin
   return Insert<false>(key, seq_splice_, false);
 }
 
