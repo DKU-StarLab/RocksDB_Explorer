@@ -577,8 +577,8 @@ Status MemTable::Add(SequenceNumber s, ValueType type,
   size_t ts_sz = GetInternalKeyComparator().user_comparator()->timestamp_size();
   Slice key_without_ts = StripTimestampFromUserKey(key, ts_sz);
 
-  struct timespec s_time, e_time;
-  double r_time;
+  //struct timespec s_time, e_time;
+  //double r_time;
 
   if (!allow_concurrent) {
     //fprintf(stdout, "Allow\n"); // Signal.Jin
@@ -592,11 +592,11 @@ Status MemTable::Add(SequenceNumber s, ValueType type,
       }
     } else {
       //fprintf(stdout, "InsertKey\n"); // Signal.Jin
-      clock_gettime(CLOCK_MONOTONIC, &s_time);
+      //clock_gettime(CLOCK_MONOTONIC, &s_time);
       bool res = table->InsertKey(handle);
-      clock_gettime(CLOCK_MONOTONIC, &e_time);
-      r_time = (e_time.tv_nsec - s_time.tv_nsec) * 0.001;
-      fprintf(stdout, "Skiplist Add time = %.2lf\n", r_time); // Signal.Jin
+      //clock_gettime(CLOCK_MONOTONIC, &e_time);
+      //r_time = (e_time.tv_nsec - s_time.tv_nsec) * 0.001;
+      //fprintf(stdout, "Skiplist Add time = %.2lf\n", r_time); // Signal.Jin
       
       if (UNLIKELY(!res)) {
         return Status::TryAgain("key+seq exists");

@@ -1310,6 +1310,7 @@ IOStatus PosixWritableFile::Flush(const IOOptions& /*opts*/,
 
 IOStatus PosixWritableFile::Sync(const IOOptions& /*opts*/,
                                  IODebugContext* /*dbg*/) {
+  //printf("fdatasync\n"); // Do fdatasync - Signal.Jin
   if (fdatasync(fd_) < 0) {
     return IOError("While fdatasync", filename_, errno);
   }

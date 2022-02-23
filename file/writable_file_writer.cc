@@ -284,6 +284,7 @@ IOStatus WritableFileWriter::Flush() {
       assert(offset_sync_to >= last_sync_size_);
       if (offset_sync_to > 0 &&
           offset_sync_to - last_sync_size_ >= bytes_per_sync_) {
+        // Do not Here in default options (bytes_per_sync = 0 (false)) - Signal.Jin
         s = RangeSync(last_sync_size_, offset_sync_to - last_sync_size_);
         last_sync_size_ = offset_sync_to;
       }
@@ -317,6 +318,7 @@ IOStatus WritableFileWriter::Sync(bool use_fsync) {
   }
   TEST_KILL_RANDOM("WritableFileWriter::Sync:0");
   if (!use_direct_io() && pending_sync_) {
+    //printf("SyncInternal\n"); // Do Here in default - Signal.Jin
     s = SyncInternal(use_fsync);
     if (!s.ok()) {
       return s;

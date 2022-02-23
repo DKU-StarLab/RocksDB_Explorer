@@ -129,18 +129,18 @@ public:
     // Advance to the first entry with a key >= target
     void Seek(const Slice& user_key, const char* memtable_key) override {
       // Time check for memtable or immutable memtable seek key - Signal.Jin
-      struct timeval s_time, e_time;
-      double r_time;
-      gettimeofday(&s_time, NULL);
+      //struct timeval s_time, e_time;
+      //double r_time;
+      //gettimeofday(&s_time, NULL);
       if (memtable_key != nullptr) {
         iter_.Seek(memtable_key);
         // In default, execute Seek() function - Signal.Jin
       } else {
         iter_.Seek(EncodeKey(&tmp_, user_key));
       }
-      gettimeofday(&e_time, NULL);
-      r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
-      fprintf(stdout, "Skiplist seek time = %.2lf\n", r_time); // Signal.Jin
+      //gettimeofday(&e_time, NULL);
+      //r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
+      //fprintf(stdout, "Skiplist seek time = %.2lf\n", r_time); // Signal.Jin
     }
 
     // Retreat to the last entry with a key <= target
