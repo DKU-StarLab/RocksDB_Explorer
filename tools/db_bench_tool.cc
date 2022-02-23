@@ -144,7 +144,9 @@ DEFINE_string(
     "randomtransaction,"
     "randomreplacekeys,"
     "timeseries,"
-    "getmergeoperands",
+    "getmergeoperands,"
+
+    "testmemtable", // Test (write memtable and read data in memtable) - Signal.Jin
 
     "Comma-separated list of operations to run in the specified"
     " order. Available benchmarks:\n"
@@ -3158,6 +3160,9 @@ class Benchmark {
         } else {
           method = &Benchmark::WriteUniqueRandomDeterministic;
         }
+      } else if (name == "testmemtable") { // Signal.Jin
+        fresh_db = true;
+        method = &Benchmark::TestMemtable; 
       } else if (name == "fillseq") {
         fresh_db = true;
         method = &Benchmark::WriteSeq;
@@ -4494,6 +4499,10 @@ class Benchmark {
                            UNIQUE_RANDOM);
   }
 
+  void TestMemtable(ThreadState* thread) {
+    DoTestMemtable(thread);
+  }
+
   void WriteSeq(ThreadState* thread) {
     DoWrite(thread, SEQUENTIAL);
   }
@@ -4581,6 +4590,105 @@ class Benchmark {
     }
   }
 */
+  uint64_t GenerateTestPutKey(int cnt) { // Generate Test Key for DoTestMemtable() - Signal.Jin
+    uint64_t res = cnt;
+    if (cnt == 0) {
+      res = 1;
+      return res;
+    } else if (cnt == 1) {
+      res = 3;
+      return res;
+    } else {
+      res = res * 2 - 1;
+      return res;
+    }
+  }
+
+  uint64_t GenerateTestGetKey(int cnt) { // Generate Test Key for DoTestMemtable() - Signal.Jin
+    uint64_t res = cnt;
+    if (cnt == 0) {
+      return res;
+    } else {
+      res = res * 2;
+      return res;
+    }
+  }
+
+  void DoTestMemtable(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
+    ReadOptions options(FLAGS_verify_checksum, true);
+    RandomGenerator gen;
+    std::string value;
+    int64_t found = 0;
+    int get_weight = 0;
+    int put_weight = 0;
+    int64_t reads_done = 0;
+    int64_t writes_done = 0;
+
+    uint64_t gen_num_for_key = 0; // Control Generate Key number - Signal.Jin
+    int put_cnt = 0;
+    int get_cnt = 0;
+
+    Duration duration(FLAGS_duration, readwrites_);
+
+    std::unique_ptr<const char[]> key_guard;
+    Slice key = AllocateKey(&key_guard);
+
+    std::unique_ptr<char[]> ts_guard;
+    if (user_timestamp_size_ > 0) {
+      ts_guard.reset(new char[user_timestamp_size_]);
+    }
+
+    // The number of iterations is the larger of read_ or write_
+    while (!duration.Done(1)) {
+      DB* db = SelectDB(thread);
+      //printf("Key number = %d\n", dur_cnt);
+      //printf("Key number = %lu\n", gen_num_for_key);
+      if (get_weight == 0 && put_weight == 0) {
+        // one batch completed, reinitialize for next batch
+        get_weight = FLAGS_num * 0.2; /*FLAGS_readwritepercent*/
+        put_weight = FLAGS_num - get_weight;
+      }
+      if (put_weight > 0) {
+        // Generate Key pattern with loop count - Signal.Jin
+        gen_num_for_key = GenerateTestPutKey(put_cnt);
+        GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
+        put_cnt++;
+        // then do all the corresponding number of puts
+        // for all the gets we have done earlier
+        Status s = db->Put(write_options_, key, gen.Generate());
+        if (!s.ok()) {
+          fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+          ErrorExit();
+        }
+        put_weight--;
+        writes_done++;
+        thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+      } else if (get_weight > 0) {
+        // Generate Key pattern with loop count - Signal.Jin
+        gen_num_for_key = GenerateTestPutKey(get_cnt);
+        GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
+        get_cnt++;
+        Status s = db->Get(options, key, &value);
+        if (!s.ok() && !s.IsNotFound()) {
+          fprintf(stderr, "get error: %s\n", s.ToString().c_str());
+          // we continue after error rather than exiting so that we can
+          // find more errors if any
+        } else if (!s.IsNotFound()) {
+          found++;
+        }
+        get_weight--;
+        reads_done++;
+        thread->stats.FinishedOps(nullptr, db, 1, kRead);
+      }
+    }
+
+    char msg[100];
+    snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
+             " total:%" PRIu64 " found:%" PRIu64 ")",
+             reads_done, writes_done, readwrites_, found);
+    thread->stats.AddMessage(msg);
+  }
+
   void DoWrite(ThreadState* thread, WriteMode write_mode) {
     const int test_duration = write_mode == RANDOM ? FLAGS_duration : 0;
     const int64_t num_ops = writes_ == 0 ? num_ : writes_;
