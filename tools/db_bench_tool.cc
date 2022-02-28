@@ -4638,16 +4638,18 @@ class Benchmark {
       ts_guard.reset(new char[user_timestamp_size_]);
     }
 
+    // Generate Random Number
+    //srand(time(NULL));
+
     // The number of iterations is the larger of read_ or write_
     while (!duration.Done(1)) {
       DB* db = SelectDB(thread);
-      //printf("Key number = %d\n", dur_cnt);
-      //printf("Key number = %lu\n", gen_num_for_key);
       if (get_weight == 0 && put_weight == 0) {
         // one batch completed, reinitialize for next batch
         get_weight = FLAGS_num * 0.2; /*FLAGS_readwritepercent*/
         put_weight = FLAGS_num - get_weight;
       }
+      //gen_num_for_key = rand() % FLAGS_num; // Random Generate - Signal.Jin
       if (put_weight > 0) {
         // Generate Key pattern with loop count - Signal.Jin
         gen_num_for_key = GenerateTestPutKey(put_cnt);
