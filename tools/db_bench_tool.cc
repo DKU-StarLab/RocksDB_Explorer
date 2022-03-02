@@ -4639,7 +4639,12 @@ class Benchmark {
     }
 
     // Generate Random Number
-    //srand(time(NULL));
+    srand(time(NULL));
+    put_cnt = rand() % FLAGS_num;
+    get_cnt = put_cnt;
+
+    //struct timespec s_time, e_time;
+    //double r_time;
 
     // The number of iterations is the larger of read_ or write_
     while (!duration.Done(1)) {
@@ -4667,10 +4672,14 @@ class Benchmark {
         thread->stats.FinishedOps(nullptr, db, 1, kWrite);
       } else if (get_weight > 0) {
         // Generate Key pattern with loop count - Signal.Jin
-        gen_num_for_key = GenerateTestPutKey(get_cnt);
+        gen_num_for_key = GenerateTestGetKey(get_cnt);
         GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
         get_cnt++;
+        //clock_gettime(CLOCK_MONOTONIC, &s_time);
         Status s = db->Get(options, key, &value);
+        //clock_gettime(CLOCK_MONOTONIC, &e_time);
+        //r_time = (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+        //fprintf(stdout, "Skiplist Get time = %.2f\n", r_time); // Signal.Jin
         if (!s.ok() && !s.IsNotFound()) {
           fprintf(stderr, "get error: %s\n", s.ToString().c_str());
           // we continue after error rather than exiting so that we can

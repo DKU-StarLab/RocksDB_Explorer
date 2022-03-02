@@ -405,13 +405,19 @@ inline void InlineSkipList<Comparator>::Iterator::Seek(const char* target) {
   r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
   fprintf(stdout, "Skiplist Find time = %.2lf\n", r_time);*/ // Signal.Jin
 
+  FILE *fp_sk_find;
+  fp_sk_find = fopen("test.txt", "at");
+
   struct timespec s_time, e_time;
   double r_time;
+  long r2_time;
   clock_gettime(CLOCK_MONOTONIC, &s_time);
   node_ = list_->FindGreaterOrEqual(target);
   clock_gettime(CLOCK_MONOTONIC, &e_time);
   r_time = (e_time.tv_nsec - s_time.tv_nsec)*0.001;
-  fprintf(stdout, "Skiplist Find time = %.2lf\n", r_time); // Signal.Jin
+  r2_time = (e_time.tv_sec - s_time.tv_sec)*1000000000 + (e_time.tv_nsec - s_time.tv_nsec);
+  fprintf(fp_sk_find, "Skiplist Find time = %.2f, %ld\n", r_time, r2_time); // Signal.Jin
+  fclose(fp_sk_find);
 }
 
 template <class Comparator>
@@ -479,7 +485,10 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
   // to exit early on equality and the result wouldn't even be correct.
   // A concurrent insert might occur after FindLessThan(key) but before
   // we get a chance to call Next(0).
-  int count_skiplist = 0; // Check how many seek ops execution - Signal.Jin
+  //int count_skiplist = 0; // Check how many seek ops execution - Signal.Jin
+  
+  //struct timespec s_time, e_time;
+  //double r_time;
   
   Node* x = head_;
   int level = GetMaxHeight() - 1;
@@ -487,7 +496,7 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
   Node* last_bigger = nullptr;
   const DecodedKey key_decoded = compare_.decode_key(key);
   while (true) {
-    count_skiplist++; // Signal.Jin
+    //count_skiplist++; // Signal.Jin
     Node* next = x->Next(level);
     if (next != nullptr) {
       PREFETCH(next->Next(level), 0, 1);
@@ -496,11 +505,15 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
     assert(x == head_ || next == nullptr || KeyIsAfterNode(next->Key(), x));
     // Make sure we haven't overshot during our search
     assert(x == head_ || KeyIsAfterNode(key_decoded, x));
+    //clock_gettime(CLOCK_MONOTONIC, &s_time);
     int cmp = (next == nullptr || next == last_bigger)
                   ? 1
                   : compare_(next->Key(), key_decoded);
+    //clock_gettime(CLOCK_MONOTONIC, &e_time);
+    //r_time = (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    //fprintf(stdout, "Skiplist Compare time = %.2f\n", r_time); // Signal.Jin
     if (cmp == 0 || (cmp > 0 && level == 0)) {
-      fprintf(stdout, "Skiplist Loop count = %d\n", count_skiplist); // Signal.Jin
+      //fprintf(stdout, "Skiplist Loop count = %d\n", count_skiplist); // Signal.Jin
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
