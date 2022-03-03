@@ -406,7 +406,7 @@ inline void InlineSkipList<Comparator>::Iterator::Seek(const char* target) {
   fprintf(stdout, "Skiplist Find time = %.2lf\n", r_time);*/ // Signal.Jin
 
   FILE *fp_sk_find;
-  fp_sk_find = fopen("test.txt", "at");
+  fp_sk_find = fopen("find.txt", "at");
 
   struct timespec s_time, e_time;
   double r_time;

@@ -2092,11 +2092,17 @@ class Stats {
       reporter_agent_->ReportFinishedOps(num_ops);
     }
 
+    FILE *fp_test;
+    fp_test = fopen("time.txt", "at");
+
     /*Time Estimation with Gettimeofday() in RocksDB - Signal.Jin*/
-    /*uint64_t now_ = FLAGS_env->NowMicros();
+    uint64_t now_ = FLAGS_env->NowMicros();
     uint64_t micros_ = now_ - last_op_finish_;
-    printf("Write Time = %lu\n", micros_);
-    last_op_finish_ = now_;*/
+    if (op_type == kRead) {
+      fprintf(fp_test, "Get Time = %lu\n", micros_);
+    }
+    fclose(fp_test);
+    last_op_finish_ = now_;
 
     if (FLAGS_histogram) {
       uint64_t now = clock_->NowMicros();

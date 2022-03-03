@@ -1738,6 +1738,7 @@ class MemTableInserter : public WriteBatch::Handler {
       return PutCFImpl(column_family_id, key, value, kTypeValue,
                        &mem_kv_prot_info);
     }
+    // Default Put Operation through here. - Singal.Jin
     return PutCFImpl(column_family_id, key, value, kTypeValue,
                      nullptr /* kv_prot_info */);
   }
