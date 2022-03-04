@@ -490,6 +490,9 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
   //struct timespec s_time, e_time;
   //double r_time;
   
+  //FILE *fp_level;
+  //fp_level = fopen("skip_level.txt", "at");
+
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   //printf("level = %d\n", level);
@@ -514,6 +517,7 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
     //fprintf(stdout, "Skiplist Compare time = %.2f\n", r_time); // Signal.Jin
     if (cmp == 0 || (cmp > 0 && level == 0)) {
       //fprintf(stdout, "Skiplist Loop count = %d\n", count_skiplist); // Signal.Jin
+      //fclose(fp_level);
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
@@ -523,6 +527,7 @@ InlineSkipList<Comparator>::FindGreaterOrEqual(const char* key) const {
       last_bigger = next;
       level--;
     }
+    //fprintf(fp_level, "Skiplist level = %d\n", level);
   }
 }
 
