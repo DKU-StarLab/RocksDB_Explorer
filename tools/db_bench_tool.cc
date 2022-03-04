@@ -146,7 +146,8 @@ DEFINE_string(
     "timeseries,"
     "getmergeoperands,"
 
-    "testmemtable", // Test (write memtable and read data in memtable) - Signal.Jin
+    "testmemtableseq," // Test (write memtable and read data in memtable) - Signal.Jin
+    "testmemtablerand",
 
     "Comma-separated list of operations to run in the specified"
     " order. Available benchmarks:\n"
@@ -610,6 +611,10 @@ DEFINE_bool(memtable_whole_key_filtering, false,
             "Try to use whole key bloom filter in memtables.");
 DEFINE_bool(memtable_use_huge_page, false,
             "Try to use huge page in memtables.");
+
+DEFINE_bool(whole_key_filtering,
+            ROCKSDB_NAMESPACE::BlockBasedTableOptions().whole_key_filtering,
+            "Use whole keys (in addition to prefixes) in SST bloom filter."); // RocksDB New Options - Signal.Jin
 
 DEFINE_bool(use_existing_db, false, "If true, do not destroy the existing"
             " database.  If you set this flag and also specify a benchmark that"
@@ -1412,6 +1417,10 @@ DEFINE_int32(readahead_size, 0, "Iterator readahead size");
 DEFINE_bool(read_with_latest_user_timestamp, true,
             "If true, always use the current latest timestamp for read. If "
             "false, choose a random timestamp from the past.");
+
+DEFINE_bool(allow_find_all_keys, true,
+            "This options for DoTestMemtable function by Signal.Jin"
+            "Nothing to do now, will be soon something to do!"); // Signal.Jin
 
 #ifndef ROCKSDB_LITE
 DEFINE_string(secondary_cache_uri, "",
@@ -3166,9 +3175,12 @@ class Benchmark {
         } else {
           method = &Benchmark::WriteUniqueRandomDeterministic;
         }
-      } else if (name == "testmemtable") { // Signal.Jin
+      } else if (name == "testmemtableseq") { // Signal.Jin
         fresh_db = true;
-        method = &Benchmark::TestMemtable; 
+        method = &Benchmark::TestMemtableSeq; 
+      } else if (name == "testmemtablerand") {
+        fresh_db = true;
+        method = &Benchmark::TestMemtableRand; 
       } else if (name == "fillseq") {
         fresh_db = true;
         method = &Benchmark::WriteSeq;
@@ -4033,6 +4045,7 @@ class Benchmark {
       block_based_options.enable_index_compression =
           FLAGS_enable_index_compression;
       block_based_options.block_align = FLAGS_block_align;
+      block_based_options.whole_key_filtering = FLAGS_whole_key_filtering;
       if (FLAGS_use_data_block_hash_index) {
         block_based_options.data_block_index_type =
             ROCKSDB_NAMESPACE::BlockBasedTableOptions::kDataBlockBinaryAndHash;
@@ -4505,8 +4518,12 @@ class Benchmark {
                            UNIQUE_RANDOM);
   }
 
-  void TestMemtable(ThreadState* thread) {
-    DoTestMemtable(thread);
+  void TestMemtableSeq(ThreadState* thread) {
+    DoTestMemtableSeq(thread);
+  }
+
+  void TestMemtableRand(ThreadState* thread) {
+    DoTestMemtableRand(thread);
   }
 
   void WriteSeq(ThreadState* thread) {
@@ -4620,7 +4637,108 @@ class Benchmark {
     }
   }
 
-  void DoTestMemtable(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
+  void DoTestMemtableSeq(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
+    ReadOptions options(FLAGS_verify_checksum, true);
+    RandomGenerator gen;
+    std::string value;
+    int64_t found = 0;
+    int get_weight = 0;
+    int put_weight = 0;
+    int64_t reads_done = 0;
+    int64_t writes_done = 0;
+
+    uint64_t gen_num_for_key = 0; // Control Generate Key number - Signal.Jin
+    int put_cnt = 0;
+    int get_cnt = 0;
+
+    Duration duration(FLAGS_duration, readwrites_);
+
+    std::unique_ptr<const char[]> key_guard;
+    Slice key = AllocateKey(&key_guard);
+
+    std::unique_ptr<char[]> ts_guard;
+    if (user_timestamp_size_ > 0) {
+      ts_guard.reset(new char[user_timestamp_size_]);
+    }
+
+    // Generate Random Number
+    srand(time(NULL));
+    put_cnt = rand() % FLAGS_num;
+    get_cnt = rand() % FLAGS_num;
+
+    while(1) {
+      if (!(put_cnt <= (FLAGS_num * 0.2))) {
+        put_cnt = rand() % FLAGS_num;
+        continue;
+      } else break;
+    } // Control Put Key pattern - Signal.Jin
+
+    while(1) {
+      if (!((get_cnt <= (FLAGS_num * 0.8)) && (get_cnt >= put_cnt))) {
+        if (!((get_cnt + FLAGS_num * 0.2) < (put_cnt + FLAGS_num * 0.8))) {
+          get_cnt = rand() % FLAGS_num;
+          continue;
+        }
+      } else break;
+    } // Control Get Key pattern - Signal.Jin
+
+    //fprintf(stdout, "testmemtable %d, %ld\n", put_cnt, get_cnt);
+
+    // The number of iterations is the larger of read_ or write_
+    while (!duration.Done(1)) {
+      DB* db = SelectDB(thread);
+      if (get_weight == 0 && put_weight == 0) {
+        // one batch completed, reinitialize for next batch
+        get_weight = FLAGS_num * 0.2; /*FLAGS_readwritepercent*/
+        put_weight = FLAGS_num - get_weight;
+      }
+      if (put_weight > 0) {
+        // Generate Put Key pattern with loop count - Signal.Jin
+        gen_num_for_key = GenerateTestPutKey(put_cnt);
+        GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
+        put_cnt++;
+        // then do all the corresponding number of puts
+        // for all the gets we have done earlier
+        Status s = db->Put(write_options_, key, gen.Generate());
+        if (!s.ok()) {
+          fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+          ErrorExit();
+        }
+        put_weight--;
+        writes_done++;
+        thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+      } else if (get_weight > 0) {
+        // Generate Put Key pattern with loop count - Signal.Jin
+        /*if (allow_find_all_keys == true) {
+          gen_num_for_key = GenerateTestPutKey(get_cnt);
+        } else if (allow_find_all_keys == false) {
+          gen_num_for_key = GenerateTestGetKey(get_cnt);
+        }*/
+        gen_num_for_key = GenerateTestPutKey(get_cnt);
+        GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
+        get_cnt++;
+        Status s = db->Get(options, key, &value);
+        if (!s.ok() && !s.IsNotFound()) {
+          fprintf(stderr, "get error: %s\n", s.ToString().c_str());
+          // we continue after error rather than exiting so that we can
+          // find more errors if any
+        } else if (!s.IsNotFound()) {
+          found++;
+        }
+        get_weight--;
+        reads_done++;
+        thread->stats.FinishedOps(nullptr, db, 1, kRead);
+      }
+    }
+
+    char msg[100];
+    snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
+             " total:%" PRIu64 " found:%" PRIu64 ")",
+             reads_done, writes_done, readwrites_, found);
+    thread->stats.AddMessage(msg);
+  }
+
+  void DoTestMemtableRand(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     std::string value;
@@ -4662,7 +4780,7 @@ class Benchmark {
       }
       //gen_num_for_key = rand() % FLAGS_num; // Random Generate - Signal.Jin
       if (put_weight > 0) {
-        // Generate Key pattern with loop count - Signal.Jin
+        // Generate Put Key pattern with loop count - Signal.Jin
         gen_num_for_key = GenerateTestPutKey(put_cnt);
         GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
         put_cnt++;
@@ -4677,7 +4795,7 @@ class Benchmark {
         writes_done++;
         thread->stats.FinishedOps(nullptr, db, 1, kWrite);
       } else if (get_weight > 0) {
-        // Generate Key pattern with loop count - Signal.Jin
+        // Generate Put Key pattern with loop count - Signal.Jin
         gen_num_for_key = GenerateTestGetKey(get_cnt);
         GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
         get_cnt++;
