@@ -410,13 +410,13 @@ inline void InlineSkipList<Comparator>::Iterator::Seek(const char* target) {
 
   struct timespec s_time, e_time;
   double r_time;
-  long r2_time;
+  //long r2_time;
   clock_gettime(CLOCK_MONOTONIC, &s_time);
   node_ = list_->FindGreaterOrEqual(target);
   clock_gettime(CLOCK_MONOTONIC, &e_time);
   r_time = (e_time.tv_nsec - s_time.tv_nsec)*0.001;
-  r2_time = (e_time.tv_sec - s_time.tv_sec)*1000000000 + (e_time.tv_nsec - s_time.tv_nsec);
-  fprintf(fp_sk_find, "Skiplist Find time = %.2f, %ld\n", r_time, r2_time); // Signal.Jin
+  //r2_time = (e_time.tv_sec - s_time.tv_sec)*1000000000 + (e_time.tv_nsec - s_time.tv_nsec);
+  fprintf(fp_sk_find, "%.2f\n", r_time); // Signal.Jin
   fclose(fp_sk_find);
 }
 
