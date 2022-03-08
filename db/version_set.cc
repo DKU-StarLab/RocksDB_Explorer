@@ -1905,17 +1905,17 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     pinned_iters_mgr.StartPinning();
   }
   // Check time for pick file(sstable) with metadata - Signal.Jin
-  struct timeval s_time, e_time;
+  /*struct timeval s_time, e_time;
   double r_time;
-  gettimeofday(&s_time, NULL);
+  gettimeofday(&s_time, NULL);*/
   FilePicker fp(
       storage_info_.files_, user_key, ikey, &storage_info_.level_files_brief_,
       storage_info_.num_non_empty_levels_, &storage_info_.file_indexer_,
       user_comparator(), internal_comparator());
   FdWithKeyRange* f = fp.GetNextFile();
-  gettimeofday(&e_time, NULL);
+  /*gettimeofday(&e_time, NULL);
   r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
-  fprintf(stdout, "FilePicker time = %.2lf\n", r_time); // Signal.Jin
+  fprintf(stdout, "FilePicker time = %.2lf\n", r_time);*/ // Signal.Jin
   //printf("FilePicker\n"); // Signal.Jin
   /*
     Up to this point, it is a task to find out which sstable range
@@ -1939,7 +1939,7 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
     StopWatchNano timer(clock_, timer_enabled /* auto_start */);
 
     //fprintf(stdout, "fp.GetHitFileLevel() = %d\n", fp.GetHitFileLevel()); // signal.Jin
-    gettimeofday(&s_time, NULL);
+    //gettimeofday(&s_time, NULL);
     *status = table_cache_->Get(
         read_options, *internal_comparator(), *f->file_metadata, ikey,
         &get_context, mutable_cf_options_.prefix_extractor.get(),
@@ -1947,9 +1947,9 @@ void Version::Get(const ReadOptions& read_options, const LookupKey& k,
         IsFilterSkipped(static_cast<int>(fp.GetHitFileLevel()),
                         fp.IsHitFileLastInLevel()),
         fp.GetHitFileLevel(), max_file_size_for_l0_meta_pin_);
-    gettimeofday(&e_time, NULL);
+    /*gettimeofday(&e_time, NULL);
     r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
-    fprintf(stdout, "table_cache_->Get time = %.2lf\n", r_time); // Signal.Jin
+    fprintf(stdout, "table_cache_->Get time = %.2lf\n", r_time);*/ // Signal.Jin
     //fprintf(stdout, "table_cache->Get\n"); // Signal.Jin
     // TODO: examine the behavior for corrupted key
     if (timer_enabled) {
