@@ -33,7 +33,7 @@ struct TestComparator {
 
 class SkipTest : public testing::Test {};
 
-TEST_F(SkipTest, Empty) {
+TEST_F(SkipTest, Empty) { // In here, Main step for Skiplist_test (Empty) - Signal.Jin
   Arena arena;
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
@@ -51,14 +51,21 @@ TEST_F(SkipTest, Empty) {
   ASSERT_TRUE(!iter.Valid());
 }
 
-TEST_F(SkipTest, InsertAndLookup) {
-  const int N = 2000;
-  const int R = 5000;
+TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Write and Read) - Signal.Jin
+  const int N = 2000; // Write Count - Signal.Jin
+  const int R = 5000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
+
+  FILE *fp_sk_test;
+  fp_sk_test = fopen("test_skiplist.txt", "at");
+
+  struct timespec s_time, e_time;
+  double r_time;
+
   for (int i = 0; i < N; i++) {
     Key key = rnd.Next() % R;
     if (keys.insert(key).second) {
@@ -66,13 +73,19 @@ TEST_F(SkipTest, InsertAndLookup) {
     }
   }
 
-  for (int i = 0; i < R; i++) {
-    if (list.Contains(i)) {
+  for (int i = 0; i < R; i++) { 
+    clock_gettime(CLOCK_MONOTONIC, &s_time);
+    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(i), 1U);
     } else {
       ASSERT_EQ(keys.count(i), 0U);
     }
+    clock_gettime(CLOCK_MONOTONIC, &e_time);
+    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    //r2_time = (e_time.tv_sec - s_time.tv_sec)*1000000000 + (e_time.tv_nsec - s_time.tv_nsec);
+    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
   }
+  fclose(fp_sk_test);
 
   // Simple iterator tests
   {
@@ -353,10 +366,10 @@ static void ConcurrentReader(void* arg) {
   state->Change(TestState::DONE);
 }
 
-static void RunConcurrent(int run) {
+static void RunConcurrent(int run) { // In here, Main step for Skiplist_test (WriteStep) - Signal.Jin
   const int seed = test::RandomSeed() + (run * 100);
   Random rnd(seed);
-  const int N = 1000;
+  const int N = 1000; // Number of Key-value pair - Signal.Jin
   const int kSize = 1000;
   for (int i = 0; i < N; i++) {
     if ((i % 100) == 0) {
@@ -375,10 +388,10 @@ static void RunConcurrent(int run) {
 }
 
 TEST_F(SkipTest, Concurrent1) { RunConcurrent(1); }
-TEST_F(SkipTest, Concurrent2) { RunConcurrent(2); }
-TEST_F(SkipTest, Concurrent3) { RunConcurrent(3); }
-TEST_F(SkipTest, Concurrent4) { RunConcurrent(4); }
-TEST_F(SkipTest, Concurrent5) { RunConcurrent(5); }
+//TEST_F(SkipTest, Concurrent2) { RunConcurrent(2); }
+//TEST_F(SkipTest, Concurrent3) { RunConcurrent(3); }
+//TEST_F(SkipTest, Concurrent4) { RunConcurrent(4); }
+//TEST_F(SkipTest, Concurrent5) { RunConcurrent(5); }
 
 }  // namespace ROCKSDB_NAMESPACE
 
