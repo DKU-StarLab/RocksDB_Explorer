@@ -32,7 +32,7 @@ struct TestComparator {
 };
 
 class SkipTest : public testing::Test {};
-
+/*
 TEST_F(SkipTest, Empty) { // In here, Main step for Skiplist_test (Empty) - Signal.Jin
   Arena arena;
   TestComparator cmp;
@@ -50,9 +50,81 @@ TEST_F(SkipTest, Empty) { // In here, Main step for Skiplist_test (Empty) - Sign
   iter.SeekToLast();
   ASSERT_TRUE(!iter.Valid());
 }
+*/
+TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern (Find nothing) - Signal.Jin
+  const int N = 5000; // Write Count - Signal.Jin
+  const int R = 5000; // Read Count - Signal.Jin
+  std::set<Key> keys;
+  Arena arena;
+  TestComparator cmp;
+  SkipList<Key, TestComparator> list(cmp, &arena);
 
-TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Write and Read) - Signal.Jin
-  const int N = 2000; // Write Count - Signal.Jin
+  FILE *fp_sk_test;
+  fp_sk_test = fopen("Xseq_test_skiplist.txt", "at");
+
+  struct timespec s_time, e_time;
+  double r_time;
+
+  // Insert key sequential pattern in skiplist
+  for (int i = 0; i < N; i++) {
+    Key key = i;
+    if (keys.insert(key).second) {
+      list.Insert(key);
+    }
+  }
+
+  for (int i = N; i < R+N; i++) { 
+    clock_gettime(CLOCK_MONOTONIC, &s_time);
+    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(i), 1U);
+    } else {
+      ASSERT_EQ(keys.count(i), 0U);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &e_time);
+    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
+  }
+  fclose(fp_sk_test);
+}
+
+TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
+  const int N = 5000; // Write Count - Signal.Jin
+  const int R = 5000; // Read Count - Signal.Jin
+  std::set<Key> keys;
+  Arena arena;
+  TestComparator cmp;
+  SkipList<Key, TestComparator> list(cmp, &arena);
+
+  FILE *fp_sk_test;
+  fp_sk_test = fopen("Oseq_test_skiplist.txt", "at");
+
+  struct timespec s_time, e_time;
+  double r_time;
+
+  // Insert key sequential pattern in skiplist
+  for (int i = 0; i < N; i++) {
+    Key key = i;
+    if (keys.insert(key).second) {
+      list.Insert(key);
+    }
+  }
+
+  for (int i = 0; i < R; i++) { 
+    clock_gettime(CLOCK_MONOTONIC, &s_time);
+    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(i), 1U);
+    } else {
+      ASSERT_EQ(keys.count(i), 0U);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &e_time);
+    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
+  }
+  fclose(fp_sk_test);
+}
+
+TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
+  const int N = 5000; // Write Count - Signal.Jin
   const int R = 5000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
@@ -61,11 +133,12 @@ TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Wr
   SkipList<Key, TestComparator> list(cmp, &arena);
 
   FILE *fp_sk_test;
-  fp_sk_test = fopen("test_skiplist.txt", "at");
+  fp_sk_test = fopen("rand_test_skiplist.txt", "at");
 
   struct timespec s_time, e_time;
   double r_time;
 
+  // Insert key Random pattern in skiplist
   for (int i = 0; i < N; i++) {
     Key key = rnd.Next() % R;
     if (keys.insert(key).second) {
@@ -86,7 +159,32 @@ TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Wr
     fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
   }
   fclose(fp_sk_test);
+}
 
+/*
+TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Write and Read) - Signal.Jin
+  const int N = 2000; // Write Count - Signal.Jin
+  const int R = 5000; // Read Count - Signal.Jin
+  Random rnd(1000);
+  std::set<Key> keys;
+  Arena arena;
+  TestComparator cmp;
+  SkipList<Key, TestComparator> list(cmp, &arena);
+
+  for (int i = 0; i < N; i++) {
+    Key key = rnd.Next() % R;
+    if (keys.insert(key).second) {
+      list.Insert(key);
+    }
+  }
+
+  for (int i = 0; i < R; i++) { 
+    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(i), 1U);
+    } else {
+      ASSERT_EQ(keys.count(i), 0U);
+    }
+  }
   // Simple iterator tests
   {
     SkipList<Key, TestComparator>::Iterator iter(&list);
@@ -148,6 +246,7 @@ TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Wr
     }
   }
 }
+*/
 
 // We want to make sure that with a single writer and multiple
 // concurrent readers (with no synchronization other than when a
@@ -312,7 +411,7 @@ const uint32_t ConcurrentTest::K;
 TEST_F(SkipTest, ConcurrentWithoutThreads) {
   ConcurrentTest test;
   Random rnd(test::RandomSeed());
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 1; i++) {
     test.ReadStep(&rnd);
     test.WriteStep(&rnd);
   }
@@ -369,8 +468,8 @@ static void ConcurrentReader(void* arg) {
 static void RunConcurrent(int run) { // In here, Main step for Skiplist_test (WriteStep) - Signal.Jin
   const int seed = test::RandomSeed() + (run * 100);
   Random rnd(seed);
-  const int N = 1000; // Number of Key-value pair - Signal.Jin
-  const int kSize = 1000;
+  const int N = 1; // Number of Key-value pair - Signal.Jin
+  const int kSize = 1;
   for (int i = 0; i < N; i++) {
     if ((i % 100) == 0) {
       fprintf(stderr, "Run %d of %d\n", i, N);
