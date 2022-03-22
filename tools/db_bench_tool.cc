@@ -146,7 +146,8 @@ DEFINE_string(
     "timeseries,"
     "getmergeoperands,"
 
-    "testmemtableseq," // Test (write memtable and read data in memtable) - Signal.Jin
+    "testmemtableseqO," // Test (write memtable and read data in memtable) - Signal.Jin
+    "testmemtableseqX,"
     "testmemtablerand",
 
     "Comma-separated list of operations to run in the specified"
@@ -2108,7 +2109,7 @@ class Stats {
     uint64_t now_ = FLAGS_env->NowMicros();
     uint64_t micros_ = now_ - last_op_finish_;
     if (op_type == kRead) {
-      fprintf(fp_test, "Get Time = %lu\n", micros_);
+      fprintf(fp_test, "%lu\n", micros_);
     }
     fclose(fp_test);
     last_op_finish_ = now_;
@@ -3175,9 +3176,12 @@ class Benchmark {
         } else {
           method = &Benchmark::WriteUniqueRandomDeterministic;
         }
-      } else if (name == "testmemtableseq") { // Signal.Jin
+      } else if (name == "testmemtableseqO") {
         fresh_db = true;
-        method = &Benchmark::TestMemtableSeq; 
+        method = &Benchmark::TestMemtableSeqO;
+      } else if (name == "testmemtableseqX") { // Signal.Jin
+        fresh_db = true;
+        method = &Benchmark::TestMemtableSeqX; 
       } else if (name == "testmemtablerand") {
         fresh_db = true;
         method = &Benchmark::TestMemtableRand; 
@@ -4518,8 +4522,12 @@ class Benchmark {
                            UNIQUE_RANDOM);
   }
 
-  void TestMemtableSeq(ThreadState* thread) {
-    DoTestMemtableSeq(thread);
+  void TestMemtableSeqO(ThreadState* thread) {
+    DoTestMemtableSeqO(thread);
+  }
+
+  void TestMemtableSeqX(ThreadState* thread) {
+    DoTestMemtableSeqX(thread);
   }
 
   void TestMemtableRand(ThreadState* thread) {
@@ -4637,7 +4645,108 @@ class Benchmark {
     }
   }
 
-  void DoTestMemtableSeq(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
+  void DoTestMemtableSeqO(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
+    ReadOptions options(FLAGS_verify_checksum, true);
+    RandomGenerator gen;
+    std::string value;
+    int64_t found = 0;
+    int get_weight = 0;
+    int put_weight = 0;
+    int64_t reads_done = 0;
+    int64_t writes_done = 0;
+
+    uint64_t gen_num_for_key = 0; // Control Generate Key number - Signal.Jin
+    int put_cnt = 0;
+    int get_cnt = 0;
+
+    Duration duration(FLAGS_duration, readwrites_);
+
+    std::unique_ptr<const char[]> key_guard;
+    Slice key = AllocateKey(&key_guard);
+
+    std::unique_ptr<char[]> ts_guard;
+    if (user_timestamp_size_ > 0) {
+      ts_guard.reset(new char[user_timestamp_size_]);
+    }
+
+    // Generate Random Number
+    srand(time(NULL));
+    put_cnt = rand() % FLAGS_num;
+    get_cnt = rand() % FLAGS_num;
+
+    while(1) {
+      if (!(put_cnt <= (FLAGS_num * 0.2))) {
+        put_cnt = rand() % FLAGS_num;
+        continue;
+      } else break;
+    } // Control Put Key pattern - Signal.Jin
+
+    while(1) {
+      if (!((get_cnt <= (FLAGS_num * 0.8)) && (get_cnt >= put_cnt))) {
+        if (!((get_cnt + FLAGS_num * 0.2) < (put_cnt + FLAGS_num * 0.8))) {
+          get_cnt = rand() % FLAGS_num;
+          continue;
+        }
+      } else break;
+    } // Control Get Key pattern - Signal.Jin
+
+    //fprintf(stdout, "testmemtable %d, %ld\n", put_cnt, get_cnt);
+
+    // The number of iterations is the larger of read_ or write_
+    while (!duration.Done(1)) {
+      DB* db = SelectDB(thread);
+      if (get_weight == 0 && put_weight == 0) {
+        // one batch completed, reinitialize for next batch
+        get_weight = FLAGS_num * 0.2; /*FLAGS_readwritepercent*/
+        put_weight = FLAGS_num - get_weight;
+      }
+      if (put_weight > 0) {
+        // Generate Put Key pattern with loop count - Signal.Jin
+        gen_num_for_key = GenerateTestPutKey(put_cnt);
+        GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
+        put_cnt++;
+        // then do all the corresponding number of puts
+        // for all the gets we have done earlier
+        Status s = db->Put(write_options_, key, gen.Generate());
+        if (!s.ok()) {
+          fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+          ErrorExit();
+        }
+        put_weight--;
+        writes_done++;
+        thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+      } else if (get_weight > 0) {
+        // Generate Get Key pattern with loop count - Signal.Jin
+        /*if (allow_find_all_keys == true) {
+          gen_num_for_key = GenerateTestPutKey(get_cnt);
+        } else if (allow_find_all_keys == false) {
+          gen_num_for_key = GenerateTestGetKey(get_cnt);
+        }*/
+        gen_num_for_key = GenerateTestPutKey(get_cnt);
+        GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
+        get_cnt++;
+        Status s = db->Get(options, key, &value);
+        if (!s.ok() && !s.IsNotFound()) {
+          fprintf(stderr, "get error: %s\n", s.ToString().c_str());
+          // we continue after error rather than exiting so that we can
+          // find more errors if any
+        } else if (!s.IsNotFound()) {
+          found++;
+        }
+        get_weight--;
+        reads_done++;
+        thread->stats.FinishedOps(nullptr, db, 1, kRead);
+      }
+    }
+
+    char msg[100];
+    snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
+             " total:%" PRIu64 " found:%" PRIu64 ")",
+             reads_done, writes_done, readwrites_, found);
+    thread->stats.AddMessage(msg);
+  }
+
+  void DoTestMemtableSeqX(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
     std::string value;

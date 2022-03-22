@@ -415,7 +415,6 @@ inline void InlineSkipList<Comparator>::Iterator::Seek(const char* target) {
   node_ = list_->FindGreaterOrEqual(target);
   clock_gettime(CLOCK_MONOTONIC, &e_time);
   r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
-  //r2_time = (e_time.tv_sec - s_time.tv_sec)*1000000000 + (e_time.tv_nsec - s_time.tv_nsec);
   fprintf(fp_sk_find, "%.2f\n", r_time); // Signal.Jin
   fclose(fp_sk_find);
 }
