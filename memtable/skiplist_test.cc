@@ -135,30 +135,41 @@ TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Si
   FILE *fp_sk_test;
   fp_sk_test = fopen("rand_test_skiplist.txt", "at");
 
+  uint64_t key_check[N];
+  int count = 0;
+
   struct timespec s_time, e_time;
   double r_time;
 
   // Insert key Random pattern in skiplist
   for (int i = 0; i < N; i++) {
     Key key = rnd.Next() % R;
+    key_check[i] = key;
     if (keys.insert(key).second) {
       list.Insert(key);
     }
   }
 
   for (int i = 0; i < R; i++) { 
+    Key Gkey = rnd.Next() % R; // Generate Random Key - Signal.Jin
     clock_gettime(CLOCK_MONOTONIC, &s_time);
-    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
-      ASSERT_EQ(keys.count(i), 1U);
+    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(Gkey), 1U);
     } else {
-      ASSERT_EQ(keys.count(i), 0U);
+      ASSERT_EQ(keys.count(Gkey), 0U);
     }
     clock_gettime(CLOCK_MONOTONIC, &e_time);
     r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
-    //r2_time = (e_time.tv_sec - s_time.tv_sec)*1000000000 + (e_time.tv_nsec - s_time.tv_nsec);
-    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
+    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin 
+
+    for (int j = 0; j < N; j++) {
+      if (key_check[j] == Gkey) {
+        count++;
+      }
+    }
   }
   fclose(fp_sk_test);
+  fprintf(stdout, "Find count = %d\n", count);
 }
 
 /*
