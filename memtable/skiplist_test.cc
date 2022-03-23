@@ -15,6 +15,10 @@
 #include "util/hash.h"
 #include "util/random.h"
 
+// Zipfian pattern generator from util directory - Signal.Jin
+#include "util/zipf.h"
+#include "util/latest-generator.h"
+
 namespace ROCKSDB_NAMESPACE {
 
 typedef uint64_t Key;
@@ -132,26 +136,28 @@ TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Si
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
 
+  // Init Zipfian Generator - Signal.Jin
+  //init_latestgen(N);
+  init_zipf_generator(0, N);
+
   FILE *fp_sk_test;
   fp_sk_test = fopen("rand_test_skiplist.txt", "at");
-
-  uint64_t key_check[N];
-  int count = 0;
 
   struct timespec s_time, e_time;
   double r_time;
 
   // Insert key Random pattern in skiplist
   for (int i = 0; i < N; i++) {
-    Key key = rnd.Next() % R;
-    key_check[i] = key;
+    //Key key = rnd.Next() % N;
+    Key key = nextValue() % N; // Zipfian Key Pattern - Signal.Jin
     if (keys.insert(key).second) {
       list.Insert(key);
     }
   }
 
   for (int i = 0; i < R; i++) { 
-    Key Gkey = rnd.Next() % R; // Generate Random Key - Signal.Jin
+    //Key Gkey = rnd.Next() % R; // Generate Random Key - Signal.Jin
+    Key Gkey = nextValue() % R; // Zipfian Key Pattern - Signal.Jin
     clock_gettime(CLOCK_MONOTONIC, &s_time);
     if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Gkey), 1U);
@@ -161,15 +167,8 @@ TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Si
     clock_gettime(CLOCK_MONOTONIC, &e_time);
     r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
     fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin 
-
-    for (int j = 0; j < N; j++) {
-      if (key_check[j] == Gkey) {
-        count++;
-      }
-    }
   }
   fclose(fp_sk_test);
-  fprintf(stdout, "Find count = %d\n", count);
 }
 
 /*

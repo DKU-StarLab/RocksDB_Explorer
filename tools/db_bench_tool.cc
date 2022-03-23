@@ -84,6 +84,10 @@
 #include "utilities/merge_operators/sortlist.h"
 #include "utilities/persistent_cache/block_cache_tier.h"
 
+// Zipfian pattern generator from util directory - Signal.Jin
+#include "util/zipf.h"
+#include "util/latest-generator.h"
+
 #ifdef MEMKIND
 #include "memory/memkind_kmem_allocator.h"
 #endif
