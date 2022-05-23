@@ -57,7 +57,7 @@ TEST_F(SkipTest, Empty) { // In here, Main step for Skiplist_test (Empty) - Sign
 */
 TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern (Find nothing) - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
-  const int R = 5000; // Read Count - Signal.Jin
+  const int R = 2000; // Read Count - Signal.Jin
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
@@ -93,7 +93,7 @@ TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern 
 
 TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
-  const int R = 5000; // Read Count - Signal.Jin
+  const int R = 2000; // Read Count - Signal.Jin
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
@@ -127,9 +127,9 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   fclose(fp_sk_test);
 }
 
-TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
+TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
-  const int R = 5000; // Read Count - Signal.Jin
+  const int R = 2000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
@@ -138,26 +138,25 @@ TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Si
 
   // Init Zipfian Generator - Signal.Jin
   //init_latestgen(N);
-  init_zipf_generator(0, N);
+  //init_zipf_generator(0, N);
 
   FILE *fp_sk_test;
-  fp_sk_test = fopen("rand_test_skiplist.txt", "at");
+  fp_sk_test = fopen("uni_rand_test_skiplist.txt", "at");
 
   struct timespec s_time, e_time;
   double r_time;
 
   // Insert key Random pattern in skiplist
   for (int i = 0; i < N; i++) {
-    //Key key = rnd.Next() % N;
-    Key key = nextValue() % N; // Zipfian Key Pattern - Signal.Jin
+    Key key = i;
     if (keys.insert(key).second) {
       list.Insert(key);
     }
   }
 
   for (int i = 0; i < R; i++) { 
-    //Key Gkey = rnd.Next() % R; // Generate Random Key - Signal.Jin
-    Key Gkey = nextValue() % R; // Zipfian Key Pattern - Signal.Jin
+    Key Gkey = rnd.Next() % N; // Generate Random Key - Signal.Jin
+    //Key Gkey = nextValue() % R; // Zipfian Key Pattern - Signal.Jin
     clock_gettime(CLOCK_MONOTONIC, &s_time);
     if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Gkey), 1U);
@@ -171,6 +170,48 @@ TEST_F(SkipTest, RandInsertAndLookup) { // Skiplist test for Random Pattern - Si
   fclose(fp_sk_test);
 }
 
+TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
+  const int N = 5000; // Write Count - Signal.Jin
+  const int R = 2000; // Read Count - Signal.Jin
+  Random rnd(1000);
+  std::set<Key> keys;
+  Arena arena;
+  TestComparator cmp;
+  SkipList<Key, TestComparator> list(cmp, &arena);
+
+  // Init Zipfian Generator - Signal.Jin
+  //init_latestgen(N);
+  init_zipf_generator(0, N);
+
+  FILE *fp_sk_test;
+  fp_sk_test = fopen("zipf_rand_test_skiplist.txt", "at");
+
+  struct timespec s_time, e_time;
+  double r_time;
+
+  // Insert key Random pattern in skiplist
+  for (int i = 0; i < N; i++) {
+    Key key = i;
+    if (keys.insert(key).second) {
+      list.Insert(key);
+    }
+  }
+
+  for (int i = 0; i < R; i++) { 
+    //Key Gkey = rnd.Next() % N; // Generate Random Key - Signal.Jin
+    Key Gkey = nextValue() % N; // Zipfian Key Pattern - Signal.Jin
+    clock_gettime(CLOCK_MONOTONIC, &s_time);
+    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(Gkey), 1U);
+    } else {
+      ASSERT_EQ(keys.count(Gkey), 0U);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &e_time);
+    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin 
+  }
+  fclose(fp_sk_test);
+}
 /*
 TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Write and Read) - Signal.Jin
   const int N = 2000; // Write Count - Signal.Jin

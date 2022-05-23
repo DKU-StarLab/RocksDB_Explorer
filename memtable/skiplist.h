@@ -198,6 +198,7 @@ struct SkipList<Key, Comparator>::Node {
  private:
   // Array of length equal to the node height.  next_[0] is lowest level link.
   std::atomic<Node*> next_[1];
+  //Node next_[1];
 };
 
 template<typename Key, class Comparator>
@@ -205,6 +206,8 @@ typename SkipList<Key, Comparator>::Node*
 SkipList<Key, Comparator>::NewNode(const Key& key, int height) {
   char* mem = allocator_->AllocateAligned(
       sizeof(Node) + sizeof(std::atomic<Node*>) * (height - 1));
+  /*char* mem = allocator_->AllocateAligned(
+      sizeof(Node) + sizeof(Node*) * (height - 1));*/
   return new (mem) Node(key);
 }
 
@@ -305,10 +308,14 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   // to exit early on equality and the result wouldn't even be correct.
   // A concurrent insert might occur after FindLessThan(key) but before
   // we get a chance to call Next(0).
+  //int count = 0;
+  
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
   while (true) {
+    //count++;
+
     assert(x != nullptr);
     Node* next = x->Next(level);
     // Make sure the lists are sorted
@@ -318,6 +325,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
     int cmp = (next == nullptr || next == last_bigger)
         ? 1 : compare_(next->key, key);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
+      //fprintf(stdout, "Count = %d\n", count);
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
@@ -327,6 +335,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
       last_bigger = next;
       level--;
     }
+    //fprintf(stdout, "level = %d\n", level);
   }
 }
 

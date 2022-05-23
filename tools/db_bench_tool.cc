@@ -4854,6 +4854,11 @@ class Benchmark {
   void DoTestMemtableRand(ThreadState* thread) { // Test Memtable Put and Get with Skiplist - Signal.Jin
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
+
+    // Init Zipfian Generator - Signal.Jin
+    init_latestgen(FLAGS_num);
+    init_zipf_generator(0, FLAGS_num);
+
     std::string value;
     int64_t found = 0;
     int get_weight = 0;
@@ -4884,7 +4889,8 @@ class Benchmark {
         get_weight = FLAGS_num * 0.2; /*FLAGS_readwritepercent*/
         put_weight = FLAGS_num - get_weight;
       }
-      gen_num_for_key = rand() % FLAGS_num; // Random Generate - Signal.Jin
+      //gen_num_for_key = rand() % FLAGS_num; // Random Generate - Signal.Jin
+      gen_num_for_key = nextValue() % FLAGS_num;
       if (put_weight > 0) {
         // Generate Put Key pattern with loop count - Signal.Jin
         GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
