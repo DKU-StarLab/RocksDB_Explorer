@@ -38,6 +38,9 @@
 #include "port/port.h"
 #include "util/random.h"
 
+static void* last_loc;
+static int last_level;
+
 namespace ROCKSDB_NAMESPACE {
 
 template<typename Key, class Comparator>
@@ -61,6 +64,8 @@ class SkipList {
 
   // Returns true iff an entry that compares equal to key is in the list.
   bool Contains(const Key& key) const;
+
+  bool Contains_RLSN(const Key& key) const; // Signal.Jin
 
   // Return estimated number of entries smaller than `key`.
   uint64_t EstimateCount(const Key& key) const;
@@ -151,6 +156,8 @@ class SkipList {
   // Returns the earliest node with a key >= key.
   // Return nullptr if there is no such node.
   Node* FindGreaterOrEqual(const Key& key) const;
+
+  Node* FindGreaterOrEqual_RLSN(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -303,6 +310,45 @@ bool SkipList<Key, Comparator>::KeyIsAfterNode(const Key& key, Node* n) const {
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   FindGreaterOrEqual(const Key& key) const {
+  // Note: It looks like we could reduce duplication by implementing
+  // this function as FindLessThan(key)->Next(0), but we wouldn't be able
+  // to exit early on equality and the result wouldn't even be correct.
+  // A concurrent insert might occur after FindLessThan(key) but before
+  // we get a chance to call Next(0).
+  //int count = 0;
+  
+  Node* x = head_;
+  int level = GetMaxHeight() - 1;
+  Node* last_bigger = nullptr;
+  while (true) {
+    //count++;
+
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+    // Make sure the lists are sorted
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    // Make sure we haven't overshot during our search
+    assert(x == head_ || KeyIsAfterNode(key, x));
+    int cmp = (next == nullptr || next == last_bigger)
+        ? 1 : compare_(next->key, key);
+    if (cmp == 0 || (cmp > 0 && level == 0)) {
+      //fprintf(stdout, "Count = %d\n", count);
+      return next;
+    } else if (cmp < 0) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      // Switch to next list, reuse compare_() result
+      last_bigger = next;
+      level--;
+    }
+    //fprintf(stdout, "level = %d\n", level);
+  }
+}
+
+template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
+  FindGreaterOrEqual_RLSN(const Key& key) const {
   // Note: It looks like we could reduce duplication by implementing
   // this function as FindLessThan(key)->Next(0), but we wouldn't be able
   // to exit early on equality and the result wouldn't even be correct.
@@ -496,6 +542,16 @@ void SkipList<Key, Comparator>::Insert(const Key& key) {
 template<typename Key, class Comparator>
 bool SkipList<Key, Comparator>::Contains(const Key& key) const {
   Node* x = FindGreaterOrEqual(key);
+  if (x != nullptr && Equal(key, x->key)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+template<typename Key, class Comparator>
+bool SkipList<Key, Comparator>::Contains_RLSN(const Key& key) const {
+  Node* x = FindGreaterOrEqual_RLSN(key);
   if (x != nullptr && Equal(key, x->key)) {
     return true;
   } else {

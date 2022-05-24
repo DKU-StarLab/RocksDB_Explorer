@@ -100,8 +100,10 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   SkipList<Key, TestComparator> list(cmp, &arena);
 
   FILE *fp_sk_test;
-  fp_sk_test = fopen("Oseq_test_skiplist.txt", "at");
+  float *lat = (float *)malloc(sizeof(float)*R);
+  int j = 0;
 
+  fp_sk_test = fopen("Oseq_test_skiplist.txt", "at");
   struct timespec s_time, e_time;
   double r_time;
 
@@ -122,9 +124,15 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
     }
     clock_gettime(CLOCK_MONOTONIC, &e_time);
     r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    lat[j] = r_time;
+    j++;
+  }
+
+  for(int i = 0; i < R; i++) {
     fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
   }
   fclose(fp_sk_test);
+  free(lat);
 }
 
 TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
