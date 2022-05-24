@@ -36,25 +36,8 @@ struct TestComparator {
 };
 
 class SkipTest : public testing::Test {};
-/*
-TEST_F(SkipTest, Empty) { // In here, Main step for Skiplist_test (Empty) - Signal.Jin
-  Arena arena;
-  TestComparator cmp;
-  SkipList<Key, TestComparator> list(cmp, &arena);
-  ASSERT_TRUE(!list.Contains(10));
 
-  SkipList<Key, TestComparator>::Iterator iter(&list);
-  ASSERT_TRUE(!iter.Valid());
-  iter.SeekToFirst();
-  ASSERT_TRUE(!iter.Valid());
-  iter.Seek(100);
-  ASSERT_TRUE(!iter.Valid());
-  iter.SeekForPrev(100);
-  ASSERT_TRUE(!iter.Valid());
-  iter.SeekToLast();
-  ASSERT_TRUE(!iter.Valid());
-}
-*/
+/*
 TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern (Find nothing) - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
   const int R = 2000; // Read Count - Signal.Jin
@@ -90,10 +73,10 @@ TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern 
   }
   fclose(fp_sk_test);
 }
-
+*/
 TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
-  const int N = 5000; // Write Count - Signal.Jin
-  const int R = 2000; // Read Count - Signal.Jin
+  const int N = 100000; // Write Count - Signal.Jin
+  const int R = 50000; // Read Count - Signal.Jin
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
@@ -115,9 +98,11 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
     }
   }
 
-  for (int i = 0; i < R; i++) { 
+  int start_p = rand() % (N-R);
+
+  for (int i = start_p; i < R; i++) { 
     clock_gettime(CLOCK_MONOTONIC, &s_time);
-    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains_RLSN(i)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(i), 1U);
     } else {
       ASSERT_EQ(keys.count(i), 0U);
@@ -133,8 +118,9 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   }
   fclose(fp_sk_test);
   free(lat);
-}
 
+}
+/*
 TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
   const int R = 2000; // Read Count - Signal.Jin
@@ -220,6 +206,7 @@ TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern -
   }
   fclose(fp_sk_test);
 }
+*/
 /*
 TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Write and Read) - Signal.Jin
   const int N = 2000; // Write Count - Signal.Jin
@@ -467,6 +454,7 @@ const uint32_t ConcurrentTest::K;
 
 // Simple test that does single-threaded testing of the ConcurrentTest
 // scaffolding.
+/*
 TEST_F(SkipTest, ConcurrentWithoutThreads) {
   ConcurrentTest test;
   Random rnd(test::RandomSeed());
@@ -550,7 +538,7 @@ TEST_F(SkipTest, Concurrent1) { RunConcurrent(1); }
 //TEST_F(SkipTest, Concurrent3) { RunConcurrent(3); }
 //TEST_F(SkipTest, Concurrent4) { RunConcurrent(4); }
 //TEST_F(SkipTest, Concurrent5) { RunConcurrent(5); }
-
+*/
 }  // namespace ROCKSDB_NAMESPACE
 
 int main(int argc, char** argv) {

@@ -38,8 +38,7 @@
 #include "port/port.h"
 #include "util/random.h"
 
-static void* last_loc;
-static int last_level;
+static void* last_loc; // Signal.Jin
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -348,7 +347,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
-  FindGreaterOrEqual_RLSN(const Key& key) const {
+  FindGreaterOrEqual_RLSN(const Key& key) const { // Signal.Jin
   // Note: It looks like we could reduce duplication by implementing
   // this function as FindLessThan(key)->Next(0), but we wouldn't be able
   // to exit early on equality and the result wouldn't even be correct.
@@ -359,19 +358,35 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
+  if (last_loc != nullptr) {
+    x = (Node *)last_loc;
+    level = 0;
+    if (compare_(x->key, key) > 0) {
+      x = head_;
+      level = GetMaxHeight() - 1;
+    }/* else {
+      for (int i = 0; i < GetMaxHeight() - 1; i++) {
+        if (x->Next(i) == nullptr) {
+          level = i-1; break;
+        }
+      }
+    }*/
+  }
   while (true) {
-    //count++;
-
     assert(x != nullptr);
     Node* next = x->Next(level);
     // Make sure the lists are sorted
     assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
     // Make sure we haven't overshot during our search
-    assert(x == head_ || KeyIsAfterNode(key, x));
+    if (next != nullptr) {
+      assert(x == head_ || KeyIsAfterNode(key, x));
+    }
     int cmp = (next == nullptr || next == last_bigger)
         ? 1 : compare_(next->key, key);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
-      //fprintf(stdout, "Count = %d\n", count);
+      if (next != nullptr) {
+        last_loc = next;
+      }
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
@@ -381,7 +396,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
       last_bigger = next;
       level--;
     }
-    //fprintf(stdout, "level = %d\n", level);
   }
 }
 
