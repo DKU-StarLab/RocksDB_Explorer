@@ -39,16 +39,18 @@ class SkipTest : public testing::Test {};
 
 /*
 TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern (Find nothing) - Signal.Jin
-  const int N = 5000; // Write Count - Signal.Jin
-  const int R = 2000; // Read Count - Signal.Jin
+  const int N = 100000; // Write Count - Signal.Jin
+  const int R = 50000; // Read Count - Signal.Jin
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
 
   FILE *fp_sk_test;
-  fp_sk_test = fopen("Xseq_test_skiplist.txt", "at");
+  float *lat = (float *)malloc(sizeof(float)*R);
+  int j = 0;
 
+  fp_sk_test = fopen("Xseq_test_skiplist.txt", "at");
   struct timespec s_time, e_time;
   double r_time;
 
@@ -62,18 +64,25 @@ TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern 
 
   for (int i = N; i < R+N; i++) { 
     clock_gettime(CLOCK_MONOTONIC, &s_time);
-    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains_RLSN(i)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(i), 1U);
     } else {
       ASSERT_EQ(keys.count(i), 0U);
     }
     clock_gettime(CLOCK_MONOTONIC, &e_time);
     r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+    lat[j] = r_time;
+    j++;  
+  }
+
+  for(int i = 0; i < R; i++) {
     fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
   }
   fclose(fp_sk_test);
+  free(lat);
 }
 */
+/*
 TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
   const int N = 100000; // Write Count - Signal.Jin
   const int R = 50000; // Read Count - Signal.Jin
@@ -120,50 +129,65 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   free(lat);
 
 }
-/*
+*/
+
 TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
-  const int N = 5000; // Write Count - Signal.Jin
-  const int R = 2000; // Read Count - Signal.Jin
+  const int N = 100000; // Write Count - Signal.Jin
+  const int R = 50000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
-
-  // Init Zipfian Generator - Signal.Jin
-  //init_latestgen(N);
-  //init_zipf_generator(0, N);
-
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<int> distr(0, N);
   FILE *fp_sk_test;
+  
+  float *lat = (float *)malloc(sizeof(float)*R);
+  uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
+  
   fp_sk_test = fopen("uni_rand_test_skiplist.txt", "at");
-
   struct timespec s_time, e_time;
   double r_time;
 
-  // Insert key Random pattern in skiplist
-  for (int i = 0; i < N; i++) {
+  for (int i = 1; i < N; i++) {
     Key key = i;
     if (keys.insert(key).second) {
       list.Insert(key);
     }
   }
 
+  for(int i = 0; i < R; i++) {
+    //rnd_val[i] = rnd.Next() % N;
+    rnd_val[i] = distr(gen);
+  } // Generate Random Key - Signal.Jin
+
+  int j = 0;
   for (int i = 0; i < R; i++) { 
-    Key Gkey = rnd.Next() % N; // Generate Random Key - Signal.Jin
-    //Key Gkey = nextValue() % R; // Zipfian Key Pattern - Signal.Jin
+    Key Gkey = rnd_val[i];
     clock_gettime(CLOCK_MONOTONIC, &s_time);
-    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains_RLSN(Gkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Gkey), 1U);
     } else {
       ASSERT_EQ(keys.count(Gkey), 0U);
     }
     clock_gettime(CLOCK_MONOTONIC, &e_time);
     r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
-    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin 
+    lat[j] = r_time;
+    j++;
   }
+
+  for(int i = 0; i < R; i++) {
+    fprintf(fp_sk_test, "%.2f\n", lat[i]);
+  }
+
   fclose(fp_sk_test);
+  free(lat);
+  free(rnd_val);
 }
 
+/*
 TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
   const int R = 2000; // Read Count - Signal.Jin
