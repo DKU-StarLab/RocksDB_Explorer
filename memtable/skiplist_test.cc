@@ -76,13 +76,13 @@ TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern 
   }
 
   for(int i = 0; i < R; i++) {
-    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
+    fprintf(fp_sk_test, "%.2f\n", lat[i]); // Signal.Jin  
   }
   fclose(fp_sk_test);
   free(lat);
 }
 */
-/*
+
 TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
   const int N = 100000; // Write Count - Signal.Jin
   const int R = 50000; // Read Count - Signal.Jin
@@ -111,7 +111,7 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
 
   for (int i = start_p; i < R; i++) { 
     clock_gettime(CLOCK_MONOTONIC, &s_time);
-    if (list.Contains_RLSN(i)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains(i)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(i), 1U);
     } else {
       ASSERT_EQ(keys.count(i), 0U);
@@ -123,14 +123,14 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   }
 
   for(int i = 0; i < R; i++) {
-    fprintf(fp_sk_test, "%.2f\n", r_time); // Signal.Jin  
+    fprintf(fp_sk_test, "%.2f\n", lat[i]); // Signal.Jin  
   }
   fclose(fp_sk_test);
   free(lat);
 
 }
-*/
 
+/*
 TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 100000; // Write Count - Signal.Jin
   const int R = 50000; // Read Count - Signal.Jin
@@ -186,7 +186,7 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   free(lat);
   free(rnd_val);
 }
-
+*/
 /*
 TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 5000; // Write Count - Signal.Jin
