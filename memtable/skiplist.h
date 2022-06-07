@@ -39,6 +39,7 @@
 #include "util/random.h"
 
 static void* last_loc; // Signal.Jin
+static int count = 0;
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -320,7 +321,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
   while (true) {
-    //count++;
+    count++;
 
     assert(x != nullptr);
     Node* next = x->Next(level);
