@@ -41,8 +41,8 @@ struct TestComparator {
 class SkipTest : public testing::Test {};
 
 TEST_F(SkipTest, NodeCompareTest) {
-  const int N = 100000; // Write Count - Signal.Jin
-  const int R = 50000;
+  const int N = 1000; // Write Count - Signal.Jin
+  //const int R = 50000;
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
@@ -51,14 +51,14 @@ TEST_F(SkipTest, NodeCompareTest) {
 
   //struct timespec s_time, e_time;
   //double r_time;
-  float *lat = (float *)malloc(sizeof(float)*R);
+  float *lat = (float *)malloc(sizeof(float)*1);
   int j = 0;
   
-  std::random_device rd;
+  /*std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<int> distr(0, N);
 
-  uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
+  uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);*/
 
   //FILE *fp_sk_test;
   //fp_sk_test = fopen("NodeCompare.txt", "at");
@@ -70,20 +70,21 @@ TEST_F(SkipTest, NodeCompareTest) {
       list.Insert(key);
     }
   }
-
+/*
   for(int i = 0; i < R; i++) {
     //rnd_val[i] = rnd.Next() % N;
     rnd_val[i] = distr(gen);
   } // Generate Random Key - Signal.Jin
-  
-  for(int i = 0; i < R; i++) {
-    Key Gkey = rnd_val[i];
+*/
+  int k = 190;
+  for(int i = 0; i < 1; i++) {
+    //Key Gkey = rnd_val[i];
     //clock_gettime(CLOCK_MONOTONIC, &s_time);
     auto start_time = Clock::now();
-    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
-      ASSERT_EQ(keys.count(Gkey), 1U);
+    if (list.Contains(k)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(k), 1U);
     } else {
-      ASSERT_EQ(keys.count(Gkey), 0U);
+      ASSERT_EQ(keys.count(k), 0U);
     }
     //clock_gettime(CLOCK_MONOTONIC, &e_time);
     auto end_time = Clock::now();
@@ -92,11 +93,11 @@ TEST_F(SkipTest, NodeCompareTest) {
     j++;
   }
 
-  for(int i = 0; i < R; i++) {
+  for(int i = 0; i < 1; i++) {
     fprintf(stdout, "%.2f\n", lat[i]); // Signal.Jin  
   }
   //fclose(fp_sk_test);
-  //free(lat);
+  free(lat);
 
   //fprintf(stdout, "Time (us) = %.2f\n", r_time); // Signal.Jin
   //fprintf(stdout, "Count = %d\n", count);
