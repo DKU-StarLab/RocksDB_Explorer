@@ -397,26 +397,18 @@ inline void InlineSkipList<Comparator>::Iterator::Prev() {
 
 template <class Comparator>
 inline void InlineSkipList<Comparator>::Iterator::Seek(const char* target) {
-  /*struct timeval s_time, e_time;
-  double r_time;
-  gettimeofday(&s_time, NULL);
-  node_ = list_->FindGreaterOrEqual(target);
-  gettimeofday(&e_time, NULL);
-  r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
-  fprintf(stdout, "Skiplist Find time = %.2lf\n", r_time);*/ // Signal.Jin
+  //FILE *fp_sk_find;
+  //fp_sk_find = fopen("find.txt", "at");
 
-  FILE *fp_sk_find;
-  fp_sk_find = fopen("find.txt", "at");
-
-  struct timespec s_time, e_time;
-  double r_time;
+  //struct timespec s_time, e_time;
+  //double r_time;
   //long r2_time;
-  clock_gettime(CLOCK_MONOTONIC, &s_time);
+  //clock_gettime(CLOCK_MONOTONIC, &s_time);
   node_ = list_->FindGreaterOrEqual(target);
-  clock_gettime(CLOCK_MONOTONIC, &e_time);
-  r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
-  fprintf(fp_sk_find, "%.2f\n", r_time); // Signal.Jin
-  fclose(fp_sk_find);
+  //clock_gettime(CLOCK_MONOTONIC, &e_time);
+  //r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
+  //fprintf(fp_sk_find, "%.2f\n", r_time); // Signal.Jin
+  //fclose(fp_sk_find);
 }
 
 template <class Comparator>
