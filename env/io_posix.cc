@@ -239,7 +239,7 @@ IOStatus PosixSequentialFile::Read(size_t n, const IOOptions& /*opts*/,
   assert(result != nullptr && !use_direct_io());
   IOStatus s;
   size_t r = 0;
-  printf("Seq-Read\n"); // Signal.Jin
+  //printf("Seq-Read\n"); // Signal.Jin
   do {
     clearerr(file_);
     r = fread_unlocked(scratch, 1, n, file_);
