@@ -4680,6 +4680,10 @@ class Benchmark {
     put_cnt = rand() % FLAGS_num;
     get_cnt = rand() % FLAGS_num;
 
+    FILE *fp_test = fopen("bench_mem_seqO.csv", "at");
+    float *lat = (float *)malloc(sizeof(float)*(FLAGS_num*0.2));
+    int j = 0;
+
     while(1) {
       if (!(put_cnt <= (FLAGS_num * 0.2))) {
         put_cnt = rand() % FLAGS_num;
@@ -4731,7 +4735,11 @@ class Benchmark {
         gen_num_for_key = GenerateTestPutKey(get_cnt);
         GenerateKeyFromInt(gen_num_for_key, FLAGS_num, &key);
         get_cnt++;
+        auto start_time = Clock::now(); // Signal.Jin
         Status s = db->Get(options, key, &value);
+        auto end_time = Clock::now(); // Signal.Jin
+        lat[j] = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() * 0.001;
+        j++; // Signal.Jin
         if (!s.ok() && !s.IsNotFound()) {
           fprintf(stderr, "get error: %s\n", s.ToString().c_str());
           // we continue after error rather than exiting so that we can
@@ -4744,6 +4752,12 @@ class Benchmark {
         thread->stats.FinishedOps(nullptr, db, 1, kRead);
       }
     }
+
+  for(int i = 0; i < (FLAGS_num*0.2); i++) {
+    fprintf(fp_test, "%.2f\n", lat[i]); // Signal.Jin  
+  }
+  free(lat);
+  fclose(fp_test);
 
     char msg[100];
     snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
