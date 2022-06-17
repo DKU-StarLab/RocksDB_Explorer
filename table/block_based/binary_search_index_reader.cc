@@ -8,6 +8,10 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 #include "table/block_based/binary_search_index_reader.h"
 
+// New Header for time estimation - Signal.Jin
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
+
 namespace ROCKSDB_NAMESPACE {
 Status BinarySearchIndexReader::Create(
     const BlockBasedTable* table, const ReadOptions& ro,
@@ -50,8 +54,12 @@ InternalIteratorBase<IndexValue>* BinarySearchIndexReader::NewIterator(
   if (index_block.IsEmpty()){
     //fprintf(stdout, "Index block is Empty\n");
   } // Signal.Jin
+  auto istart_time = Clock::now();
   const Status s =
       GetOrReadIndexBlock(no_io, get_context, lookup_context, &index_block);
+  auto iend_time = Clock::now();
+  float IndexLat = std::chrono::duration_cast<std::chrono::nanoseconds>(iend_time - istart_time).count() * 0.001;
+  fprintf(stdout, "Index = %.2lf\n", IndexLat); // Signal.Jin
   if (!s.ok()) {
     if (iter != nullptr) {
       iter->Invalidate(s);

@@ -64,6 +64,10 @@
 #include "util/stop_watch.h"
 #include "util/string_util.h"
 
+// New Header for time estimation - Signal.Jin
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
+
 // Control Print Flow - Signal.Jin
 int block_get_flag = 1;
 int retrieve_get_flag = 0;
@@ -1443,7 +1447,7 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
                          rep_->compressed_cache_key_prefix_size, handle,
                          compressed_cache_key);
     }
-
+    auto dcstart_time = Clock::now();
     if (!contents) {
       s = GetDataBlockFromCache(key, ckey, block_cache, block_cache_compressed,
                                 ro, block_entry, uncompression_dict, block_type,
@@ -1461,6 +1465,9 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
         }
       }
     }
+    auto dcend_time = Clock::now();
+    float DataCacheLat = std::chrono::duration_cast<std::chrono::nanoseconds>(dcend_time - dcstart_time).count() * 0.001;
+    fprintf(stdout, "GetCache = %.2lf\n", DataCacheLat); // Signal.Jin
 
     // Can't find the block from the cache. If I/O is allowed, read from the
     // file.
@@ -1507,10 +1514,14 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
       if (s.ok()) {
         // If filling cache is allowed and a cache is configured, try to put the
         // block to the cache.
+        auto pcstart_time = Clock::now();
         s = PutDataBlockToCache(
             key, ckey, block_cache, block_cache_compressed, block_entry,
             contents, raw_block_comp_type, uncompression_dict,
             GetMemoryAllocator(rep_->table_options), block_type, get_context);
+        auto pcend_time = Clock::now();
+        float PutCacheLat = std::chrono::duration_cast<std::chrono::nanoseconds>(pcend_time - pcstart_time).count() * 0.001;
+        fprintf(stdout, "PutCache = %.2lf\n", PutCacheLat); // Signal.Jin
       }
     }
   }
@@ -1932,6 +1943,7 @@ Status BlockBasedTable::RetrieveBlock(
   {
     StopWatch sw(rep_->ioptions.clock, rep_->ioptions.stats,
                  READ_BLOCK_GET_MICROS);
+    auto rbstart_time = Clock::now();
     s = ReadBlockFromFile(
         rep_->file.get(), prefetch_buffer, rep_->footer, ro, handle, &block,
         rep_->ioptions, do_uncompress, maybe_compressed, block_type,
@@ -1942,7 +1954,9 @@ Status BlockBasedTable::RetrieveBlock(
         GetMemoryAllocator(rep_->table_options), for_compaction,
         rep_->blocks_definitely_zstd_compressed,
         rep_->table_options.filter_policy.get());
-
+    auto rbend_time = Clock::now();
+    float ReadBlockLat = std::chrono::duration_cast<std::chrono::nanoseconds>(rbend_time - rbstart_time).count() * 0.001;
+    fprintf(stdout, "ReadBlock = %.2lf\n", ReadBlockLat); // Signal.Jin
     if (get_context) {
       switch (block_type) {
         case BlockType::kIndex:
@@ -2290,20 +2304,13 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
   assert(get_context != nullptr);
   Status s;
   const bool no_io = read_options.read_tier == kBlockCacheTier;
-  // Check time for Index, Data block - Signal.Jin
-  struct timeval s_time, e_time;
-  double r_time;
-
+  
   if (DB_READ_FLOW == 1 && block_get_flag == 1) {
     fprintf(stdout, "  [9]        \t|      Get() {    \t\t\t| block_based_table_reader.cc (line 2265)\n"); // Signal.Jin
   }
 
   FilterBlockReader* const filter =
       !skip_filters ? rep_->filter.get() : nullptr;
-
-  if (filter == nullptr) {
-    //printf("filter is a nullptr\n"); // Signal.Jin
-  }
 
   // First check the full filter
   // If full filter not useful, Then go into each block
@@ -2336,13 +2343,9 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
           rep_->table_properties.get(), prefix_extractor);
     }
     
-    gettimeofday(&s_time, NULL);
     auto iiter =
         NewIndexIterator(read_options, need_upper_bound_check, &iiter_on_stack,
                          get_context, &lookup_context);
-    gettimeofday(&e_time, NULL);
-    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
-    fprintf(stdout, "Index Iterator time = %.2lf\n", r_time); // Signal.Jin
     //printf("NewIndexIterator\n"); // Signal.Jin
     std::unique_ptr<InternalIteratorBase<IndexValue>> iiter_unique_ptr;
     if (iiter != &iiter_on_stack) {
@@ -2396,14 +2399,10 @@ Status BlockBasedTable::Get(const ReadOptions& read_options, const Slice& key,
         retrieve_get_flag = 1;
       }
       //printf("NewDataBlockIterator\n"); // Signal.Jin
-      gettimeofday(&s_time, NULL);
       NewDataBlockIterator<DataBlockIter>(
           read_options, v.handle, &biter, BlockType::kData, get_context,
           &lookup_data_block_context,
           /*s=*/Status(), /*prefetch_buffer*/ nullptr);
-      gettimeofday(&e_time, NULL);
-      r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
-      fprintf(stdout, "Data Iterator time = %.2lf\n", r_time); // Signal.Jin
 
       if (no_io && biter.status().IsIncomplete()) {
         // couldn't get block from block_cache
