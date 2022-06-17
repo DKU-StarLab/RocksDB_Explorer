@@ -41,27 +41,27 @@ struct TestComparator {
 class SkipTest : public testing::Test {};
 
 TEST_F(SkipTest, NodeCompareTest) {
-  const int N = 1000; // Write Count - Signal.Jin
-  //const int R = 50000;
+  const int N = 40000; // Write Count - Signal.Jin
+  const int R = 10000;
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
 
-  //struct timespec s_time, e_time;
-  //double r_time;
-  float *lat = (float *)malloc(sizeof(float)*1);
+  float *lat = (float *)malloc(sizeof(float)*R);
   int j = 0;
-  
-  /*std::random_device rd;
+/*
+  std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<int> distr(0, N);
 
-  uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);*/
+  uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
+*/
+  uint64_t *zipf_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
 
-  //FILE *fp_sk_test;
-  //fp_sk_test = fopen("NodeCompare.txt", "at");
+  FILE *fp_sk_test;
+  fp_sk_test = fopen("NodeCompare.csv", "at");
 
   // Insert key sequential pattern in skiplist
   for (int i = 0; i < N; i++) {
@@ -70,33 +70,40 @@ TEST_F(SkipTest, NodeCompareTest) {
       list.Insert(key);
     }
   }
+
+  // Init Zipfian Generator - Signal.Jin
+  //init_latestgen(N);
+  init_zipf_generator(0, N);
 /*
   for(int i = 0; i < R; i++) {
     //rnd_val[i] = rnd.Next() % N;
     rnd_val[i] = distr(gen);
   } // Generate Random Key - Signal.Jin
 */
-  int k = 265;
-  for(int i = 0; i < 1; i++) {
+  for(int i = 0; i < R; i++) {
+    zipf_val[i] = nextValue() % N;
+  } // Zipfian Key Pattern - Signal.Jin
+
+  for(int i = 0; i < R; i++) {
     //Key Gkey = rnd_val[i];
-    //clock_gettime(CLOCK_MONOTONIC, &s_time);
+    Key Zkey = zipf_val[i];
     auto start_time = Clock::now();
-    if (list.Contains(k)) { // Maybe estimate time in here - Signal.Jin
-      ASSERT_EQ(keys.count(k), 1U);
+    if (list.Contains(Zkey)) { // Maybe estimate time in here - Signal.Jin
+      ASSERT_EQ(keys.count(Zkey), 1U);
     } else {
-      ASSERT_EQ(keys.count(k), 0U);
+      ASSERT_EQ(keys.count(Zkey), 0U);
     }
-    //clock_gettime(CLOCK_MONOTONIC, &e_time);
     auto end_time = Clock::now();
-    //r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.001;
     lat[j] = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() * 0.001;
     j++;
   }
 
-  for(int i = 0; i < 1; i++) {
-    fprintf(stdout, "%.2f\n", lat[i]); // Signal.Jin  
+  for(int i = 0; i < R; i++) {
+    fprintf(fp_sk_test, "%.2f\n", lat[i]); // Signal.Jin  
   }
-  //fclose(fp_sk_test);
+  fclose(fp_sk_test);
+  free(zipf_val);
+  //free(rnd_val);
   free(lat);
 
   //fprintf(stdout, "Time (us) = %.2f\n", r_time); // Signal.Jin

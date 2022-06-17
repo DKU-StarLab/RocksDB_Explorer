@@ -39,7 +39,7 @@
 #include "util/random.h"
 
 static void* last_loc; // Signal.Jin
-static int count = 0;
+//static int count = 0;
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -321,10 +321,11 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
   while (true) {
-    count++;
-
     assert(x != nullptr);
     Node* next = x->Next(level);
+    if (next != nullptr) {
+      PREFETCH(next->Next(level), 0, 1);
+    }
     // Make sure the lists are sorted
     assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
     // Make sure we haven't overshot during our search
