@@ -76,7 +76,7 @@ TEST_F(SkipTest, NodeCompareTest) {
     rnd_val[i] = distr(gen);
   } // Generate Random Key - Signal.Jin
 */
-  int k = 190;
+  int k = 265;
   for(int i = 0; i < 1; i++) {
     //Key Gkey = rnd_val[i];
     //clock_gettime(CLOCK_MONOTONIC, &s_time);
