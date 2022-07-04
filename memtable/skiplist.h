@@ -315,17 +315,19 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   // to exit early on equality and the result wouldn't even be correct.
   // A concurrent insert might occur after FindLessThan(key) but before
   // we get a chance to call Next(0).
-  //int count = 0;
+  int count = 0;
   
   Node* x = head_;
+  //fprintf(stdout, "Node size = %lu\n", sizeof(Node)); // Check skiplist node size - Signal.Jin
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
   while (true) {
+    count++;
     assert(x != nullptr);
     Node* next = x->Next(level);
-    if (next != nullptr) {
+    /*if (next != nullptr) {
       PREFETCH(next->Next(level), 0, 1);
-    }
+    }*/
     // Make sure the lists are sorted
     assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
     // Make sure we haven't overshot during our search
@@ -333,7 +335,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
     int cmp = (next == nullptr || next == last_bigger)
         ? 1 : compare_(next->key, key);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
-      //fprintf(stdout, "Count = %d\n", count);
+      fprintf(stdout, "%d\n", count);
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
