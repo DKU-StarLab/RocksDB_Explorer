@@ -28,8 +28,8 @@ Random* Random::GetTLSInstance() {
 
   auto rv = tls_instance;
   if (UNLIKELY(rv == nullptr)) {
-    size_t seed = std::hash<std::thread::id>()(std::this_thread::get_id());
-    //size_t seed = 1000; // Signal.Jin
+    //size_t seed = std::hash<std::thread::id>()(std::this_thread::get_id());
+    size_t seed = 1000; // Signal.Jin
     rv = new (&tls_instance_bytes) Random((uint32_t)seed);
     tls_instance = rv;
   }
