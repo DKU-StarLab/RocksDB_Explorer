@@ -169,7 +169,7 @@ TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern 
   free(lat);
 }
 */
-
+/*
 TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
   const int N = 1000; // Write Count - Signal.Jin
   const int R = 200; // Read Count - Signal.Jin
@@ -214,11 +214,11 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   free(lat);
 
 }
+*/
 
-/*
 TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
-  const int N = 800; // Write Count - Signal.Jin
-  const int R = 200; // Read Count - Signal.Jin
+  const int N = 25000; // Write Count - Signal.Jin
+  const int R = 25000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
@@ -270,11 +270,11 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   free(lat);
   free(rnd_val);
 }
-*/
+
 /*
 TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
-  const int N = 800; // Write Count - Signal.Jin
-  const int R = 200; // Read Count - Signal.Jin
+  const int N = 25000; // Write Count - Signal.Jin
+  const int R = 25000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
