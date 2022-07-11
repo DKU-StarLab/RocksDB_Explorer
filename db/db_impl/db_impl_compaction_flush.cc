@@ -2665,14 +2665,14 @@ void DBImpl::BackgroundCallFlush(Env::Priority thread_pri) {
             CaptureCurrentFileNumberInPendingOutputs()));
     FlushReason reason;
 
-    struct timespec s_time, e_time;
-    double r_time;
-    clock_gettime(CLOCK_MONOTONIC, &s_time);
+    //struct timespec s_time, e_time;
+    //double r_time;
+    //clock_gettime(CLOCK_MONOTONIC, &s_time);
     Status s = BackgroundFlush(&made_progress, &job_context, &log_buffer,
                                &reason, thread_pri);
-    clock_gettime(CLOCK_MONOTONIC, &e_time);
-    r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.000000001;
-    fprintf(stdout, "Memtable Flush time = %.2lf\n", r_time); // Signal.Jin
+    //clock_gettime(CLOCK_MONOTONIC, &e_time);
+    //r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_nsec - s_time.tv_nsec)*0.000000001;
+    //fprintf(stdout, "Memtable Flush time = %.2lf\n", r_time); // Signal.Jin
 
     if (!s.ok() && !s.IsShutdownInProgress() && !s.IsColumnFamilyDropped() &&
         reason != FlushReason::kErrorRecovery) {

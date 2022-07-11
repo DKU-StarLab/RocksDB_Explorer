@@ -1707,11 +1707,11 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   }
 
   // Acquire SuperVersion
-  auto vstart_time = Clock::now();
+  //auto vstart_time = Clock::now();
   SuperVersion* sv = GetAndRefSuperVersion(cfd);
-  auto vend_time = Clock::now();
-  float VersionLat = std::chrono::duration_cast<std::chrono::nanoseconds>(vend_time - vstart_time).count() * 0.001;
-  fprintf(stdout, "\n\nVersion = %.2lf\n", VersionLat); // Signal.Jin
+  //auto vend_time = Clock::now();
+  //float VersionLat = std::chrono::duration_cast<std::chrono::nanoseconds>(vend_time - vstart_time).count() * 0.001;
+  //fprintf(stdout, "\n\nVersion = %.2lf\n", VersionLat); // Signal.Jin
 
   TEST_SYNC_POINT("DBImpl::GetImpl:1");
   TEST_SYNC_POINT("DBImpl::GetImpl:2");
@@ -1786,7 +1786,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
     // Get value associated with key
     if (get_impl_options.get_value) { // In default, Check for memtable or immutable memtable key - Signal.Jin
       //fprintf(stdout, "\n[RandomRead Memtable Get Start]\n");
-      auto mstart_time = Clock::now();
+      //auto mstart_time = Clock::now();
       if (sv->mem->Get(lkey, get_impl_options.value->GetSelf(), timestamp, &s,
                        &merge_context, &max_covering_tombstone_seq,
                        read_options, get_impl_options.callback,
@@ -1806,9 +1806,9 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
         get_impl_options.value->PinSelf();
         RecordTick(stats_, MEMTABLE_HIT);
       }
-      auto mend_time = Clock::now();
-      float MemLat = std::chrono::duration_cast<std::chrono::nanoseconds>(mend_time - mstart_time).count() * 0.001;
-      fprintf(stdout, "Memtable = %.2lf\n", MemLat); // Signal.Jin
+      //auto mend_time = Clock::now();
+      //float MemLat = std::chrono::duration_cast<std::chrono::nanoseconds>(mend_time - mstart_time).count() * 0.001;
+      //fprintf(stdout, "Memtable = %.2lf\n", MemLat); // Signal.Jin
       //fprintf(stdout, "[RandomRead Memtable Get End]\n\n");
     } else {
       // Get Merge Operands associated with key, Merge Operands should not be

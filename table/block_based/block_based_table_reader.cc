@@ -1447,7 +1447,7 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
                          rep_->compressed_cache_key_prefix_size, handle,
                          compressed_cache_key);
     }
-    auto dcstart_time = Clock::now();
+    //auto dcstart_time = Clock::now();
     if (!contents) {
       s = GetDataBlockFromCache(key, ckey, block_cache, block_cache_compressed,
                                 ro, block_entry, uncompression_dict, block_type,
@@ -1465,9 +1465,9 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
         }
       }
     }
-    auto dcend_time = Clock::now();
-    float DataCacheLat = std::chrono::duration_cast<std::chrono::nanoseconds>(dcend_time - dcstart_time).count() * 0.001;
-    fprintf(stdout, "GetCache = %.2lf\n", DataCacheLat); // Signal.Jin
+    //auto dcend_time = Clock::now();
+    //float DataCacheLat = std::chrono::duration_cast<std::chrono::nanoseconds>(dcend_time - dcstart_time).count() * 0.001;
+    //fprintf(stdout, "GetCache = %.2lf\n", DataCacheLat); // Signal.Jin
 
     // Can't find the block from the cache. If I/O is allowed, read from the
     // file.
@@ -1514,14 +1514,14 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
       if (s.ok()) {
         // If filling cache is allowed and a cache is configured, try to put the
         // block to the cache.
-        auto pcstart_time = Clock::now();
+        //auto pcstart_time = Clock::now();
         s = PutDataBlockToCache(
             key, ckey, block_cache, block_cache_compressed, block_entry,
             contents, raw_block_comp_type, uncompression_dict,
             GetMemoryAllocator(rep_->table_options), block_type, get_context);
-        auto pcend_time = Clock::now();
-        float PutCacheLat = std::chrono::duration_cast<std::chrono::nanoseconds>(pcend_time - pcstart_time).count() * 0.001;
-        fprintf(stdout, "PutCache = %.2lf\n", PutCacheLat); // Signal.Jin
+        //auto pcend_time = Clock::now();
+        //float PutCacheLat = std::chrono::duration_cast<std::chrono::nanoseconds>(pcend_time - pcstart_time).count() * 0.001;
+        //fprintf(stdout, "PutCache = %.2lf\n", PutCacheLat); // Signal.Jin
       }
     }
   }
@@ -1943,7 +1943,7 @@ Status BlockBasedTable::RetrieveBlock(
   {
     StopWatch sw(rep_->ioptions.clock, rep_->ioptions.stats,
                  READ_BLOCK_GET_MICROS);
-    auto rbstart_time = Clock::now();
+    //auto rbstart_time = Clock::now();
     s = ReadBlockFromFile(
         rep_->file.get(), prefetch_buffer, rep_->footer, ro, handle, &block,
         rep_->ioptions, do_uncompress, maybe_compressed, block_type,
@@ -1954,9 +1954,9 @@ Status BlockBasedTable::RetrieveBlock(
         GetMemoryAllocator(rep_->table_options), for_compaction,
         rep_->blocks_definitely_zstd_compressed,
         rep_->table_options.filter_policy.get());
-    auto rbend_time = Clock::now();
-    float ReadBlockLat = std::chrono::duration_cast<std::chrono::nanoseconds>(rbend_time - rbstart_time).count() * 0.001;
-    fprintf(stdout, "ReadBlock = %.2lf\n", ReadBlockLat); // Signal.Jin
+    //auto rbend_time = Clock::now();
+    //float ReadBlockLat = std::chrono::duration_cast<std::chrono::nanoseconds>(rbend_time - rbstart_time).count() * 0.001;
+    //fprintf(stdout, "ReadBlock = %.2lf\n", ReadBlockLat); // Signal.Jin
     if (get_context) {
       switch (block_type) {
         case BlockType::kIndex:
