@@ -1786,7 +1786,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
     // Get value associated with key
     if (get_impl_options.get_value) { // In default, Check for memtable or immutable memtable key - Signal.Jin
       //fprintf(stdout, "\n[RandomRead Memtable Get Start]\n");
-      //auto mstart_time = Clock::now();
+      auto mstart_time = Clock::now();
       if (sv->mem->Get(lkey, get_impl_options.value->GetSelf(), timestamp, &s,
                        &merge_context, &max_covering_tombstone_seq,
                        read_options, get_impl_options.callback,
@@ -1806,9 +1806,9 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
         get_impl_options.value->PinSelf();
         RecordTick(stats_, MEMTABLE_HIT);
       }
-      //auto mend_time = Clock::now();
-      //float MemLat = std::chrono::duration_cast<std::chrono::nanoseconds>(mend_time - mstart_time).count() * 0.001;
-      //fprintf(stdout, "Memtable = %.2lf\n", MemLat); // Signal.Jin
+      auto mend_time = Clock::now();
+      float MemLat = std::chrono::duration_cast<std::chrono::nanoseconds>(mend_time - mstart_time).count() * 0.001;
+      fprintf(stdout, "Memtable = %.2lf\n", MemLat); // Signal.Jin
       //fprintf(stdout, "[RandomRead Memtable Get End]\n\n");
     } else {
       // Get Merge Operands associated with key, Merge Operands should not be
@@ -1835,6 +1835,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   /*struct timeval s_time, e_time;
   double r_time;
   gettimeofday(&s_time, NULL);*/
+  auto sstart_time = Clock::now();
   if (!done) {
     PERF_TIMER_GUARD(get_from_output_files_time);
     //printf("\n[RandomRead Get SSTable Start]\n"); // Signal.Jin
@@ -1849,6 +1850,9 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
     RecordTick(stats_, MEMTABLE_MISS);
     //printf("[RandomRead Get SSTable End]\n\n"); // Signal.Jin
   }
+  auto send_time = Clock::now();
+  float SSTLat = std::chrono::duration_cast<std::chrono::nanoseconds>(send_time - sstart_time).count() * 0.001;
+  fprintf(stdout, "SSTable = %.2lf\n", SSTLat); // Signal.Jin
   /*gettimeofday(&e_time, NULL);
   r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
   fprintf(stdout, "SST seek time = %.2lf\n", r_time);*/ // Signal.Jin
