@@ -1707,11 +1707,11 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   }
 
   // Acquire SuperVersion
-  //auto vstart_time = Clock::now();
+  auto vstart_time = Clock::now();
   SuperVersion* sv = GetAndRefSuperVersion(cfd);
-  //auto vend_time = Clock::now();
-  //float VersionLat = std::chrono::duration_cast<std::chrono::nanoseconds>(vend_time - vstart_time).count() * 0.001;
-  //fprintf(stdout, "\n\nVersion = %.2lf\n", VersionLat); // Signal.Jin
+  auto vend_time = Clock::now();
+  float VersionLat = std::chrono::duration_cast<std::chrono::nanoseconds>(vend_time - vstart_time).count() * 0.001;
+  fprintf(stdout, "\n\nVersion = %.2lf\n", VersionLat); // Signal.Jin
 
   TEST_SYNC_POINT("DBImpl::GetImpl:1");
   TEST_SYNC_POINT("DBImpl::GetImpl:2");
@@ -1835,7 +1835,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
   /*struct timeval s_time, e_time;
   double r_time;
   gettimeofday(&s_time, NULL);*/
-  auto sstart_time = Clock::now();
+  //auto sstart_time = Clock::now();
   if (!done) {
     PERF_TIMER_GUARD(get_from_output_files_time);
     //printf("\n[RandomRead Get SSTable Start]\n"); // Signal.Jin
@@ -1850,9 +1850,9 @@ Status DBImpl::GetImpl(const ReadOptions& read_options, const Slice& key,
     RecordTick(stats_, MEMTABLE_MISS);
     //printf("[RandomRead Get SSTable End]\n\n"); // Signal.Jin
   }
-  auto send_time = Clock::now();
-  float SSTLat = std::chrono::duration_cast<std::chrono::nanoseconds>(send_time - sstart_time).count() * 0.001;
-  fprintf(stdout, "SSTable = %.2lf\n", SSTLat); // Signal.Jin
+  //auto send_time = Clock::now();
+  //float SSTLat = std::chrono::duration_cast<std::chrono::nanoseconds>(send_time - sstart_time).count() * 0.001;
+  //fprintf(stdout, "SSTable = %.2lf\n", SSTLat); // Signal.Jin
   /*gettimeofday(&e_time, NULL);
   r_time = (e_time.tv_sec - s_time.tv_sec) + (e_time.tv_usec - s_time.tv_usec);
   fprintf(stdout, "SST seek time = %.2lf\n", r_time);*/ // Signal.Jin
