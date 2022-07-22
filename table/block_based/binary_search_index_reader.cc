@@ -54,12 +54,12 @@ InternalIteratorBase<IndexValue>* BinarySearchIndexReader::NewIterator(
   if (index_block.IsEmpty()){
     //fprintf(stdout, "Index block is Empty\n");
   } // Signal.Jin
-  //auto istart_time = Clock::now();
+  auto istart_time = Clock::now();
   const Status s =
       GetOrReadIndexBlock(no_io, get_context, lookup_context, &index_block);
-  //auto iend_time = Clock::now();
-  //float IndexLat = std::chrono::duration_cast<std::chrono::nanoseconds>(iend_time - istart_time).count() * 0.001;
-  //fprintf(stdout, "Index = %.2lf\n", IndexLat); // Signal.Jin
+  auto iend_time = Clock::now();
+  float IndexLat = std::chrono::duration_cast<std::chrono::nanoseconds>(iend_time - istart_time).count() * 0.001;
+  fprintf(stdout, "Index = %.2lf\n", IndexLat); // Signal.Jin
   if (!s.ok()) {
     if (iter != nullptr) {
       iter->Invalidate(s);
