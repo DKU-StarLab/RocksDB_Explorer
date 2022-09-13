@@ -38,7 +38,7 @@
 #include "port/port.h"
 #include "util/random.h"
 
-static void* last_loc; // Signal.Jin
+//static void* last_loc; // Signal.Jin
 //static int count = 0;
 
 namespace ROCKSDB_NAMESPACE {
@@ -114,6 +114,7 @@ class SkipList {
    private:
     const SkipList* list_;
     Node* node_;
+    Node* single_cursor_; // Cursor based skiplist optimization - Signal.Jin
     // Intentionally copyable
   };
 
@@ -362,8 +363,8 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
-  if (last_loc != nullptr) {
-    x = (Node *)last_loc;
+  if (single_cursor_ != nullptr) {
+    x = single_cursor_;
     level = 0;
     if (compare_(x->key, key) > 0) {
       x = head_;
@@ -389,7 +390,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
         ? 1 : compare_(next->key, key);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
       if (next != nullptr) {
-        last_loc = next;
+        single_cursor_ = next;
       }
       return next;
     } else if (cmp < 0) {
@@ -488,6 +489,7 @@ SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
       compare_(cmp),
       allocator_(allocator),
       head_(NewNode(0 /* any key will do */, max_height)),
+      single_cursor_(NewNode(0, max_height)),
       max_height_(1),
       prev_height_(1) {
   assert(max_height > 0 && kMaxHeight_ == static_cast<uint32_t>(max_height));
