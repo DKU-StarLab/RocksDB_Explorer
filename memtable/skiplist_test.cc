@@ -251,7 +251,7 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   for (int i = 0; i < R; i++) { 
     Key Gkey = rnd_val[i];
     auto start_time = Clock::now();
-    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains_Cursor(Gkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Gkey), 1U);
     } else {
       ASSERT_EQ(keys.count(Gkey), 0U);
