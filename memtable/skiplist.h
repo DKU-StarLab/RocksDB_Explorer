@@ -65,7 +65,7 @@ class SkipList {
   // Returns true iff an entry that compares equal to key is in the list.
   bool Contains(const Key& key) const;
 
-  bool Contains_RLSN(const Key& key) const; // Signal.Jin
+  bool Contains_Cursor(const Key& key) const; // Signal.Jin
 
   // Return estimated number of entries smaller than `key`.
   uint64_t EstimateCount(const Key& key) const;
@@ -157,7 +157,7 @@ class SkipList {
   // Return nullptr if there is no such node.
   Node* FindGreaterOrEqual(const Key& key) const;
 
-  Node* FindGreaterOrEqual_RLSN(const Key& key) const; // Signal.Jin
+  Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -351,7 +351,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
-  FindGreaterOrEqual_RLSN(const Key& key) const { // Signal.Jin
+  FindGreaterOrEqual_Cursor(const Key& key) const { // Signal.Jin
   // Note: It looks like we could reduce duplication by implementing
   // this function as FindLessThan(key)->Next(0), but we wouldn't be able
   // to exit early on equality and the result wouldn't even be correct.
@@ -568,8 +568,8 @@ bool SkipList<Key, Comparator>::Contains(const Key& key) const {
 }
 
 template<typename Key, class Comparator>
-bool SkipList<Key, Comparator>::Contains_RLSN(const Key& key) const {
-  Node* x = FindGreaterOrEqual_RLSN(key);
+bool SkipList<Key, Comparator>::Contains_Cursor(const Key& key) const {
+  Node* x = FindGreaterOrEqual_Cursor(key);
   if (x != nullptr && Equal(key, x->key)) {
     return true;
   } else {
