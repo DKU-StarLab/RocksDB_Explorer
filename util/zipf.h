@@ -1,5 +1,5 @@
 extern long items; //initialized in init_zipf_generator function
-extern long base; //initialized in init_zipf_generator function
+//extern long base; //initialized in init_zipf_generator function
 extern double zipfianconstant; //initialized in init_zipf_generator function
 extern double alpha; //initialized in init_zipf_generator function
 extern double zetan; //initialized in init_zipf_generator function
