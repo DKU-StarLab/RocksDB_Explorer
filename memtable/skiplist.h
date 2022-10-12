@@ -114,7 +114,6 @@ class SkipList {
    private:
     const SkipList* list_;
     Node* node_;
-    Node* single_cursor_; // Cursor based skiplist optimization - Signal.Jin
     // Intentionally copyable
   };
 
@@ -128,6 +127,8 @@ class SkipList {
   Allocator* const allocator_;    // Allocator used for allocations of nodes
 
   Node* const head_;
+  mutable Node* single_cursor_; // Cursor based skiplist optimization - Signal.Jin
+  mutable int cs_level; // To store single cursor's top level - Signal.Jin
 
   // Modified only by Insert().  Read racily by readers, but stale
   // values are ok.
@@ -206,7 +207,6 @@ struct SkipList<Key, Comparator>::Node {
  private:
   // Array of length equal to the node height.  next_[0] is lowest level link.
   std::atomic<Node*> next_[1];
-  //Node next_[1];
 };
 
 template<typename Key, class Comparator>
@@ -353,29 +353,24 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   FindGreaterOrEqual_Cursor(const Key& key) const { // Signal.Jin
-  // Note: It looks like we could reduce duplication by implementing
-  // this function as FindLessThan(key)->Next(0), but we wouldn't be able
-  // to exit early on equality and the result wouldn't even be correct.
-  // A concurrent insert might occur after FindLessThan(key) but before
-  // we get a chance to call Next(0).
-  //int count = 0;
+  // Note: This function is a single cursor algorithm in a skip-list
+  // The role of curosr is to remember where it was previsouly
+  // lookup to.
+  // In a single-cursor, only one cursor can exist at a time. - Signal.Jin
   
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
-  if (single_cursor_ != nullptr) {
-    x = single_cursor_;
-    level = 0;
-    if (compare_(x->key, key) > 0) {
-      x = head_;
-      level = GetMaxHeight() - 1;
-    }/* else {
-      for (int i = 0; i < GetMaxHeight() - 1; i++) {
-        if (x->Next(i) == nullptr) {
-          level = i-1; break;
-        }
-      }
-    }*/
+  if (compare_(single_cursor_->key, head_->key) > 0) {
+    if (compare_(single_cursor_->key, key) < 0) {
+      x = single_cursor_;
+      level = cs_level;
+    } else if (compare_(single_cursor_->key, key) == 0) {
+      return single_cursor_;
+    }
+    // We can start lookup from a cursor.
+    // Becasue there is a possibility of having the
+    // shortest distance from the cursor. - Signal.Jin
   }
   while (true) {
     assert(x != nullptr);
@@ -391,6 +386,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
     if (cmp == 0 || (cmp > 0 && level == 0)) {
       if (next != nullptr) {
         single_cursor_ = next;
+        cs_level = level;
       }
       return next;
     } else if (cmp < 0) {
