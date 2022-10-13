@@ -68,8 +68,8 @@ class SkipList {
   // Call a FindGreatorOrEqual_Cursor function - Signal.Jin
   bool Contains_Cursor(const Key& key) const;
 
-  // Call a FindGreatorOrEqual_TwoCursor function - Signal.Jin
-  bool Contains_TwoCursor(const Key& key) const;
+  // Call a FindGreatorOrEqual_TwoCursors function - Signal.Jin
+  bool Contains_TwoCursors(const Key& key) const;
 
   // Return estimated number of entries smaller than `key`.
   uint64_t EstimateCount(const Key& key) const;
@@ -169,7 +169,7 @@ class SkipList {
 
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
-  Node* FindGreatorOrEqual_TwoCursor(const Key& key) const; // Signal.Jin
+  Node* FindGreatorOrEqual_TwoCursors(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -578,6 +578,16 @@ bool SkipList<Key, Comparator>::Contains(const Key& key) const {
 template<typename Key, class Comparator>
 bool SkipList<Key, Comparator>::Contains_Cursor(const Key& key) const {
   Node* x = FindGreaterOrEqual_Cursor(key);
+  if (x != nullptr && Equal(key, x->key)) {
+    return true;
+  } else {
+    return false;
+  }
+} // Signal.Jin
+
+template<typename Key, class Comparator>
+bool SkipList<Key, Comparator>::Contains_TwoCursors(const Key& key) const {
+  Node* x = FindGreatorOrEqual_TwoCursors(key);
   if (x != nullptr && Equal(key, x->key)) {
     return true;
   } else {
