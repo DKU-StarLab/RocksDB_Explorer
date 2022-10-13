@@ -169,7 +169,7 @@ class SkipList {
 
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
-  Node* FindGreatorOrEqual_TwoCursors(const Key& key) const; // Signal.Jin
+  Node* FindGreaterOrEqual_TwoCursors(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -411,6 +411,56 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 }
 
 template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
+  FindGreaterOrEqual_TwoCursors(const Key& key) const { // Signal.Jin
+  // Note: This function is a single cursor algorithm in a skip-list
+  // The role of curosr is to remember where it was previsouly
+  // lookup to.
+  // In a single-cursor, only one cursor can exist at a time. - Signal.Jin
+  
+  Node* x = head_;
+  int level = GetMaxHeight() - 1;
+  Node* last_bigger = nullptr;
+  if (compare_(single_cursor_->key, head_->key) > 0) {
+    if (compare_(single_cursor_->key, key) < 0) {
+      x = single_cursor_;
+      level = cs_level;
+    } else if (compare_(single_cursor_->key, key) == 0) {
+      return single_cursor_;
+    }
+    // We can start lookup from a cursor.
+    // Becasue there is a possibility of having the
+    // shortest distance from the cursor. - Signal.Jin
+  }
+  while (true) {
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+    // Make sure the lists are sorted
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    // Make sure we haven't overshot during our search
+    if (next != nullptr) {
+      assert(x == head_ || KeyIsAfterNode(key, x));
+    }
+    int cmp = (next == nullptr || next == last_bigger)
+        ? 1 : compare_(next->key, key);
+    if (cmp == 0 || (cmp > 0 && level == 0)) {
+      if (next != nullptr) {
+        single_cursor_ = next;
+        cs_level = level;
+      }
+      return next;
+    } else if (cmp < 0) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      // Switch to next list, reuse compare_() result
+      last_bigger = next;
+      level--;
+    }
+  }
+}
+
+template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node*
 SkipList<Key, Comparator>::FindLessThan(const Key& key, Node** prev) const {
   Node* x = head_;
@@ -587,7 +637,7 @@ bool SkipList<Key, Comparator>::Contains_Cursor(const Key& key) const {
 
 template<typename Key, class Comparator>
 bool SkipList<Key, Comparator>::Contains_TwoCursors(const Key& key) const {
-  Node* x = FindGreatorOrEqual_TwoCursors(key);
+  Node* x = FindGreaterOrEqual_TwoCursors(key);
   if (x != nullptr && Equal(key, x->key)) {
     return true;
   } else {
