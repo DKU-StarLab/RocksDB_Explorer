@@ -65,7 +65,11 @@ class SkipList {
   // Returns true iff an entry that compares equal to key is in the list.
   bool Contains(const Key& key) const;
 
-  bool Contains_Cursor(const Key& key) const; // Signal.Jin
+  // Call a FindGreatorOrEqual_Cursor function - Signal.Jin
+  bool Contains_Cursor(const Key& key) const;
+
+  // Call a FindGreatorOrEqual_TwoCursor function - Signal.Jin
+  bool Contains_TwoCursor(const Key& key) const;
 
   // Return estimated number of entries smaller than `key`.
   uint64_t EstimateCount(const Key& key) const;
@@ -127,8 +131,12 @@ class SkipList {
   Allocator* const allocator_;    // Allocator used for allocations of nodes
 
   Node* const head_;
-  mutable Node* single_cursor_; // Cursor based skiplist optimization - Signal.Jin
+  
+  mutable Node* single_cursor_; // Single Cursor based skiplist optimization - Signal.Jin
   mutable int cs_level; // To store single cursor's top level - Signal.Jin
+
+  mutable Node* two_cursor[2];
+  mutable int tc_level[2];
 
   // Modified only by Insert().  Read racily by readers, but stale
   // values are ok.
@@ -160,6 +168,8 @@ class SkipList {
   Node* FindGreaterOrEqual(const Key& key) const;
 
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
+
+  Node* FindGreatorOrEqual_TwoCursor(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -573,6 +583,6 @@ bool SkipList<Key, Comparator>::Contains_Cursor(const Key& key) const {
   } else {
     return false;
   }
-}
+} // Signal.Jin
 
 }  // namespace ROCKSDB_NAMESPACE
