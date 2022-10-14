@@ -135,7 +135,7 @@ class SkipList {
   mutable Node* single_cursor_; // Single Cursor based skiplist optimization - Signal.Jin
   mutable int cs_level; // To store single cursor's top level - Signal.Jin
 
-  mutable Node* two_cursor[2];
+  mutable Node* two_cursors[2];
   mutable int tc_level[2];
 
   // Modified only by Insert().  Read racily by readers, but stale
@@ -326,14 +326,11 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   // to exit early on equality and the result wouldn't even be correct.
   // A concurrent insert might occur after FindLessThan(key) but before
   // we get a chance to call Next(0).
-  //int count = 0;
   
   Node* x = head_;
-  //fprintf(stdout, "Node size = %lu\n", sizeof(Node)); // Check skiplist node size - Signal.Jin
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
   while (true) {
-    //count++;
     assert(x != nullptr);
     Node* next = x->Next(level);
     /*if (next != nullptr) {
@@ -346,7 +343,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
     int cmp = (next == nullptr || next == last_bigger)
         ? 1 : compare_(next->key, key);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
-      //fprintf(stdout, "%d\n", count);
       return next;
     } else if (cmp < 0) {
       // Keep searching in this list
@@ -356,7 +352,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
       last_bigger = next;
       level--;
     }
-    //fprintf(stdout, "level = %d\n", level);
   }
 }
 
