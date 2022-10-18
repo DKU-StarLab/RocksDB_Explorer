@@ -359,13 +359,18 @@ template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   FindGreaterOrEqual_Cursor(const Key& key) const { // Signal.Jin
   // Note: This function is a single cursor algorithm in a skip-list
-  // The role of curosr is to remember where it was previsouly
+  // The role of cursor is to remember where it was previsouly
   // lookup to.
   // In a single-cursor, only one cursor can exist at a time. - Signal.Jin
   
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
+  if (cs_level != NULL) {
+    if (cs_level =< level/2) {
+      x = head_;
+    }
+  } // TODO: Not yet
   if (compare_(single_cursor_->key, head_->key) > 0) {
     if (compare_(single_cursor_->key, key) < 0) {
       x = single_cursor_;
@@ -408,11 +413,12 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   FindGreaterOrEqual_TwoCursors(const Key& key) const { // Signal.Jin
-  // Note: This function is a single cursor algorithm in a skip-list
-  // The role of curosr is to remember where it was previsouly
+  // Note: This function is a two cursors algorithm in a skip-list
+  // The role of cursor is to remember where it was previsouly
   // lookup to.
-  // In a single-cursor, only one cursor can exist at a time. - Signal.Jin
-  
+  // In a two-cursors, only two cursors can exist at a time. - Signal.Jin
+  // Var: two_cursors, tc_level
+
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
@@ -555,6 +561,9 @@ SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
   for (int i = 0; i < kMaxHeight_; i++) {
     head_->SetNext(i, nullptr);
     prev_[i] = head_;
+  }
+  for (int i = 0; i < 2; i++) {
+    two_cursors[i] = NewNode(0, max_height);
   }
 }
 
