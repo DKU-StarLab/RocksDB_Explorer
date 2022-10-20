@@ -366,22 +366,26 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
-  if (cs_level != NULL) {
-    if (cs_level =< level/2) {
-      x = head_;
+  if (cs_level != -1) {
+    if (cs_level <= level/2) {
+      // Nothing to do. - Signal.Jin
+    } else {
+      if (compare_(single_cursor_->key, head_->key) > 0) {
+        if (compare_(single_cursor_->key, key) < 0) {
+          x = single_cursor_;
+          level = cs_level;
+        } else if (compare_(single_cursor_->key, key) == 0) {
+          return single_cursor_;
+        }
+        // We can start lookup from a cursor.
+        // Becasue there is a possibility of having the
+        // shortest distance from the cursor. - Signal.Jin
+      }
     }
-  } // TODO: Not yet
-  if (compare_(single_cursor_->key, head_->key) > 0) {
-    if (compare_(single_cursor_->key, key) < 0) {
-      x = single_cursor_;
-      level = cs_level;
-    } else if (compare_(single_cursor_->key, key) == 0) {
-      return single_cursor_;
-    }
-    // We can start lookup from a cursor.
-    // Becasue there is a possibility of having the
-    // shortest distance from the cursor. - Signal.Jin
-  }
+  } 
+  // If Cursor's node height is too low,
+  // Will start from the head node. - Signal.Jin
+  
   while (true) {
     assert(x != nullptr);
     Node* next = x->Next(level);
@@ -547,6 +551,7 @@ SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
       allocator_(allocator),
       head_(NewNode(0 /* any key will do */, max_height)),
       single_cursor_(NewNode(0, max_height)),
+      cs_level(-1),
       max_height_(1),
       prev_height_(1) {
   assert(max_height > 0 && kMaxHeight_ == static_cast<uint32_t>(max_height));
