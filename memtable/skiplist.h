@@ -366,6 +366,8 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   Node* x = head_;
   int level = GetMaxHeight() - 1;
   Node* last_bigger = nullptr;
+  /*
+  // Single Cursor Opt 1.
   if (cs_level != -1) {
     if (cs_level <= level/2) {
       // Nothing to do. - Signal.Jin
@@ -385,7 +387,27 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   } 
   // If Cursor's node height is too low,
   // Will start from the head node. - Signal.Jin
-  
+  */
+
+  // Single Cursor Opt 2
+  if (cs_level != -1) {
+    if ((key - single_cursor_->key) > 9) {
+      // Nothing to do. - Signal.Jin
+    } else {
+      if (compare_(single_cursor_->key, head_->key) > 0) {
+        if (compare_(single_cursor_->key, key) < 0) {
+          x = single_cursor_;
+          level = cs_level;
+        } else if (compare_(single_cursor_->key, key) == 0) {
+          return single_cursor_;
+        }
+        // We can start lookup from a cursor.
+        // Becasue there is a possibility of having the
+        // shortest distance from the cursor. - Signal.Jin
+      }
+    }
+  }
+
   while (true) {
     assert(x != nullptr);
     Node* next = x->Next(level);

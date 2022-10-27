@@ -169,7 +169,7 @@ TEST_F(SkipTest, SeqInsertAndLookupX) { // Skiplist test for Sequential Pattern 
   free(lat);
 }
 */
-
+/*
 TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern (Find all keys) - Signal.Jin
   const int N = 250000; // Write Count - Signal.Jin
   const int R = 100000; // Read Count - Signal.Jin
@@ -182,7 +182,7 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
   float *lat = (float *)malloc(sizeof(float)*R);
   int j = 0;
 
-  fp_sk_test = fopen("./sc_exp/seq_100k/sc_seq_100k.csv", "at");
+  fp_sk_test = fopen("./opt_sc_exp/seq/100k/sc_seq_100k.csv", "at");
 
   // Insert key sequential pattern in skiplist
   for (int i = 0; i < N; i++) {
@@ -207,18 +207,17 @@ TEST_F(SkipTest, SeqInsertAndLookupO) { // Skiplist test for Sequential Pattern 
     j++;
   }
 
-  for(int i = 0; i < R; i++) {
-    fprintf(fp_sk_test, "%.2f\n", lat[i]); // Signal.Jin  
+  for(int k = 0; k < R; k++) {
+    fprintf(fp_sk_test, "%.2f\n", lat[k]); // Signal.Jin  
   }
   fclose(fp_sk_test);
   free(lat);
-
 }
-
+*/
 /*
 TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 250000; // Write Count - Signal.Jin
-  const int R = 10000; // Read Count - Signal.Jin
+  const int R = 100000; // Read Count - Signal.Jin
   Random rnd(5326);
   std::set<Key> keys;
   Arena arena;
@@ -233,7 +232,7 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   float *lat = (float *)malloc(sizeof(float)*R);
   uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
   
-  fp_sk_test = fopen("./sc_exp/uni_10k/sc_uni_10k.csv", "at");
+  fp_sk_test = fopen("./opt_sc_exp/uni/100k/default_uni_100k.csv", "at");
 
   for (int i = 1; i < N; i++) {
     Key key = i;
@@ -251,7 +250,7 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   for (int i = 0; i < R; i++) { 
     Key Gkey = rnd_val[i];
     auto start_time = Clock::now();
-    if (list.Contains_Cursor(Gkey)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Gkey), 1U);
     } else {
       ASSERT_EQ(keys.count(Gkey), 0U);
@@ -262,8 +261,8 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
     j++;
   }
 
-  for(int i = 0; i < R; i++) {
-    fprintf(fp_sk_test, "%.2f\n", lat[i]);
+  for(int k = 0; k < R; k++) {
+    fprintf(fp_sk_test, "%.2f\n", lat[k]);
   }
 
   fclose(fp_sk_test);
@@ -271,10 +270,10 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   free(rnd_val);
 }
 */
-/*
+
 TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern - Signal.Jin
   const int N = 250000; // Write Count - Signal.Jin
-  const int R = 1000; // Read Count - Signal.Jin
+  const int R = 100000; // Read Count - Signal.Jin
   Random rnd(1000);
   std::set<Key> keys;
   Arena arena;
@@ -286,7 +285,7 @@ TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern -
   init_zipf_generator(0, N);
 
   FILE *fp_sk_test;
-  fp_sk_test = fopen("./sc_exp/zipf_1000/zipf_test.csv", "at");
+  fp_sk_test = fopen("./opt_sc_exp/zipf/100k/sc_zipf_100k_best.csv", "at");
 
   float *lat = (float *)malloc(sizeof(float)*R);
   uint64_t *zipf_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
@@ -307,7 +306,7 @@ TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern -
   for (int i = 0; i < R; i++) { 
     Key Zkey = zipf_val[i];
     auto start_time = Clock::now();
-    if (list.Contains_Cursor(Zkey)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains(Zkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Zkey), 1U);
     } else {
       ASSERT_EQ(keys.count(Zkey), 0U);
@@ -317,14 +316,15 @@ TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern -
     lat[j] = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() * 0.001;
     j++;
   }
-  for(int i = 0; i < R; i++) {
-    fprintf(fp_sk_test, "%.2f\n", lat[i]);
+
+  for(int k = 0; k < R; k++) {
+    fprintf(fp_sk_test, "%.2f\n", lat[k]);
   }
   fclose(fp_sk_test);
   free(zipf_val);
   free(lat);
 }
-*/
+
 /*
 TEST_F(SkipTest, InsertAndLookup) { /// In here, Main step for Skiplist_test (Write and Read) - Signal.Jin
   const int N = 2000; // Write Count - Signal.Jin
