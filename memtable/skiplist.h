@@ -135,9 +135,6 @@ class SkipList {
   mutable Node* single_cursor_; // Single Cursor based skiplist optimization - Signal.Jin
   mutable int cs_level; // To store single cursor's top level - Signal.Jin
 
-  mutable Node* two_cursors[2];
-  mutable int tc_level[2];
-
   // Modified only by Insert().  Read racily by readers, but stale
   // values are ok.
   std::atomic<int> max_height_;  // Height of the entire list
@@ -391,7 +388,7 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 
   // Single Cursor Opt 2
   if (cs_level != -1) {
-    if ((key - single_cursor_->key) > 9) {
+    if ((key - single_cursor_->key) > 9) { /*TODO: Setting Value by number of inserts*/
       // Nothing to do. - Signal.Jin
     } else {
       if (compare_(single_cursor_->key, head_->key) > 0) {
@@ -408,57 +405,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
     }
   }
 
-  while (true) {
-    assert(x != nullptr);
-    Node* next = x->Next(level);
-    // Make sure the lists are sorted
-    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
-    // Make sure we haven't overshot during our search
-    if (next != nullptr) {
-      assert(x == head_ || KeyIsAfterNode(key, x));
-    }
-    int cmp = (next == nullptr || next == last_bigger)
-        ? 1 : compare_(next->key, key);
-    if (cmp == 0 || (cmp > 0 && level == 0)) {
-      if (next != nullptr) {
-        single_cursor_ = next;
-        cs_level = level;
-      }
-      return next;
-    } else if (cmp < 0) {
-      // Keep searching in this list
-      x = next;
-    } else {
-      // Switch to next list, reuse compare_() result
-      last_bigger = next;
-      level--;
-    }
-  }
-}
-
-template<typename Key, class Comparator>
-typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
-  FindGreaterOrEqual_TwoCursors(const Key& key) const { // Signal.Jin
-  // Note: This function is a two cursors algorithm in a skip-list
-  // The role of cursor is to remember where it was previsouly
-  // lookup to.
-  // In a two-cursors, only two cursors can exist at a time. - Signal.Jin
-  // Var: two_cursors, tc_level
-
-  Node* x = head_;
-  int level = GetMaxHeight() - 1;
-  Node* last_bigger = nullptr;
-  if (compare_(single_cursor_->key, head_->key) > 0) {
-    if (compare_(single_cursor_->key, key) < 0) {
-      x = single_cursor_;
-      level = cs_level;
-    } else if (compare_(single_cursor_->key, key) == 0) {
-      return single_cursor_;
-    }
-    // We can start lookup from a cursor.
-    // Becasue there is a possibility of having the
-    // shortest distance from the cursor. - Signal.Jin
-  }
   while (true) {
     assert(x != nullptr);
     Node* next = x->Next(level);
@@ -589,9 +535,6 @@ SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
     head_->SetNext(i, nullptr);
     prev_[i] = head_;
   }
-  for (int i = 0; i < 2; i++) {
-    two_cursors[i] = NewNode(0, max_height);
-  }
 }
 
 template<typename Key, class Comparator>
@@ -659,16 +602,6 @@ bool SkipList<Key, Comparator>::Contains(const Key& key) const {
 template<typename Key, class Comparator>
 bool SkipList<Key, Comparator>::Contains_Cursor(const Key& key) const {
   Node* x = FindGreaterOrEqual_Cursor(key);
-  if (x != nullptr && Equal(key, x->key)) {
-    return true;
-  } else {
-    return false;
-  }
-} // Signal.Jin
-
-template<typename Key, class Comparator>
-bool SkipList<Key, Comparator>::Contains_TwoCursors(const Key& key) const {
-  Node* x = FindGreaterOrEqual_TwoCursors(key);
   if (x != nullptr && Equal(key, x->key)) {
     return true;
   } else {
