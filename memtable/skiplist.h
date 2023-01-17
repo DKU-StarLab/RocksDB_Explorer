@@ -48,10 +48,14 @@ class SkipList {
  private:
   struct Node;
 
-  struct L_node {
+  typedef struct T_node {
     Node* SL_node;
-    struct L_node* next;
-  }; // Signal.Jin
+    struct T_node* left;
+    struct T_node* right;
+    int key;
+  } Tnode; // Tree node structure - Signal.Jin
+
+  Tnode* root; // Root of Tree structure - Signal.Jin
 
  public:
   // Create a new SkipList object that will use "cmp" for comparing keys,
@@ -67,17 +71,9 @@ class SkipList {
   // REQUIRES: nothing that compares equal to key is currently in the list.
   void Insert(const Key& key);
 
-  void Insert_B2hSL(const Key& key); // Signal.Jin
+  void Insert_B2hSL(const Key& key); // B2hSL insert function - Signal.Jin
 
   uint64_t Estimate_Max() const; // Signal.Jin
-
-  // Init L_node list. - Signal.Jin
-  L_node* init(L_node* tmp) {
-    tmp = new L_node();
-    tmp->next = NULL;
-    tmp->SL_node = NULL;
-    return tmp;
-  }
 
   // Returns true iff an entry that compares equal to key is in the list.
   bool Contains(const Key& key) const;
@@ -132,7 +128,6 @@ class SkipList {
    private:
     const SkipList* list_;
     Node* node_;
-    L_node* Lhead_; // Signal.Jin
     // Intentionally copyable
   };
 
@@ -181,9 +176,8 @@ class SkipList {
 
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
-  void L_insert(L_node* head, Node* l) const; // Signal.Jin
-  L_node* L_find(const Key& key) const; // Signal.Jin
-  void L_delete(L_node* head) const; // Signal.Jin
+  void AddTreeNode(const Key& key, Node* M_target) const; // Signal.Jin
+  Tnode* SearchTreeNode(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
