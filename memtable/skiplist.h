@@ -48,12 +48,17 @@ class SkipList {
  private:
   struct Node;
 
+  struct L_node {
+    Node* SL_node;
+    struct L_node* next;
+  }; // Signal.Jin
+
  public:
   // Create a new SkipList object that will use "cmp" for comparing keys,
   // and will allocate memory using "*allocator".  Objects allocated in the
   // allocator must remain allocated for the lifetime of the skiplist object.
   explicit SkipList(Comparator cmp, Allocator* allocator,
-                    int32_t max_height = 12, int32_t branching_factor = 4);
+                    int32_t max_height = 5, int32_t branching_factor = 4);
   // No copying allowed
   SkipList(const SkipList&) = delete;
   void operator=(const SkipList&) = delete;
@@ -62,14 +67,23 @@ class SkipList {
   // REQUIRES: nothing that compares equal to key is currently in the list.
   void Insert(const Key& key);
 
+  void Insert_B2hSL(const Key& key); // Signal.Jin
+
+  uint64_t Estimate_Max() const; // Signal.Jin
+
+  // Init L_node list. - Signal.Jin
+  L_node* init(L_node* tmp) {
+    tmp = new L_node();
+    tmp->next = NULL;
+    tmp->SL_node = NULL;
+    return tmp;
+  }
+
   // Returns true iff an entry that compares equal to key is in the list.
   bool Contains(const Key& key) const;
 
   // Call a FindGreatorOrEqual_Cursor function - Signal.Jin
   bool Contains_Cursor(const Key& key) const;
-
-  // Call a FindGreatorOrEqual_TwoCursors function - Signal.Jin
-  bool Contains_TwoCursors(const Key& key) const;
 
   // Return estimated number of entries smaller than `key`.
   uint64_t EstimateCount(const Key& key) const;
@@ -118,6 +132,7 @@ class SkipList {
    private:
     const SkipList* list_;
     Node* node_;
+    L_node* Lhead_; // Signal.Jin
     // Intentionally copyable
   };
 
@@ -166,7 +181,9 @@ class SkipList {
 
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
-  Node* FindGreaterOrEqual_TwoCursors(const Key& key) const; // Signal.Jin
+  void L_insert(L_node* head, Node* l) const; // Signal.Jin
+  L_node* L_find(const Key& key) const; // Signal.Jin
+  void L_delete(L_node* head) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -483,7 +500,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::FindLast()
   }
 }
 
-//
 template <typename Key, class Comparator>
 uint64_t SkipList<Key, Comparator>::EstimateCount(const Key& key) const {
   uint64_t count = 0;
@@ -505,6 +521,22 @@ uint64_t SkipList<Key, Comparator>::EstimateCount(const Key& key) const {
       x = next;
       count++;
     }
+  }
+}
+
+template <typename Key, class Comparator>
+uint64_t SkipList<Key, Comparator>::Estimate_Max() const {
+  uint64_t count = 0;
+
+  Node* x = head_;
+  int level = GetMaxHeight() - 1;
+  while (true) {
+    Node* next = x->Next(level);
+    if (next == nullptr) {
+      return count;
+    }
+    count++;
+    x = next;
   }
 }
 
@@ -577,7 +609,7 @@ void SkipList<Key, Comparator>::Insert(const Key& key) {
     // keys.  In the latter case the reader will use the new node.
     max_height_.store(height, std::memory_order_relaxed);
   }
-
+  
   Node* x = NewNode(key, height);
   for (int i = 0; i < height; i++) {
     // NoBarrier_SetNext() suffices since we will add a barrier when
@@ -585,6 +617,70 @@ void SkipList<Key, Comparator>::Insert(const Key& key) {
     x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
     prev_[i]->SetNext(i, x);
   }
+
+  prev_[0] = x;
+  prev_height_ = height;
+}
+
+template<typename Key, class Comparator>
+void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
+  // fast path for sequential insertion
+  if (!KeyIsAfterNode(key, prev_[0]->NoBarrier_Next(0)) &&
+      (prev_[0] == head_ || KeyIsAfterNode(key, prev_[0]))) {
+    assert(prev_[0] != head_ || (prev_height_ == 1 && GetMaxHeight() == 1));
+
+    // Outside of this method prev_[1..max_height_] is the predecessor
+    // of prev_[0], and prev_height_ refers to prev_[0].  Inside Insert
+    // prev_[0..max_height - 1] is the predecessor of key.  Switch from
+    // the external state to the internal
+    for (int i = 1; i < prev_height_; i++) {
+      prev_[i] = prev_[0];
+    }
+  } else {
+    // TODO(opt): we could use a NoBarrier predecessor search as an
+    // optimization for architectures where memory_order_acquire needs
+    // a synchronization instruction.  Doesn't matter on x86
+    FindLessThan(key, prev_);
+  }
+
+  // Our data structure does not allow duplicate insertion
+  assert(prev_[0]->Next(0) == nullptr || !Equal(key, prev_[0]->Next(0)->key));
+
+  int height = RandomHeight(); // Height is defined randomly - Lee Jeyeon.
+  if (height > GetMaxHeight()) { // Change Total skiplist height - Lee Jeyeon.
+    for (int i = GetMaxHeight(); i < height; i++) {
+      prev_[i] = head_;
+    }
+    //fprintf(stderr, "Change height from %d to %d\n", max_height_, height);
+
+    // It is ok to mutate max_height_ without any synchronization
+    // with concurrent readers.  A concurrent reader that observes
+    // the new value of max_height_ will see either the old value of
+    // new level pointers from head_ (nullptr), or a new value set in
+    // the loop below.  In the former case the reader will
+    // immediately drop to the next level since nullptr sorts after all
+    // keys.  In the latter case the reader will use the new node.
+    max_height_.store(height, std::memory_order_relaxed);
+  }
+
+  Node* x = NewNode(key, height);
+  if (height == kMaxHeight_) {
+    for (int i = 0; i < height-1; i++) {
+      // NoBarrier_SetNext() suffices since we will add a barrier when
+      // we publish a pointer to "x" in prev[i].
+      x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
+      prev_[i]->SetNext(i, x);
+    }
+  } // If height == kMaxHeight, highest level node turn into tree node - Signal.Jin
+  else {
+    for (int i = 0; i < height; i++) {
+      // NoBarrier_SetNext() suffices since we will add a barrier when
+      // we publish a pointer to "x" in prev[i].
+      x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
+      prev_[i]->SetNext(i, x);
+    }
+  }
+
   prev_[0] = x;
   prev_height_ = height;
 }
