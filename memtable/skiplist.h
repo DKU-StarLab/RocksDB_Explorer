@@ -605,8 +605,6 @@ AddTreeNode(const Key& key, Node* M_target) const {
     else
       tmpRoot->right = newNode;
   }
-  //printf("\n%lu ", key);
-  //printf("%lu\n", newNode->SL_node->key);
 } // Add Skip List into Tree Node - Signal.Jin
 
 template<typename Key, class Comparator>
@@ -759,7 +757,6 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
     // keys.  In the latter case the reader will use the new node.
     max_height_.store(height, std::memory_order_relaxed);
   }
-
   Node* x = NewNode(key, height);
   if (height == kMaxHeight_) {
     for (int i = 0; i < height-1; i++) {
@@ -778,7 +775,6 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
       prev_[i]->SetNext(i, x);
     }
   }
-
   prev_[0] = x;
   prev_height_ = height;
 }
