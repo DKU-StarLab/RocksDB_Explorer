@@ -540,7 +540,7 @@ AddTreeNode(const Key& key, Node* M_target) const {
   Tnode* tmpRoot = nullptr;
 
   newNode->key = key;
-  newNode->SL_node = M_target->Next(kMaxHeight_-1);
+  newNode->SL_node = M_target->Next(kMaxHeight_-2);
   if (root == nullptr) {
     root = newNode;
   } else {
@@ -558,12 +558,13 @@ AddTreeNode(const Key& key, Node* M_target) const {
     else
       tmpRoot->right = newNode;
   }
-
+  //printf("\n%lu ", key);
+  //printf("%lu\n", newNode->SL_node->key);
 } // Add Skip List into Tree Node - Signal.Jin
 
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
-SearchTreeNode(const Key& key  ) const {
+SearchTreeNode(const Key& key) const {
 
 } // Search Node from Tree Structure - Signal.Jin
 
@@ -698,7 +699,7 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
       x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
       prev_[i]->SetNext(i, x);
     }
-    AddTreeNode(key, prev_[height-1]); // Signal.Jin
+    AddTreeNode(key, prev_[height-2]); // Signal.Jin
   } // If height == kMaxHeight, highest level node turn into tree node - Signal.Jin
   else {
     for (int i = 0; i < height; i++) {
