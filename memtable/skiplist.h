@@ -55,8 +55,6 @@ class SkipList {
     Key key;
   } Tnode; // Tree node structure - Signal.Jin
 
-  Tnode* root; // Root of Tree structure - Signal.Jin
-
  public:
   // Create a new SkipList object that will use "cmp" for comparing keys,
   // and will allocate memory using "*allocator".  Objects allocated in the
@@ -142,6 +140,7 @@ class SkipList {
 
   Node* const head_;
   
+  mutable Tnode* root; // Root of Tree structure - Signal.Jin
   mutable Node* single_cursor_; // Single Cursor based skiplist optimization - Signal.Jin
   mutable int cs_level; // To store single cursor's top level - Signal.Jin
 
