@@ -60,7 +60,7 @@ class SkipList {
   // and will allocate memory using "*allocator".  Objects allocated in the
   // allocator must remain allocated for the lifetime of the skiplist object.
   explicit SkipList(Comparator cmp, Allocator* allocator,
-                    int32_t max_height = 5, int32_t branching_factor = 4);
+                    int32_t max_height = 7, int32_t branching_factor = 4);
   // No copying allowed
   SkipList(const SkipList&) = delete;
   void operator=(const SkipList&) = delete;
@@ -457,9 +457,14 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   // A concurrent insert might occur after FindLessThan(key) but before
   // we get a chance to call Next(0).
   
-  Node* x = head_;
-  int level = GetMaxHeight() - 1;
+  Node* x = SearchTreeNode(key);
+  if (compare_(x->key, key) == 0) {
+    return x;
+  }
+  int level = GetMaxHeight() - 2;
   Node* last_bigger = nullptr;
+
+  //printf("\n%lu\n", x->key);
   while (true) {
     assert(x != nullptr);
     Node* next = x->Next(level);
@@ -608,19 +613,28 @@ template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 SearchTreeNode(const Key& key) const {
   Tnode* pos = root;
+  //printf("\n root = %lu\n", pos->key);
+  //printf("\n key = %lu\n", key);
 
   while (pos != nullptr) {
     if (compare_(pos->key, key) == 0) {
       return pos->SL_node;
     } else if (compare_(pos->key, key) < 0) {
-      pos = pos->right;
+      if (pos->right != nullptr) {
+        pos = pos->right;
+      } else return pos->SL_node;
+      //printf("\nright\n");
     } else if (compare_(pos->key, key) > 0) {
-      pos = pos->left;
+      if (pos->left != nullptr) {
+        pos = pos->left;
+      } else return head_;
+      //printf("\nleft\n");
     } else {
+      //printf("\n SL = %lu\n", pos->SL_node->key);
       return pos->SL_node;
     }
   }
-
+  return head_;
 } // Search Node from Tree Structure - Signal.Jin
 
 template <typename Key, class Comparator>
