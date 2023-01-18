@@ -52,7 +52,7 @@ class SkipList {
     Node* SL_node;
     struct T_node* left;
     struct T_node* right;
-    int key;
+    Key key;
   } Tnode; // Tree node structure - Signal.Jin
 
   Tnode* root; // Root of Tree structure - Signal.Jin
@@ -177,7 +177,7 @@ class SkipList {
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
   void AddTreeNode(const Key& key, Node* M_target) const; // Signal.Jin
-  Tnode* SearchTreeNode(const Key& key) const; // Signal.Jin
+  Node* SearchTreeNode(const Key& key) const; // Signal.Jin
 
   // Return the latest node with a key < key.
   // Return head_ if there is no such node.
@@ -532,7 +532,41 @@ uint64_t SkipList<Key, Comparator>::Estimate_Max() const {
     count++;
     x = next;
   }
-}
+} // Signal.Jin
+
+template<typename Key, class Comparator>
+void SkipList<Key, Comparator>::
+AddTreeNode(const Key& key, Node* M_target) const {
+  Tnode* newNode = new Tnode();
+  Tnode* tmpRoot = nullptr;
+
+  newNode->key = key;
+  newNode->SL_node = M_target->Next(kMaxHeight_-1);
+  if (root == nullptr) {
+    root = newNode;
+  } else {
+    Tnode* pos = root;
+    while(pos != nullptr) {
+      tmpRoot = pos;
+      if (compare_(newNode->key, pos->key) < 0) {
+        pos = pos->left;
+      } else {
+        pos = pos->right;
+      }
+    }
+    if (compare_(newNode->key, tmpRoot->key) < 0)
+      tmpRoot->left = newNode;
+    else
+      tmpRoot->right = newNode;
+  }
+
+} // Add Skip List into Tree Node - Signal.Jin
+
+template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
+SearchTreeNode(const Key& key  ) const {
+
+} // Search Node from Tree Structure - Signal.Jin
 
 template <typename Key, class Comparator>
 SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
@@ -665,6 +699,7 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
       x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
       prev_[i]->SetNext(i, x);
     }
+    AddTreeNode(key, prev_[height-1]); // Signal.Jin
   } // If height == kMaxHeight, highest level node turn into tree node - Signal.Jin
   else {
     for (int i = 0; i < height; i++) {
