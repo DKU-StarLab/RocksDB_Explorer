@@ -79,6 +79,9 @@ class SkipList {
   // Call a FindGreatorOrEqual_Cursor function - Signal.Jin
   bool Contains_Cursor(const Key& key) const;
 
+  // Signal.Jin
+  bool Contains_B2hSL(const Key& key) const; 
+
   // Return estimated number of entries smaller than `key`.
   uint64_t EstimateCount(const Key& key) const;
 
@@ -174,6 +177,8 @@ class SkipList {
   Node* FindGreaterOrEqual(const Key& key) const;
 
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
+
+  Node* FindGreaterOrEqual_B2hSL(const Key& key) const; // Signal.Jin
 
   void AddTreeNode(const Key& key, Node* M_target) const; // Signal.Jin
   Node* SearchTreeNode(const Key& key) const; // Signal.Jin
@@ -444,6 +449,43 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 }
 
 template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
+  FindGreaterOrEqual_B2hSL(const Key& key) const {
+  // Note: It looks like we could reduce duplication by implementing
+  // this function as FindLessThan(key)->Next(0), but we wouldn't be able
+  // to exit early on equality and the result wouldn't even be correct.
+  // A concurrent insert might occur after FindLessThan(key) but before
+  // we get a chance to call Next(0).
+  
+  Node* x = head_;
+  int level = GetMaxHeight() - 1;
+  Node* last_bigger = nullptr;
+  while (true) {
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+    /*if (next != nullptr) {
+      PREFETCH(next->Next(level), 0, 1);
+    }*/
+    // Make sure the lists are sorted
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    // Make sure we haven't overshot during our search
+    assert(x == head_ || KeyIsAfterNode(key, x));
+    int cmp = (next == nullptr || next == last_bigger)
+        ? 1 : compare_(next->key, key);
+    if (cmp == 0 || (cmp > 0 && level == 0)) {
+      return next;
+    } else if (cmp < 0) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      // Switch to next list, reuse compare_() result
+      last_bigger = next;
+      level--;
+    }
+  }
+}
+
+template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node*
 SkipList<Key, Comparator>::FindLessThan(const Key& key, Node** prev) const {
   Node* x = head_;
@@ -565,6 +607,19 @@ AddTreeNode(const Key& key, Node* M_target) const {
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 SearchTreeNode(const Key& key) const {
+  Tnode* pos = root;
+
+  while (pos != nullptr) {
+    if (compare_(pos->key, key) == 0) {
+      return pos->SL_node;
+    } else if (compare_(pos->key, key) < 0) {
+      pos = pos->right;
+    } else if (compare_(pos->key, key) > 0) {
+      pos = pos->left;
+    } else {
+      return pos->SL_node;
+    }
+  }
 
 } // Search Node from Tree Structure - Signal.Jin
 
@@ -727,6 +782,16 @@ bool SkipList<Key, Comparator>::Contains(const Key& key) const {
 template<typename Key, class Comparator>
 bool SkipList<Key, Comparator>::Contains_Cursor(const Key& key) const {
   Node* x = FindGreaterOrEqual_Cursor(key);
+  if (x != nullptr && Equal(key, x->key)) {
+    return true;
+  } else {
+    return false;
+  }
+} // Signal.Jin
+
+template<typename Key, class Comparator>
+bool SkipList<Key, Comparator>::Contains_B2hSL(const Key& key) const {
+  Node* x = FindGreaterOrEqual_B2hSL(key);
   if (x != nullptr && Equal(key, x->key)) {
     return true;
   } else {
