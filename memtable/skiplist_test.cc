@@ -224,35 +224,37 @@ TEST_F(SkipTest, UniRandInsertAndLookup) { // Skiplist test for Random Pattern -
   TestComparator cmp;
   SkipList<Key, TestComparator> list(cmp, &arena);
 
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<int> distr(0, N);
+  //std::random_device rd;
+  //std::mt19937 gen(rd());
+  //std::uniform_int_distribution<int> distr(0, N);
   
   //FILE *fp_sk_test;
   //float *lat = (float *)malloc(sizeof(float)*R);
   uint64_t *rnd_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
-  
+  for(int i = 0; i < R; i++) {
+    rnd_val[i] = rnd.Next() % N;
+    //rnd_val[i] = distr(gen);
+  } // Generate Random Key - Signal.Jin
+
   //fp_sk_test = fopen("./opt_sc_exp/uni/100k/default_uni_100k.csv", "at");
+  //printf("\nBefore Insert\n");
   auto w_start = Clock::now();
-  for (int i = 1; i < N; i++) {
-    Key key = i;
+  for (int i = 0; i < N; i++) {
+    //printf("Bkey = %lu\n", rnd_val[i]);
+    Key key = rnd_val[i];
     if (keys.insert(key).second) {
-      list.Insert(key);
+      list.Insert_B2hSL(key);
     }
   }
   auto w_end = Clock::now();
 
-  for(int i = 0; i < R; i++) {
-    //rnd_val[i] = rnd.Next() % N;
-    rnd_val[i] = distr(gen);
-  } // Generate Random Key - Signal.Jin
-
+  //printf("\nAfter Insert\n");
   //int j = 0;
   auto r_start = Clock::now();
   for (int i = 0; i < R; i++) { 
     Key Gkey = rnd_val[i];
     //auto start_time = Clock::now();
-    if (list.Contains(Gkey)) { // Maybe estimate time in here - Signal.Jin
+    if (list.Contains_B2hSL(Gkey)) { // Maybe estimate time in here - Signal.Jin
       ASSERT_EQ(keys.count(Gkey), 1U);
     } else {
       ASSERT_EQ(keys.count(Gkey), 0U);
@@ -293,25 +295,27 @@ TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern -
   init_zipf_generator(0, N);
 
   //FILE *fp_sk_test;
-  //fp_sk_test = fopen("./opt_sc_exp/zipf/100k/sc_zipf_100k_best.csv", "at");
+  //fp_sk_test = fopen("./zipf_default.csv", "at");
 
   //float *lat = (float *)malloc(sizeof(float)*R);
   uint64_t *zipf_val = (uint64_t *)malloc(sizeof(uint64_t)*R);
-
-  // Insert key Random pattern in skiplist
-  auto w_start = Clock::now();
-  for (int i = 0; i < N; i++) {
-    Key key = i;
-    if (keys.insert(key).second) {
-      list.Insert(key);
-    }
-  }
-  auto w_end = Clock::now();
 
   for(int i = 0; i < R; i++) {
     zipf_val[i] = nextValue() % N;
   } // Zipfian Key Pattern - Signal.Jin
 
+  // Insert key Random pattern in skiplist
+  //auto w_start = Clock::now();
+  for (int i = 0; i < N; i++) {
+    Key key = zipf_val[i];
+    if (keys.insert(key).second) {
+      //list.Insert(key);
+      //list.Insert_B2hSL(key);
+      list.Insert_AVL(key);
+    }
+  }
+  //auto w_end = Clock::now();
+/*
   //int j = 0;
   auto r_start = Clock::now();
   for (int i = 0; i < R; i++) { 
@@ -334,14 +338,14 @@ TEST_F(SkipTest, ZipRandInsertAndLookup) { // Skiplist test for Random Pattern -
   w_time = std::chrono::duration_cast<std::chrono::nanoseconds>(w_end - w_start).count() * 0.001;
 
   printf("\n%.lf, %.lf\n", w_time, r_time);
-
+*/
   //for(int k = 0; k < R; k++) {
   //  fprintf(fp_sk_test, "%.2f\n", lat[k]);
+  //  printf("%.2f\n", lat[k]);
   //}
   //fclose(fp_sk_test);
   free(zipf_val);
   //free(lat);
-
 }
 
 /*
