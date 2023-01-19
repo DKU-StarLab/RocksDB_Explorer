@@ -463,7 +463,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   }
   int level = GetMaxHeight() - 2;
   Node* last_bigger = nullptr;
-
   //printf("\n%lu\n", x->key);
   while (true) {
     assert(x != nullptr);
@@ -611,6 +610,7 @@ template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 SearchTreeNode(const Key& key) const {
   Tnode* pos = root;
+  Node* tmpTop = nullptr;
   //printf("\n root = %lu\n", pos->key);
   //printf("\n key = %lu\n", key);
 
@@ -619,12 +619,26 @@ SearchTreeNode(const Key& key) const {
       return pos->SL_node;
     } else if (compare_(pos->key, key) < 0) {
       if (pos->right != nullptr) {
+        tmpTop = pos->SL_node;
         pos = pos->right;
+        if (compare_(pos->key, key) > 0) {
+          if (pos->left != nullptr) {
+            pos = pos->left;
+            if (pos->left == nullptr) return tmpTop;
+          }    
+        }
       } else return pos->SL_node;
       //printf("\nright\n");
     } else if (compare_(pos->key, key) > 0) {
       if (pos->left != nullptr) {
         pos = pos->left;
+        if (compare_(pos->key, key) < 0) {
+          if (pos->right != nullptr) {
+            tmpTop = pos->SL_node;
+            pos = pos->right;
+            if (pos->left == nullptr) return tmpTop;
+          }    
+        }
       } else return head_;
       //printf("\nleft\n");
     } else {
