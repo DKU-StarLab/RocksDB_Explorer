@@ -191,6 +191,7 @@ class SkipList {
   Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
   Node* FindGreaterOrEqual_B2hSL(const Key& key) const; // Signal.Jin
+  Node* FindLessThan_B2hSL(const Key& key, Node** prev = nullptr) const; // Signal.Jin
 
   Node* FindGreaterOrEqual_AVL(const Key& key) const; // Signal.Jin
 
@@ -483,7 +484,8 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   if (compare_(x->key, key) == 0) {
     return x;
   }
-  int level = GetMaxHeight() - 2;
+  int level =GetMaxHeight() - 1; // Max height node + tree - Signal.Jin
+  //int level = GetMaxHeight() - 2; // Max height node -> tree - Signal.Jin
   Node* last_bigger = nullptr;
   //printf("\n%lu\n", x->key);
   while (true) {
@@ -583,6 +585,36 @@ SkipList<Key, Comparator>::FindLessThan(const Key& key, Node** prev) const {
 }
 
 template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node*
+SkipList<Key, Comparator>::FindLessThan_B2hSL(const Key& key, Node** prev) const {
+  Node* x = SearchTreeNode(key);
+  int level = GetMaxHeight() - 1;
+  // KeyIsAfter(key, last_not_after) is definitely false
+  Node* last_not_after = nullptr;
+  while (true) {
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    assert(x == head_ || KeyIsAfterNode(key, x));
+    if (next != last_not_after && KeyIsAfterNode(key, next)) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      if (prev != nullptr) {
+        prev[level] = x;
+      }
+      if (level == 0) {
+        return x;
+      } else {
+        // Switch to next list, reuse KeyIUsAfterNode() result
+        last_not_after = next;
+        level--;
+      }
+    }
+  }
+} // Signal.Jin
+
+template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::FindLast()
     const {
   Node* x = head_;
@@ -649,7 +681,8 @@ AddTreeNode(const Key& key, Node* M_target) const {
   Tnode* tmpRoot = nullptr;
 
   newNode->key = key;
-  newNode->SL_node = M_target->Next(kMaxHeight_-2);
+  newNode->SL_node = M_target->Next(kMaxHeight_-1); // Max height node + tree - Signal.Jin
+  //newNode->SL_node = M_target->Next(kMaxHeight_-2); // Max height node -> tree - Signal.Jin
   if (root == nullptr) {
     root = newNode;
   } else {
@@ -674,8 +707,6 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 SearchTreeNode(const Key& key) const {
   Tnode* pos = root;
   Node* tmpTop = nullptr;
-  //printf("\n root = %lu\n", pos->key);
-  //printf("\n key = %lu\n", key);
 
   while (pos != nullptr) {
     if (compare_(pos->key, key) == 0) {
@@ -936,7 +967,8 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
     // TODO(opt): we could use a NoBarrier predecessor search as an
     // optimization for architectures where memory_order_acquire needs
     // a synchronization instruction.  Doesn't matter on x86
-    FindLessThan(key, prev_);
+    //FindLessThan(key, prev_);
+    FindLessThan_B2hSL(key, prev_); // Signal.Jin
   }
 
   // Our data structure does not allow duplicate insertion
@@ -959,7 +991,7 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
     max_height_.store(height, std::memory_order_relaxed);
   }
   Node* x = NewNode(key, height);
-  if (height == kMaxHeight_) {
+  /*if (height == kMaxHeight_) {
     for (int i = 0; i < height-1; i++) {
       // NoBarrier_SetNext() suffices since we will add a barrier when
       // we publish a pointer to "x" in prev[i].
@@ -975,7 +1007,18 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
       x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
       prev_[i]->SetNext(i, x);
     }
+  }*/
+
+  for (int i = 0; i < height; i++) {
+    // NoBarrier_SetNext() suffices since we will add a barrier when
+    // we publish a pointer to "x" in prev[i].
+    x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
+    prev_[i]->SetNext(i, x);
   }
+  if (height == kMaxHeight_) {
+    AddTreeNode(key, prev_[height-1]);
+  } // Signal.Jin
+
   prev_[0] = x;
   prev_height_ = height;
 }
