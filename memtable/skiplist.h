@@ -194,6 +194,7 @@ class SkipList {
   Node* FindLessThan_B2hSL(const Key& key, Node** prev = nullptr) const; // Signal.Jin
 
   Node* FindGreaterOrEqual_AVL(const Key& key) const; // Signal.Jin
+  Node* FindLessThan_AVL(const Key& key, Node** prev = nullptr) const; // Signal.Jin
 
   void AddTreeNode(const Key& key, Node* M_target) const; // Signal.Jin
   Node* SearchTreeNode(const Key& key) const; // Signal.Jin
@@ -526,7 +527,8 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
   if (compare_(x->key, key) == 0) {
     return x;
   }
-  int level = GetMaxHeight() - 2;
+  int level = GetMaxHeight() - 1;
+  //int level = GetMaxHeight() - 2;
   Node* last_bigger = nullptr;
   //printf("\n%lu\n", x->key);
   while (true) {
@@ -588,6 +590,36 @@ template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node*
 SkipList<Key, Comparator>::FindLessThan_B2hSL(const Key& key, Node** prev) const {
   Node* x = SearchTreeNode(key);
+  int level = GetMaxHeight() - 1;
+  // KeyIsAfter(key, last_not_after) is definitely false
+  Node* last_not_after = nullptr;
+  while (true) {
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    assert(x == head_ || KeyIsAfterNode(key, x));
+    if (next != last_not_after && KeyIsAfterNode(key, next)) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      if (prev != nullptr) {
+        prev[level] = x;
+      }
+      if (level == 0) {
+        return x;
+      } else {
+        // Switch to next list, reuse KeyIUsAfterNode() result
+        last_not_after = next;
+        level--;
+      }
+    }
+  }
+} // Signal.Jin
+
+template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node*
+SkipList<Key, Comparator>::FindLessThan_AVL(const Key& key, Node** prev) const {
+  Node* x = SearchAVLNode(key);
   int level = GetMaxHeight() - 1;
   // KeyIsAfter(key, last_not_after) is definitely false
   Node* last_not_after = nullptr;
@@ -1041,7 +1073,8 @@ void SkipList<Key, Comparator>::Insert_AVL(const Key& key) {
     // TODO(opt): we could use a NoBarrier predecessor search as an
     // optimization for architectures where memory_order_acquire needs
     // a synchronization instruction.  Doesn't matter on x86
-    FindLessThan(key, prev_);
+    //FindLessThan(key, prev_);
+    FindLessThan_AVL(key, prev_);
   }
 
   // Our data structure does not allow duplicate insertion
@@ -1064,7 +1097,7 @@ void SkipList<Key, Comparator>::Insert_AVL(const Key& key) {
     max_height_.store(height, std::memory_order_relaxed);
   }
   Node* x = NewNode(key, height);
-  if (height == kMaxHeight_) {
+  /*if (height == kMaxHeight_) {
     for (int i = 0; i < height-1; i++) {
       // NoBarrier_SetNext() suffices since we will add a barrier when
       // we publish a pointer to "x" in prev[i].
@@ -1080,7 +1113,18 @@ void SkipList<Key, Comparator>::Insert_AVL(const Key& key) {
       x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
       prev_[i]->SetNext(i, x);
     }
+  }*/
+
+  for (int i = 0; i < height; i++) {
+    // NoBarrier_SetNext() suffices since we will add a barrier when
+    // we publish a pointer to "x" in prev[i].
+    x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
+    prev_[i]->SetNext(i, x);
   }
+  if (height == kMaxHeight_) {
+    rootAVL = AddAVLNode(key, prev_[height-1], rootAVL);
+  } // Signal.Jin
+
   prev_[0] = x;
   prev_height_ = height;
 }
