@@ -176,6 +176,7 @@ class SkipList {
 
   Node* NewNode(const Key& key, int height);
   int RandomHeight();
+  int RandomHeight_B2hSL();
   bool Equal(const Key& a, const Key& b) const { return (compare_(a, b) == 0); }
   bool LessThan(const Key& a, const Key& b) const {
     return (compare_(a, b) < 0);
@@ -345,6 +346,24 @@ int SkipList<Key, Comparator>::RandomHeight() {
   }
   assert(height > 0);
   assert(height <= kMaxHeight_);
+  return height;
+}
+
+template<typename Key, class Comparator>
+int SkipList<Key, Comparator>::RandomHeight_B2hSL() {
+  auto rnd = Random::GetTLSInstance();
+
+  // Increase height with probability 1 in kBranching
+  int height = 1;
+  while (height <= kMaxHeight_ && rnd->Next() < kScaledInverseBranching_) {
+    if (height == kMaxHeight_ && rnd->Next() < kScaledInverseBranching_/2) {
+      height++;
+      break;
+    }
+    height++;
+  }
+  assert(height > 0);
+  assert(height <= kMaxHeight_+1);
   return height;
 }
 
@@ -925,7 +944,7 @@ SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
     head_->SetNext(i, nullptr);
     prev_[i] = head_;
   }
-  rootAVL = nullptr; // Signal.Jin
+  rootAVL = nullptr; // Setup for AVL tree with Skip List - Signal.Jin
 }
 
 template<typename Key, class Comparator>
@@ -1006,7 +1025,12 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
   // Our data structure does not allow duplicate insertion
   assert(prev_[0]->Next(0) == nullptr || !Equal(key, prev_[0]->Next(0)->key));
 
-  int height = RandomHeight(); // Height is defined randomly - Lee Jeyeon.
+  int check = 0;
+  int height = RandomHeight_B2hSL(); // Height is defined randomly - Lee Jeyeon.
+  if (height == kMaxHeight_+1) {
+    height--;
+    check = 1;
+  } // Signal.Jin
   if (height > GetMaxHeight()) { // Change Total skiplist height - Lee Jeyeon.
     for (int i = GetMaxHeight(); i < height; i++) {
       prev_[i] = head_;
@@ -1047,7 +1071,7 @@ void SkipList<Key, Comparator>::Insert_B2hSL(const Key& key) {
     x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
     prev_[i]->SetNext(i, x);
   }
-  if (height == kMaxHeight_) {
+  if (height == kMaxHeight_ && check == 1) {
     AddTreeNode(key, prev_[height-1]);
   } // Signal.Jin
 
