@@ -38,6 +38,8 @@
 #include "port/port.h"
 #include "util/random.h"
 
+#define MAX_TABLE 8191
+
 //static void* last_loc; // Signal.Jin
 //static int count = 0;
 
@@ -68,6 +70,7 @@ class SkipList {
     Key key;
     int ref_cnt;
     int lookup_cnt;
+    struct Lifting_node *next;
   } Lnode; // Lifting Table strucutre - Signal.Jin
 
  public:
@@ -164,6 +167,7 @@ class SkipList {
   
   mutable Tnode* root; // Root of Tree structure - Signal.Jin
   mutable Anode* rootAVL; // Root of AVL Tree structure - Signal.Jin
+  mutable Lnode* table[MAX_TABLE];
 
   mutable Node* single_cursor_; // Single Cursor based skiplist optimization - Signal.Jin
   mutable int cs_level; // To store single cursor's top level - Signal.Jin
@@ -209,7 +213,8 @@ class SkipList {
   Node* FindGreaterOrEqual_Lift(const Key& key) const; // Signal.Jin
   Node* FindLessThan_Lift(const Key& key, Node** prev = nullptr) const; // Signal.Jin
 
-  void AddLiftNode(const Key& key) const; // Signal.Jin
+  void AddLiftNode(const Key& key, int height, bool flag) const; // Signal.Jin
+  int hashing(const Key& key) const; // Signal.Jin
 
   void AddTreeNode(const Key& key, Node* M_target) const; // Signal.Jin
   Node* SearchTreeNode(const Key& key) const; // Signal.Jin
@@ -731,11 +736,13 @@ SkipList<Key, Comparator>::FindLessThan_Lift(const Key& key, Node** prev) const 
     if (next != last_not_after && KeyIsAfterNode(key, next)) {
       // Keep searching in this list
       x = next;
+      AddLiftNode(x->key, level, false);
     } else {
       if (prev != nullptr) {
         prev[level] = x;
       }
       if (level == 0) {
+        AddLiftNode(x->key, level, true);
         return x;
       } else {
         // Switch to next list, reuse KeyIUsAfterNode() result
@@ -804,6 +811,64 @@ uint64_t SkipList<Key, Comparator>::Estimate_Max() const {
     count++;
     x = next;
   }
+} // Signal.Jin
+
+template<typename Key, class Comparator>
+void SkipList<Key, Comparator>::
+AddLiftNode(const Key& key, int height, bool flag) const {
+  Lnode* newNode = new Lnode();
+  Lnode* tmpNode = new Lnode();
+
+  int h_key = hashing(key);
+  //printf("key = %d, h_key = %d, height = %d\n", (int)key, h_key, height);
+
+  if (table[h_key] == nullptr) {
+    newNode->key = key;
+    newNode->max_height = height+1;
+    if (flag == false) {
+      newNode->ref_cnt = 1;
+      newNode->lookup_cnt = 0;
+    } else if (flag == true) {
+      newNode->ref_cnt = 0;
+      newNode->lookup_cnt = 1;
+    }
+    newNode->next = nullptr;
+    table[h_key] = newNode;
+  } else {
+    tmpNode = table[h_key];
+    while(tmpNode->next) {
+      if (compare_(tmpNode->key, key) == 0) {
+        if (flag == false)
+          tmpNode->ref_cnt++;
+        else if (flag == true)
+          tmpNode->lookup_cnt++;
+        break;
+      }
+      tmpNode = tmpNode->next;
+    }
+    if (tmpNode == nullptr) {
+      newNode->key = key;
+      newNode->max_height = height;
+      if (flag == false) {
+        newNode->ref_cnt = 1;
+        newNode->lookup_cnt = 0;
+      } else if (flag == true) {
+        newNode->ref_cnt = 0;
+        newNode->lookup_cnt = 1;
+      }
+      newNode->next = nullptr;
+      tmpNode = newNode;
+    }
+  }
+} // Signal.Jin
+
+template<typename Key, class Comparator>
+int SkipList<Key, Comparator>::
+hashing(const Key& key) const {
+  int t_key = (int)key;
+  t_key = t_key & MAX_TABLE;
+
+  return t_key;
 } // Signal.Jin
 
 template<typename Key, class Comparator>
@@ -1254,7 +1319,7 @@ void SkipList<Key, Comparator>::Insert_Lift(const Key& key) {
     // TODO(opt): we could use a NoBarrier predecessor search as an
     // optimization for architectures where memory_order_acquire needs
     // a synchronization instruction.  Doesn't matter on x86
-    FindLessThan(key, prev_);
+    FindLessThan_Lift(key, prev_);
   }
 
   // Our data structure does not allow duplicate insertion
