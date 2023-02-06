@@ -836,7 +836,7 @@ AddLiftNode(const Key& key, int height, bool flag) const {
     table[h_key] = newNode;
   } else {
     tmpNode = table[h_key];
-    while(tmpNode->next) {
+    do {
       if (compare_(tmpNode->key, key) == 0) {
         if (flag == false)
           tmpNode->ref_cnt++;
@@ -845,20 +845,20 @@ AddLiftNode(const Key& key, int height, bool flag) const {
         break;
       }
       tmpNode = tmpNode->next;
-    }
-    if (tmpNode == nullptr) {
-      newNode->key = key;
-      newNode->max_height = height;
-      if (flag == false) {
-        newNode->ref_cnt = 1;
-        newNode->lookup_cnt = 0;
-      } else if (flag == true) {
-        newNode->ref_cnt = 0;
-        newNode->lookup_cnt = 1;
+      if (tmpNode == nullptr) {
+        newNode->key = key;
+        newNode->max_height = height;
+        if (flag == false) {
+          newNode->ref_cnt = 1;
+          newNode->lookup_cnt = 0;
+        } else if (flag == true) {
+          newNode->ref_cnt = 0;
+          newNode->lookup_cnt = 1;
+        }
+        newNode->next = nullptr;
+        tmpNode = newNode;
       }
-      newNode->next = nullptr;
-      tmpNode = newNode;
-    }
+    } while(tmpNode->next != nullptr);
   }
 } // Signal.Jin
 
@@ -901,40 +901,44 @@ AddTreeNode(const Key& key, Node* M_target) const {
 
 template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
-SearchTreeNode(const Key& key) const {
+  SearchTreeNode(const Key& key) const {
   Tnode* pos = root;
-  Node* tmpTop = nullptr;
+  Tnode* parent = nullptr;
+  Tnode* gparent = nullptr;
 
   while (pos != nullptr) {
     if (compare_(pos->key, key) == 0) {
       return pos->SL_node;
     } else if (compare_(pos->key, key) < 0) {
-      if (pos->right != nullptr) {
-        tmpTop = pos->SL_node;
+      if (pos->right == nullptr) {
+        return pos->SL_node;
+      } else if (gparent != nullptr) {
+        gparent = nullptr;
+        parent = pos;
         pos = pos->right;
-        if (compare_(pos->key, key) > 0) {
-          if (pos->left != nullptr) {
-            pos = pos->left;
-            if (pos->left == nullptr) return tmpTop;
-          }    
-        }
-      } else return pos->SL_node;
-      //printf("\nright\n");
+      }else {
+        parent = pos;
+        pos = pos->right;
+      }
     } else if (compare_(pos->key, key) > 0) {
-      if (pos->left != nullptr) {
-        pos = pos->left;
-        if (compare_(pos->key, key) < 0) {
-          if (pos->right != nullptr) {
-            tmpTop = pos->SL_node;
-            pos = pos->right;
-            if (pos->left == nullptr) return tmpTop;
-          }    
+      if (pos->left == nullptr) {
+        if (parent == nullptr && gparent == nullptr) {
+          return head_;
+        } else if (parent != nullptr && gparent == nullptr) {
+          return parent->SL_node;
+        } else if (parent != nullptr && gparent != nullptr) {
+          return gparent->SL_node;
         }
-      } else return head_;
-      //printf("\nleft\n");
-    } else {
-      //printf("\n SL = %lu\n", pos->SL_node->key);
-      return pos->SL_node;
+      } else if (parent != nullptr && gparent == nullptr) {
+        gparent = parent;
+        parent = pos;
+        pos = pos->left;
+      } else if (parent != nullptr && gparent != nullptr) {
+        parent = pos;
+        pos = pos->left;
+      } else {
+        pos = pos->left;
+      }
     }
   }
   return head_;
@@ -1091,6 +1095,9 @@ SkipList<Key, Comparator>::SkipList(const Comparator cmp, Allocator* allocator,
     prev_[i] = head_;
   }
   rootAVL = nullptr; // Setup for AVL tree with Skip List - Signal.Jin
+  for (int i = 0; i < MAX_TABLE; i++) {
+    table[i] = NULL;
+  }
 }
 
 template<typename Key, class Comparator>
