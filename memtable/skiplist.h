@@ -78,7 +78,7 @@ class SkipList {
   // and will allocate memory using "*allocator".  Objects allocated in the
   // allocator must remain allocated for the lifetime of the skiplist object.
   explicit SkipList(Comparator cmp, Allocator* allocator,
-                    int32_t max_height = 6, int32_t branching_factor = 4);
+                    int32_t max_height = 7, int32_t branching_factor = 4);
   // No copying allowed
   SkipList(const SkipList&) = delete;
   void operator=(const SkipList&) = delete;
@@ -1028,40 +1028,42 @@ template<typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
 SearchAVLNode(const Key& key) const {
   Anode* pos = rootAVL;
-  Node* tmpTop = nullptr;
-  //printf("\n root = %lu\n", pos->key);
-  //printf("\n key = %lu\n", key);
+  Anode* parent = nullptr;
+  Anode* gparent = nullptr;
 
   while (pos != nullptr) {
     if (compare_(pos->key, key) == 0) {
       return pos->SL_node;
     } else if (compare_(pos->key, key) < 0) {
-      if (pos->right != nullptr) {
-        tmpTop = pos->SL_node;
+      if (pos->right == nullptr) {
+        return pos->SL_node;
+      } else if (gparent != nullptr) {
+        gparent = nullptr;
+        parent = pos;
         pos = pos->right;
-        if (compare_(pos->key, key) > 0) {
-          if (pos->left != nullptr) {
-            pos = pos->left;
-            if (pos->left == nullptr) return tmpTop;
-          }    
-        }
-      } else return pos->SL_node;
-      //printf("\nright\n");
+      }else {
+        parent = pos;
+        pos = pos->right;
+      }
     } else if (compare_(pos->key, key) > 0) {
-      if (pos->left != nullptr) {
-        pos = pos->left;
-        if (compare_(pos->key, key) < 0) {
-          if (pos->right != nullptr) {
-            tmpTop = pos->SL_node;
-            pos = pos->right;
-            if (pos->left == nullptr) return tmpTop;
-          }    
+      if (pos->left == nullptr) {
+        if (parent == nullptr && gparent == nullptr) {
+          return head_;
+        } else if (parent != nullptr && gparent == nullptr) {
+          return parent->SL_node;
+        } else if (parent != nullptr && gparent != nullptr) {
+          return gparent->SL_node;
         }
-      } else return head_;
-      //printf("\nleft\n");
-    } else {
-      //printf("\n SL = %lu\n", pos->SL_node->key);
-      return pos->SL_node;
+      } else if (parent != nullptr && gparent == nullptr) {
+        gparent = parent;
+        parent = pos;
+        pos = pos->left;
+      } else if (parent != nullptr && gparent != nullptr) {
+        parent = pos;
+        pos = pos->left;
+      } else {
+        pos = pos->left;
+      }
     }
   }
   return head_;
