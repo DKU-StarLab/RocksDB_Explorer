@@ -39,6 +39,7 @@
 #include "util/random.h"
 
 //#define MAX_TABLE 8191
+#define MOD 5 // Signal.Jin
 
 //static void* last_loc; // Signal.Jin
 //static int count = 0;
@@ -100,7 +101,7 @@ class SkipList {
   // and will allocate memory using "*allocator".  Objects allocated in the
   // allocator must remain allocated for the lifetime of the skiplist object.
   explicit SkipList(Comparator cmp, Allocator* allocator,
-                    int32_t max_height = 7, int32_t branching_factor = 4);
+                    int32_t max_height = 12, int32_t branching_factor = 4);
   // No copying allowed
   SkipList(const SkipList&) = delete;
   void operator=(const SkipList&) = delete;
@@ -108,6 +109,8 @@ class SkipList {
   // Insert key into the list.
   // REQUIRES: nothing that compares equal to key is currently in the list.
   void Insert(const Key& key);
+
+  void Insert_Buf(const Key& key);
 
   void Insert_B2hSL(const Key& key); // B2hSL insert function - Signal.Jin
   void Insert_RB(const Key& key);
@@ -127,6 +130,7 @@ class SkipList {
   //bool Contains_Cursor(const Key& key) const;
 
   // Signal.Jin
+  bool Contains_Buf(const Key& key) const;
   bool Contains_B2hSL(const Key& key) const;
   bool Contains_RB(const Key& key) const;
 /*
@@ -195,6 +199,8 @@ class SkipList {
   Allocator* const allocator_;    // Allocator used for allocations of nodes
 
   Node* const head_;
+
+  //mutable Key buf[MOD]; // Signal.Jin
   
   mutable Tnode* root; // Root of Tree structure - Signal.Jin
   mutable RBnode* rootRB;
@@ -239,6 +245,8 @@ class SkipList {
   Node* FindGreaterOrEqual(const Key& key) const;
 
   //Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
+
+  Node* FindLessOrEqual_Buf(const Key& key, Node** prev = nullptr) const;
 
   Node* FindGreaterOrEqual_B2hSL(const Key& key) const; // Signal.Jin
   Node* FindLessThan_B2hSL(const Key& key, Node** prev = nullptr) const; // Signal.Jin
@@ -295,6 +303,8 @@ struct SkipList<Key, Comparator>::Node {
   explicit Node(const Key& k) : key(k) { }
 
   Key const key;
+
+  Key buf[MOD]; // Signal.Jin
 
   // Accessors/mutators for links.  Wrapped in methods so we can
   // add the appropriate barriers as necessary.
@@ -769,6 +779,42 @@ SkipList<Key, Comparator>::FindLessThan(const Key& key, Node** prev) const {
       }
       if (level == 0) {
         return x;
+      } else {
+        // Switch to next list, reuse KeyIUsAfterNode() result
+        last_not_after = next;
+        level--;
+      }
+    }
+  }
+}
+
+template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node*
+SkipList<Key, Comparator>::FindLessOrEqual_Buf(const Key& key, Node** prev) const {
+  Node* x = head_;
+  int level = GetMaxHeight() - 1;
+  // KeyIsAfter(key, last_not_after) is definitely false
+  Node* last_not_after = nullptr;
+  //printf("key = %lu\n", key);
+  while (true) {
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+
+    if (next != nullptr && compare_(key, next->key) == 0) {
+      return next; // Signal.Jin
+    }
+
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    assert(x == head_ || KeyIsAfterNode(key, x));
+    if (next != last_not_after && KeyIsAfterNode(key, next)) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      if (prev != nullptr) {
+        prev[level] = x;
+      }
+      if (level == 0) {
+        return nullptr;
       } else {
         // Switch to next list, reuse KeyIUsAfterNode() result
         last_not_after = next;
@@ -1568,6 +1614,71 @@ void SkipList<Key, Comparator>::Insert(const Key& key) {
     // we publish a pointer to "x" in prev[i].
     x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
     prev_[i]->SetNext(i, x);
+  }
+
+  prev_[0] = x;
+  prev_height_ = height;
+}
+
+template<typename Key, class Comparator>
+void SkipList<Key, Comparator>::Insert_Buf(const Key& key) {
+  // fast path for sequential insertion
+  Key quot, remain;
+  Node* loc = nullptr;
+
+  quot = key / MOD;
+  remain = key % MOD;
+
+  //printf("%lu, %lu\n", quot, remain);
+
+  if (!KeyIsAfterNode(quot, prev_[0]->NoBarrier_Next(0)) &&
+      (prev_[0] == head_ || KeyIsAfterNode(quot, prev_[0]))) {
+    assert(prev_[0] != head_ || (prev_height_ == 1 && GetMaxHeight() == 1));
+    // Outside of this method prev_[1..max_height_] is the predecessor
+    // of prev_[0], and prev_height_ refers to prev_[0].  Inside Insert
+    // prev_[0..max_height - 1] is the predecessor of key.  Switch from
+    // the external state to the internal
+    for (int i = 1; i < prev_height_; i++) {
+      prev_[i] = prev_[0];
+    }
+  } else {
+    // TODO(opt): we could use a NoBarrier predecessor search as an
+    // optimization for architectures where memory_order_acquire needs
+    // a synchronization instruction.  Doesn't matter on x86
+    //loc = FindLessOrEqual_Buf(quot, prev_);
+  }
+  loc = FindLessOrEqual_Buf(quot, prev_);
+  if (loc != nullptr && compare_(loc->key, quot) == 0) {
+    loc->buf[remain] = key;
+    return;
+  } // Signal.Jin
+
+  // Our data structure does not allow duplicate insertion
+  assert(prev_[0]->Next(0) == nullptr || !Equal(key, prev_[0]->Next(0)->key));
+
+  int height = RandomHeight(); // Height is defined randomly - Lee Jeyeon.
+  if (height > GetMaxHeight()) { // Change Total skiplist heigth - Lee Jeyeon.
+    for (int i = GetMaxHeight(); i < height; i++) {
+      prev_[i] = head_;
+    }
+    //fprintf(stderr, "Change height from %d to %d\n", max_height_, height);
+
+    // It is ok to mutate max_height_ without any synchronization
+    // with concurrent readers.  A concurrent reader that observes
+    // the new value of max_height_ will see either the old value of
+    // new level pointers from head_ (nullptr), or a new value set in
+    // the loop below.  In the former case the reader will
+    // immediately drop to the next level since nullptr sorts after all
+    // keys.  In the latter case the reader will use the new node.
+    max_height_.store(height, std::memory_order_relaxed);
+  }
+  Node* x = NewNode(quot, height);
+  for (int i = 0; i < height; i++) {
+    // NoBarrier_SetNext() suffices since we will add a barrier when
+    // we publish a pointer to "x" in prev[i].
+    x->NoBarrier_SetNext(i, prev_[i]->NoBarrier_Next(i));
+    prev_[i]->SetNext(i, x);
+    if (i == 0) x->buf[remain] = key;
   }
 
   prev_[0] = x;
