@@ -38,11 +38,7 @@
 #include "port/port.h"
 #include "util/random.h"
 
-//#define MAX_TABLE 8191
-#define MOD 5 // Signal.Jin
-
-//static void* last_loc; // Signal.Jin
-//static int count = 0;
+#define MOD 16 // Signal.Jin
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -101,7 +97,7 @@ class SkipList {
   // and will allocate memory using "*allocator".  Objects allocated in the
   // allocator must remain allocated for the lifetime of the skiplist object.
   explicit SkipList(Comparator cmp, Allocator* allocator,
-                    int32_t max_height = 12, int32_t branching_factor = 4);
+                    int32_t max_height = 7, int32_t branching_factor = 4);
   // No copying allowed
   SkipList(const SkipList&) = delete;
   void operator=(const SkipList&) = delete;
@@ -246,6 +242,7 @@ class SkipList {
 
   //Node* FindGreaterOrEqual_Cursor(const Key& key) const; // Signal.Jin
 
+  Node* FindGreaterOrEqual_Buf(const Key& key) const;
   Node* FindLessOrEqual_Buf(const Key& key, Node** prev = nullptr) const;
 
   Node* FindGreaterOrEqual_B2hSL(const Key& key) const; // Signal.Jin
@@ -304,7 +301,7 @@ struct SkipList<Key, Comparator>::Node {
 
   Key const key;
 
-  Key buf[MOD]; // Signal.Jin
+  //Key buf[MOD]; // Signal.Jin
 
   // Accessors/mutators for links.  Wrapped in methods so we can
   // add the appropriate barriers as necessary.
@@ -459,6 +456,41 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
     assert(x == head_ || KeyIsAfterNode(key, x));
     int cmp = (next == nullptr || next == last_bigger)
         ? 1 : compare_(next->key, key);
+    if (cmp == 0 || (cmp > 0 && level == 0)) {
+      return next;
+    } else if (cmp < 0) {
+      // Keep searching in this list
+      x = next;
+    } else {
+      // Switch to next list, reuse compare_() result
+      last_bigger = next;
+      level--;
+    }
+  }
+}
+
+template<typename Key, class Comparator>
+typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::
+  FindGreaterOrEqual_Buf(const Key& key) const {
+  // Note: It looks like we could reduce duplication by implementing
+  // this function as FindLessThan(key)->Next(0), but we wouldn't be able
+  // to exit early on equality and the result wouldn't even be correct.
+  // A concurrent insert might occur after FindLessThan(key) but before
+  // we get a chance to call Next(0).
+  Key quot = key / MOD;
+
+  Node* x = head_;
+  int level = GetMaxHeight() - 1;
+  Node* last_bigger = nullptr;
+  while (true) {
+    assert(x != nullptr);
+    Node* next = x->Next(level);
+    // Make sure the lists are sorted
+    assert(x == head_ || next == nullptr || KeyIsAfterNode(next->key, x));
+    // Make sure we haven't overshot during our search
+    assert(x == head_ || KeyIsAfterNode(key, x));
+    int cmp = (next == nullptr || next == last_bigger)
+        ? 1 : compare_(next->key, quot);
     if (cmp == 0 || (cmp > 0 && level == 0)) {
       return next;
     } else if (cmp < 0) {
@@ -2079,6 +2111,19 @@ template<typename Key, class Comparator>
 bool SkipList<Key, Comparator>::Contains(const Key& key) const {
   Node* x = FindGreaterOrEqual(key);
   if (x != nullptr && Equal(key, x->key)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+template<typename Key, class Comparator>
+bool SkipList<Key, Comparator>::Contains_Buf(const Key& key) const {
+  Node* x = FindGreaterOrEqual_Buf(key);
+  Key res;
+  if (x != nullptr)
+    res = x->buf[key % MOD];
+  if (x != nullptr && Equal(key, res)) {
     return true;
   } else {
     return false;
